@@ -24,5 +24,5 @@ integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,\
 returns-nonnull-attribute,shift,signed-integer-overflow,undefined,\
 unreachable,vla-bound,vptr")
 
-add_executable(onegin main.c)
+add_executable(onegin main.c sort.c utils.c files.c)
 
