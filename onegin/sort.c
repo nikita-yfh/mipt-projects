@@ -116,15 +116,20 @@ void myqsort(void *_data, size_t count, size_t size, compareFunction_t *comparat
 
 	if(count <= 1);
 	else if(count == 2) {
+
 		if(comparator(data, data + size) > 0)
 			swap(data, data + size, size);
+
 	} else if(count == 3) {
 		if(comparator(data,        data + size)     > 0)
-			swap(data,        data + size,     size);
+			swap(data,             data + size,     size);
+
 		if(comparator(data + size, data + size * 2) > 0)
-			swap(data + size, data + size * 2, size);
+			swap(data + size,      data + size * 2, size);
+
 		if(comparator(data,        data + size * 2) > 0)
-			swap(data,        data + size * 2, size);
+			swap(data,             data + size * 2, size);
+
 	} else {
 		size_t pivot = partition(data, data + size * (count - 1), size, comparator);
 
