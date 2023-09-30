@@ -55,7 +55,6 @@ static stackValue_t* stackIndex(struct Stack *stack, size_t index) {
 	return stack->values + index;
 }
 
-
 static int stackSetCapacity(struct Stack* stack) {
 	printLog(LOG_INFO, "Set stack capacity to %d", stack->capacity);
 
@@ -191,7 +190,9 @@ struct Stack* stackCreate() {
 	stack->bigKapetz          = STACK_KAPETZ_VALUE;
 #endif
 
+#ifdef STACK_ENABLE_HASH
 	stackRehash(stack);
+#endif
 
 	return stack;
 }
@@ -231,7 +232,9 @@ int stackPush(struct Stack* stack, stackValue_t value) {
 
 	printLog(LOG_INFO, "Stack push "STACK_FORMAT, value);
 
+#ifdef STACK_ENABLE_HASH
 	stackRehash(stack);
+#endif
 	return stack->error;
 }
 
@@ -249,7 +252,9 @@ int stackPop(struct Stack* stack, stackValue_t *value) {
 	printLog(LOG_INFO, "Stack pop "STACK_FORMAT, *value);
 
 	ret = stackResize(stack);
+#ifdef STACK_ENABLE_HASH
 	stackRehash(stack);
+#endif
 	return ret;
 }
 
