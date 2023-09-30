@@ -2,7 +2,6 @@
 #define STACK_H
 
 #include <stdint.h>
-#include <stdio.h>
 
 struct Stack;
 
@@ -30,7 +29,7 @@ int stackDelete(struct Stack* stack);
 int stackPush(struct Stack* stack, stackValue_t value);
 int stackPop(struct Stack* stack, stackValue_t* value);
 
-void stackDump(struct Stack* stack, FILE* file);
+void stackDump(struct Stack* stack);
 
 const char *stackGetErrorDescription(int error);
 

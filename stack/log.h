@@ -12,7 +12,7 @@ enum LogLevel {
 	LOG_FATAL
 };
 
-int log(LogLevel level, const char* fmt, ...);
-int vlog(LogLevel level, const char* fmt, va_list args);
+int printLog(enum LogLevel level, const char* fmt, ...);
+int vprintLog(enum LogLevel level, const char* fmt, va_list args);
 
 #endif

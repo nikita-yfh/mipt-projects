@@ -6,6 +6,8 @@
 #include <stddef.h>
 #include <limits.h>
 
+#include "log.h"
+
 #define STACK_RESIZE_ON_POP
 #define STACK_ENABLE_KAPETZ
 #define STACK_ENABLE_HASH
@@ -41,23 +43,17 @@ struct Stack {
 };
 
 static size_t stackGetValuesSize(size_t capacity) {
-#ifdef STACK_ENABLE_KAPETZ
-	return sizeof(kapetz_t) * 2 + capacity * sizeof(stackValue_t);
-#else
 	return capacity * sizeof(stackValue_t);
-#endif
 }
 
 static stackValue_t* stackIndex(struct Stack *stack, size_t index) {
 	assert(stack);
-#ifdef STACK_ENABLE_KAPETZ
-	return (stackValue_t*)((char*)stack->values + sizeof(kapetz_t) * 2 + index * sizeof(stackValue_t));
-#else
 	return stack->values + index;
-#endif
 }
 
 static int stackSetCapacity(struct Stack* stack) {
+	printLog(LOG_INFO, "Set stack capacity to %d", stack->capacity);
+
 	if(!stack->values)
 		stack->values = calloc(1, stackGetValuesSize(stack->capacity));
 	else {
@@ -76,16 +72,11 @@ static int stackResize(struct Stack* stack) {
 		return stackSetCapacity(stack);
 	}
 #ifdef STACK_RESIZE_ON_POP
-	else if(stack->size < stack->capacity * 2 &&
+	else if(stack->size * 2 < stack->capacity &&
 			stack->size >= STACK_DEFAULT_CAPACITY * 2) {
 		stack->capacity /= 2;
 		return stackSetCapacity(stack);
 	}
-#endif
-#ifdef STACK_ENABLE_KAPETZ
-	*((kapetz_t*) stack->values) = STACK_KAPETZ_VALUE;
-	*((kapetz_t*) stack->values +  stack->capacity * sizeof(stackValue_t) +
-	           sizeof(kapetz_t)) = STACK_KAPETZ_VALUE;
 #endif
 	return stack->error;
 }
@@ -103,12 +94,6 @@ static int stackVerify(struct Stack* stack) {
 		stack->error = STACK_SMALL_KAPETZ;
 	if(stack->bigKapetz   != STACK_KAPETZ_VALUE)
 		stack->error = STACK_BIG_KAPETZ;
-
-	if(*((kapetz_t*)stack->values) != STACK_KAPETZ_VALUE)
-		stack->error = STACK_DATA_SMALL_KAPETZ;
-	if(*((kapetz_t*)stack->values + sizeof(kapetz_t) + stack->capacity * sizeof(stackValue_t))
-	                               != STACK_KAPETZ_VALUE)
-		stack->error = STACK_DATA_BIG_KAPETZ;
 #endif
 	return stack->error;
 }
@@ -161,6 +146,8 @@ int stackPush(struct Stack* stack, stackValue_t value) {
 
 	*stackIndex(stack, stack->size - 1) = value;
 
+	printLog(LOG_INFO, "Stack push "STACK_FORMAT, value);
+
 	return stack->error;
 }
 
@@ -172,6 +159,8 @@ int stackPop(struct Stack* stack, stackValue_t *value) {
 		return STACK_EMPTY;
 
 	*value = *stackIndex(stack, --stack->size);
+
+	printLog(LOG_INFO, "Stack pop "STACK_FORMAT, *value);
 
 	return stackResize(stack);
 }
@@ -197,31 +186,30 @@ const char *stackGetErrorDescription(int error) {
 	}
 }
 
-void stackDump(struct Stack *stack, FILE *file) {
-	fprintf(file,
-		"{\n"
+void stackDump(struct Stack *stack) {
+printLog(LOG_DEBUG, "{");
 #ifdef STACK_ENABLE_KAPETZ
-		"  smallKapetz = %lX,\n"
-		"  bigKapetz   = %lX,\n"
+	printLog(LOG_DEBUG, "  smallKapetz = %lX,", stack->smallKapetz);
+	printLog(LOG_DEBUG, "  bigKapetz   = %lX,", stack->bigKapetz);
 #endif
-		"  size        = %lu,\n"
-		"  capacity    = %lu,\n"
-		"  error       = %d [%s],\n"
-		"  values [%p] = {\n",
-#ifdef STACK_ENABLE_KAPETZ
-	stack->smallKapetz, stack->bigKapetz,
-#endif
-	stack->size, stack->capacity,
-	stack->error, stackGetErrorDescription(stack->error), stack->values);
+	printLog(LOG_DEBUG, "  size        = %lu,", stack->size);
+	printLog(LOG_DEBUG, "  capacity    = %lu,", stack->capacity);
+	printLog(LOG_DEBUG, "  error       = %d [%s],",
+			stack->error, stackGetErrorDescription(stack->error));
+	printLog(LOG_DEBUG, "  values [%p] = {",    stack->values);
+
+
 	if(stack->values) {
 		for(size_t index = 0; index < minSize(STACK_DUMP_MAX_VALUES, stack->size); index++) {
 			stackValue_t *value = stackIndex(stack, index);
 
-			fprintf(file, "    [%lu] [%p] = "STACK_FORMAT",\n",
+			printLog(LOG_DEBUG, "    [%lu] [%p] = "STACK_FORMAT",",
 					index, value, *value);
 		}
+		if(stack->size > STACK_DUMP_MAX_VALUES)
+			printLog(LOG_DEBUG, "    ............................[%d]",
+					stack->size - STACK_DUMP_MAX_VALUES);
 	}
-	fprintf(file,
-		"  }\n"
-		"}\n");
+	printLog(LOG_DEBUG, "  }");
+	printLog(LOG_DEBUG, "}");
 }
