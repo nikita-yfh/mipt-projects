@@ -7,6 +7,7 @@
 #include <limits.h>
 
 #include "log.h"
+#include "murmurhash.h"
 
 #define STACK_RESIZE_ON_POP
 #define STACK_ENABLE_KAPETZ
@@ -33,6 +34,9 @@ struct Stack {
 	size_t size;
 	size_t capacity;
 
+	unsigned int structHash;
+	unsigned int dataHash;
+
 	int error;
 
 	stackValue_t* values;
@@ -50,6 +54,7 @@ static stackValue_t* stackIndex(struct Stack *stack, size_t index) {
 	assert(stack);
 	return stack->values + index;
 }
+
 
 static int stackSetCapacity(struct Stack* stack) {
 	printLog(LOG_INFO, "Set stack capacity to %d", stack->capacity);
@@ -81,16 +86,58 @@ static int stackResize(struct Stack* stack) {
 	return stack->error;
 }
 
+// Hashes
+
+#ifdef STACK_ENABLE_HASH
+static unsigned int stackGetStructHash(struct Stack *stack) {
+	assert(stack);
+
+	unsigned int lastStructHash = stack->structHash;
+	stack->structHash = 0;
+
+	unsigned int lastDataHash   = stack->dataHash;
+	stack->dataHash = 0;
+
+	unsigned int hash = murmurHash2(stack, sizeof(struct Stack));
+
+	stack->structHash = lastStructHash;
+	stack->dataHash   = lastDataHash;
+
+	return hash;
+}
+
+static unsigned int stackGetDataHash(struct Stack *stack) {
+	assert(stack);
+
+	return murmurHash2(stack->values, stackGetValuesSize(stack->capacity));
+}
+
+static void stackRehash(struct Stack *stack) {
+	assert(stack);
+
+	stack->dataHash   = stackGetDataHash(stack);
+	stack->structHash = stackGetStructHash(stack);
+
+	printLog(LOG_VERBOSE, "Recalc data hash:   %x", stack->dataHash);
+	printLog(LOG_VERBOSE, "Recalc struct hash: %x", stack->structHash);
+}
+#endif
+
+
 static int stackVerify(struct Stack* stack) {
 	if(!stack)
 		return STACK_INVALID_POINTER;
-
-	stack->error = STACK_OK;
 
 	if(stack->size > stack->capacity)
 		stack->error = STACK_INVALID_SIZE;
 	if(!stack->values)
 		stack->error = STACK_INVALID_DATA;
+#ifdef STACK_ENABLE_HASH
+	if(stack->dataHash != stackGetDataHash(stack))
+		stack->error = STACK_INVALID_DATA_HASH;
+	if(stack->structHash != stackGetStructHash(stack))
+		stack->error = STACK_INVALID_STRUCT_HASH;
+#endif
 #ifdef STACK_ENABLE_KAPETZ
 	if(stack->smallKapetz != STACK_KAPETZ_VALUE)
 		stack->error = STACK_SMALL_KAPETZ;
@@ -99,6 +146,37 @@ static int stackVerify(struct Stack* stack) {
 #endif
 	return stack->error;
 }
+
+const char *stackGetErrorDescription(int error) {
+	switch(error) {
+	case STACK_OK:
+		return "OK";
+	case STACK_EMPTY:
+		return "Stack is empty";
+	case STACK_OVERFLOW:
+		return "Stack overflow";
+	case STACK_NO_MEMORY:
+		return "No enough memory";
+	case STACK_INVALID_DATA:
+		return "Invalid data pointer";
+	case STACK_SMALL_KAPETZ:
+		return "Small stack kapetz";
+	case STACK_BIG_KAPETZ:
+		return "BIG stack kapetz";
+	case STACK_INVALID_STRUCT_HASH:
+		return "Struct hash doesn't match";
+	case STACK_INVALID_DATA_HASH:
+		return "Data hash doesn't match";
+	case STACK_INVALID_POINTER:
+		return "Invalid pointer";
+	case STACK_INVALID_SIZE:
+		return "Invalid stack size";
+	default:
+		return "Unknown error";
+	}
+}
+
+// Main functions
 
 struct Stack* stackCreate() {
 	struct Stack* stack = (struct Stack*) calloc(1, sizeof(struct Stack));
@@ -113,12 +191,13 @@ struct Stack* stackCreate() {
 	stack->bigKapetz          = STACK_KAPETZ_VALUE;
 #endif
 
+	stackRehash(stack);
+
 	return stack;
 }
 
 int stackDelete(struct Stack* stack) {
-	int ret = stackVerify(stack);
-	if(ret) return ret;
+	assert(stack);
 
 	free(stack->values);
 	stack->values = NULL;
@@ -152,6 +231,7 @@ int stackPush(struct Stack* stack, stackValue_t value) {
 
 	printLog(LOG_INFO, "Stack push "STACK_FORMAT, value);
 
+	stackRehash(stack);
 	return stack->error;
 }
 
@@ -168,32 +248,9 @@ int stackPop(struct Stack* stack, stackValue_t *value) {
 
 	printLog(LOG_INFO, "Stack pop "STACK_FORMAT, *value);
 
-	return stackResize(stack);
-}
-
-const char *stackGetErrorDescription(int error) {
-	switch(error) {
-	case STACK_OK:
-		return "OK";
-	case STACK_EMPTY:
-		return "Stack is empty";
-	case STACK_OVERFLOW:
-		return "Stack overflow";
-	case STACK_NO_MEMORY:
-		return "No enough memory";
-	case STACK_INVALID_DATA:
-		return "Invalid data pointer";
-	case STACK_SMALL_KAPETZ:
-		return "Small stack kapetz";
-	case STACK_BIG_KAPETZ:
-		return "BIG stack kapetz";
-	case STACK_INVALID_POINTER:
-		return "Invalid pointer";
-	case STACK_INVALID_SIZE:
-		return "Invalid stack size";
-	default:
-		return "Unknown error";
-	}
+	ret = stackResize(stack);
+	stackRehash(stack);
+	return ret;
 }
 
 void stackDump(struct Stack *stack, int level) {
@@ -202,12 +259,15 @@ void stackDump(struct Stack *stack, int level) {
 	printLog(level, "  smallKapetz = %lX,", stack->smallKapetz);
 	printLog(level, "  bigKapetz   = %lX,", stack->bigKapetz);
 #endif
+#ifdef STACK_ENABLE_HASH
+	printLog(level, "  dataHash    = %x,",  stack->dataHash);
+	printLog(level, "  structHash  = %x,",  stack->structHash);
+#endif
 	printLog(level, "  size        = %lu,", stack->size);
 	printLog(level, "  capacity    = %lu,", stack->capacity);
 	printLog(level, "  error       = %d [%s],",
 			stack->error, stackGetErrorDescription(stack->error));
 	printLog(level, "  values [%p] = {",    stack->values);
-
 
 	if(stack->values) {
 		for(size_t index = 0; index < minSize(STACK_DUMP_MAX_VALUES, stack->size); index++) {

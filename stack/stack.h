@@ -16,6 +16,8 @@ enum STACK_STATE {
 	STACK_INVALID_DATA,
 	STACK_SMALL_KAPETZ,
 	STACK_BIG_KAPETZ,
+	STACK_INVALID_STRUCT_HASH,
+	STACK_INVALID_DATA_HASH,
 	STACK_INVALID_POINTER,
 	STACK_INVALID_SIZE,
 };
@@ -27,8 +29,6 @@ int stackPush(struct Stack* stack, stackValue_t value);
 int stackPop(struct Stack* stack, stackValue_t* value);
 
 void stackDump(struct Stack* stack, int level);
-
-const char *stackGetErrorDescription(int error);
 
 #endif
 
