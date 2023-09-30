@@ -1,6 +1,6 @@
 #include "murmurhash.h"
 
-unsigned int murmurHash2 (char * key, unsigned int len) {
+unsigned int murmurHash2 (const void* key, size_t len) {
 	const unsigned int m = 0x5bd1e995;
 	const unsigned int seed = 0;
 	const int r = 24;
