@@ -34,19 +34,19 @@ int main() {
 
 	struct Stack *stack = stackCreate();
 
-	stackDump(stack);
+	stackDump(stack, LOG_DEBUG);
 
 	for(int i = 0; i < 100; i++) {
 		int value = i * 64;
-		stackPush(stack, value);
-		stackDump(stack);
+		int ret = stackPush(stack, value);
+		stackDump(stack, ret ? LOG_ERROR : LOG_DEBUG);
 	}
 
 
 	int value = 0;
-	for(int i = 0; i < 100; i++) {
-		stackPop(stack, &value);
-		stackDump(stack);
+	for(int i = 0; i < 103; i++) {
+		int ret = stackPop(stack, &value);
+		stackDump(stack, ret ? LOG_ERROR : LOG_DEBUG);
 	}
 
 	stackDelete(stack);

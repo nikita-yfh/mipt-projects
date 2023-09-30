@@ -22,7 +22,7 @@ static struct LogLevelS logLevels[] = {
 	{'D', "\e[1;35m"},
 	{'I', "\e[1;32m"},
 	{'W', "\e[1;33m"},
-	{'E', "\e[0;31m"},
+	{'E', "\e[1;31m"},
 	{'F', "\e[1;31m"}
 };
 

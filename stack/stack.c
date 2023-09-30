@@ -85,6 +85,8 @@ static int stackVerify(struct Stack* stack) {
 	if(!stack)
 		return STACK_INVALID_POINTER;
 
+	stack->error = STACK_OK;
+
 	if(stack->size > stack->capacity)
 		stack->error = STACK_INVALID_SIZE;
 	if(!stack->values)
@@ -135,8 +137,10 @@ int stackPush(struct Stack* stack, stackValue_t value) {
 	int ret = stackVerify(stack);
 	if(ret) return ret;
 
-	if(stack->size == STACK_MAX_SIZE)
-		return STACK_OVERFLOW;
+	if(stack->size == STACK_MAX_SIZE) {
+		stack->error = STACK_OVERFLOW;
+		return stack->error;
+	}
 
 	stack->size++;
 
@@ -155,8 +159,10 @@ int stackPop(struct Stack* stack, stackValue_t *value) {
 	int ret = stackVerify(stack);
 	if(ret) return ret;
 
-	if(stack->size == 0)
-		return STACK_EMPTY;
+	if(stack->size == 0) {
+		stack->error = STACK_EMPTY;
+		return stack->error;
+	}
 
 	*value = *stackIndex(stack, --stack->size);
 
@@ -177,6 +183,10 @@ const char *stackGetErrorDescription(int error) {
 		return "No enough memory";
 	case STACK_INVALID_DATA:
 		return "Invalid data pointer";
+	case STACK_SMALL_KAPETZ:
+		return "Small stack kapetz";
+	case STACK_BIG_KAPETZ:
+		return "BIG stack kapetz";
 	case STACK_INVALID_POINTER:
 		return "Invalid pointer";
 	case STACK_INVALID_SIZE:
@@ -186,30 +196,30 @@ const char *stackGetErrorDescription(int error) {
 	}
 }
 
-void stackDump(struct Stack *stack) {
-printLog(LOG_DEBUG, "{");
+void stackDump(struct Stack *stack, int level) {
+	printLog(level, "{");
 #ifdef STACK_ENABLE_KAPETZ
-	printLog(LOG_DEBUG, "  smallKapetz = %lX,", stack->smallKapetz);
-	printLog(LOG_DEBUG, "  bigKapetz   = %lX,", stack->bigKapetz);
+	printLog(level, "  smallKapetz = %lX,", stack->smallKapetz);
+	printLog(level, "  bigKapetz   = %lX,", stack->bigKapetz);
 #endif
-	printLog(LOG_DEBUG, "  size        = %lu,", stack->size);
-	printLog(LOG_DEBUG, "  capacity    = %lu,", stack->capacity);
-	printLog(LOG_DEBUG, "  error       = %d [%s],",
+	printLog(level, "  size        = %lu,", stack->size);
+	printLog(level, "  capacity    = %lu,", stack->capacity);
+	printLog(level, "  error       = %d [%s],",
 			stack->error, stackGetErrorDescription(stack->error));
-	printLog(LOG_DEBUG, "  values [%p] = {",    stack->values);
+	printLog(level, "  values [%p] = {",    stack->values);
 
 
 	if(stack->values) {
 		for(size_t index = 0; index < minSize(STACK_DUMP_MAX_VALUES, stack->size); index++) {
 			stackValue_t *value = stackIndex(stack, index);
 
-			printLog(LOG_DEBUG, "    [%lu] [%p] = "STACK_FORMAT",",
+			printLog(level, "    [%lu] [%p] = "STACK_FORMAT",",
 					index, value, *value);
 		}
 		if(stack->size > STACK_DUMP_MAX_VALUES)
-			printLog(LOG_DEBUG, "    ............................[%d]",
+			printLog(level, "    ............................[%d]",
 					stack->size - STACK_DUMP_MAX_VALUES);
 	}
-	printLog(LOG_DEBUG, "  }");
-	printLog(LOG_DEBUG, "}");
+	printLog(level, "  }");
+	printLog(level, "}");
 }
