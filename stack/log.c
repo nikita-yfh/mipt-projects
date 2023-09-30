@@ -1,9 +1,13 @@
 #include "log.h"
 
 #include <sys/time.h>
+#include <unistd.h>
+#include <string.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+static FILE *htmlOutput = NULL;
 
 static long long currentTimestamp() {
     struct timeval te;
@@ -14,19 +18,20 @@ static long long currentTimestamp() {
 
 struct LogLevelS {
 	char letter;
-	const char *color;
+	const char *colorFormat;
+	unsigned int colorCode;
 };
 
 static struct LogLevelS logLevels[] = {
-	{'V', "\e[1;37m"},
-	{'D', "\e[1;35m"},
-	{'I', "\e[1;32m"},
-	{'W', "\e[1;33m"},
-	{'E', "\e[1;31m"},
-	{'F', "\e[1;31m"}
+	{'V', "\e[1;37m", 0x808080},
+	{'D', "\e[1;35m", 0xFF00FF},
+	{'I', "\e[1;32m", 0x00FF00},
+	{'W', "\e[1;33m", 0xFFFF00},
+	{'E', "\e[1;31m", 0xFF0000},
+	{'F', "\e[1;31m", 0xFF0000}
 };
 
-static void printLineBegin(enum LogLevel level) {
+static void printLineBegin(FILE *file, enum LogLevel level) {
 	assert(level >= LOG_VERBOSE && level <= LOG_FATAL);
 
 	static long long timeBegin = 0;
@@ -38,19 +43,34 @@ static void printLineBegin(enum LogLevel level) {
 	long long milliseconds = currentTime % 1000;
 	long long seconds      = currentTime / 1000;
 
-	printf("[%04lld.%03lld] %s[%c] ", seconds, milliseconds,
-		logLevels[level].color, logLevels[level].letter);
+	char colorFormat[4096];
+	if(isatty(fileno(file)))
+		strcpy(colorFormat, logLevels[level].colorFormat);
+	else
+		snprintf(colorFormat, 4096, "<font color='#%06X'>", logLevels[level].colorCode);
+
+	fprintf(file, "[%04lld.%03lld] %s[%c] ", seconds, milliseconds,
+		colorFormat, logLevels[level].letter);
 }
 
-static void printLineEnd() {
-	puts("\e[0m");
+static void printLineEnd(FILE *file) {
+	if(isatty(fileno(file)))
+		fprintf(file, "\e[0m\n");
+	else
+		fprintf(file, "</font>\n");
+}
+
+static int vfprintLog(FILE *file, enum LogLevel level, const char* fmt, va_list args) {
+	printLineBegin(file, level);
+	int ret = vfprintf(file, fmt, args);
+	printLineEnd(file);
+	return ret;
 }
 
 int vprintLog(enum LogLevel level, const char* fmt, va_list args) {
-	printLineBegin(level);
-	int ret = vprintf(fmt, args);
-	printLineEnd();
-	return ret;
+	if(htmlOutput)
+		vfprintLog(htmlOutput, level, fmt, args);
+	return vfprintLog(stdout, level, fmt, args);
 }
 
 int printLog(enum LogLevel level, const char *fmt, ...) {
@@ -60,3 +80,21 @@ int printLog(enum LogLevel level, const char *fmt, ...) {
 	va_end(args);
 	return ret;
 }
+
+int openHTMLLog(const char *file) {
+	htmlOutput = fopen(file, "w");
+	if(!htmlOutput)
+		return -1;
+	fprintf(htmlOutput, "<pre>\n");
+	return 0;
+}
+
+int closeHTMLLog() {
+	if(htmlOutput) {
+		fprintf(htmlOutput, "</pre>\n");
+		fclose(htmlOutput);
+		return 0;
+	}
+	return -1;
+}
+

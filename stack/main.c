@@ -29,6 +29,7 @@ const char* intro[] = {
 
 
 int main() {
+	openHTMLLog("log.html");
 	for(size_t index = 0; index < sizeof(intro) / sizeof(*intro); index++)
 		printLog(LOG_VERBOSE, intro[index]);
 
@@ -49,6 +50,8 @@ int main() {
 	}
 
 	stackDelete(stack);
+
+	closeHTMLLog();
 
 	return 0;
 }
