@@ -36,15 +36,14 @@ int main() {
 
 	stackDump(stack, LOG_DEBUG);
 
-	for(int i = 0; i < 100; i++) {
+	for(int i = 0; i < 20; i++) {
 		int value = i * 64;
 		int ret = stackPush(stack, value);
 		stackDump(stack, ret ? LOG_ERROR : LOG_DEBUG);
 	}
 
-
 	int value = 0;
-	for(int i = 0; i < 103; i++) {
+	for(int i = 0; i < 21; i++) {
 		int ret = stackPop(stack, &value);
 		stackDump(stack, ret ? LOG_ERROR : LOG_DEBUG);
 	}

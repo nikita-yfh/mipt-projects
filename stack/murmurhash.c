@@ -11,10 +11,10 @@ unsigned int murmurHash2 (const void* key, size_t len) {
 	unsigned int k = 0;
 
 	while (len >= 4) {
-		k  = data[0];
-		k |= data[1] << 8;
-		k |= data[2] << 16;
-		k |= data[3] << 24;
+		k  = (unsigned int) data[0];
+		k |= (unsigned int) data[1] << 8;
+		k |= (unsigned int) data[2] << 16;
+		k |= (unsigned int) data[3] << 24;
 
 		k *= m;
 		k ^= k >> r;

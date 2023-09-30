@@ -72,12 +72,14 @@ static int stackSetCapacity(struct Stack* stack) {
 
 static int stackResize(struct Stack* stack) {
 	if(stack->size > stack->capacity) {
+		printLog(LOG_INFO, "Need to increase capacity");
 		stack->capacity = minSize(STACK_MAX_SIZE, stack->capacity * 2);
 		return stackSetCapacity(stack);
 	}
 #ifdef STACK_RESIZE_ON_POP
 	else if(stack->size * 2 < stack->capacity &&
 			stack->size >= STACK_DEFAULT_CAPACITY * 2) {
+		printLog(LOG_INFO, "Need to decrease capacity");
 		stack->capacity /= 2;
 		return stackSetCapacity(stack);
 	}
@@ -117,8 +119,8 @@ static void stackRehash(struct Stack *stack) {
 	stack->dataHash   = stackGetDataHash(stack);
 	stack->structHash = stackGetStructHash(stack);
 
-	printLog(LOG_VERBOSE, "Recalc data hash:   %x", stack->dataHash);
-	printLog(LOG_VERBOSE, "Recalc struct hash: %x", stack->structHash);
+	printLog(LOG_VERBOSE, "Recalc data hash:   %08X", stack->dataHash);
+	printLog(LOG_VERBOSE, "Recalc struct hash: %08X", stack->structHash);
 }
 #endif
 
@@ -265,8 +267,8 @@ void stackDump(struct Stack *stack, int level) {
 	printLog(level, "  bigKapetz   = %lX,", stack->bigKapetz);
 #endif
 #ifdef STACK_ENABLE_HASH
-	printLog(level, "  dataHash    = %x,",  stack->dataHash);
-	printLog(level, "  structHash  = %x,",  stack->structHash);
+	printLog(level, "  dataHash    = %08X,",stack->dataHash);
+	printLog(level, "  structHash  = %08X,",stack->structHash);
 #endif
 	printLog(level, "  size        = %lu,", stack->size);
 	printLog(level, "  capacity    = %lu,", stack->capacity);
