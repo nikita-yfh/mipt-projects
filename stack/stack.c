@@ -246,11 +246,6 @@ int stackPush(struct Stack* stack, stackValue_t value) {
 	int ret = stackVerify(stack);
 	if(ret) return ret;
 
-	if(stack->size == STACK_MAX_SIZE) {
-		stack->error = STACK_OVERFLOW;
-		return stack->error;
-	}
-
 	stack->size++;
 
 	ret = stackResize(stack);
