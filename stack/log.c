@@ -70,7 +70,7 @@ static int vfprintLog(FILE *file, enum LogLevel level, const char* fmt, va_list 
 int vprintLog(enum LogLevel level, const char* fmt, va_list args) {
 	if(htmlOutput)
 		vfprintLog(htmlOutput, level, fmt, args);
-	return vfprintLog(stdout, level, fmt, args);
+	return vfprintLog(stderr, level, fmt, args);
 }
 
 int printLog(enum LogLevel level, const char *fmt, ...) {

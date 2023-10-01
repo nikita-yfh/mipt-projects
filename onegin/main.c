@@ -60,9 +60,9 @@ void processOnegin(FILE *input, FILE *output) {
 	fputs("******************************************************************************************************\n", output);
 	sortStrings(lines, lineCount, SORT_BEGIN);
 	writeStrings(lines, lineCount, output);
-	//fputs("******************************************************************************************************\n", output);
-	//sortStrings(lines, lineCount, SORT_END);
-	//writeStrings(lines, lineCount, output);
+	fputs("******************************************************************************************************\n", output);
+	sortStrings(lines, lineCount, SORT_END);
+	writeStrings(lines, lineCount, output);
 	fputs("******************************************************************************************************\n", output);
 	writeStringsDirect(lines, lineCount, output);
 

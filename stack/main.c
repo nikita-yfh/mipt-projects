@@ -37,7 +37,7 @@ int main() {
 
 	stackDump(stack, LOG_DEBUG);
 
-	for(int i = 0; i < 20; i++) {
+	for(int i = 0; i < 2000; i++) {
 		int value = i * 64;
 		int ret = stackPush(stack, value);
 		stackDump(stack, ret ? LOG_ERROR : LOG_DEBUG);

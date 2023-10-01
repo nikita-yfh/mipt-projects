@@ -5,26 +5,25 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <limits.h>
+#include <time.h>
 
 #include "log.h"
 #include "murmurhash.h"
 
+
+// config
+
+#define STACK_RANDOM_KAPETZ
 #define STACK_RESIZE_ON_POP
 #define STACK_ENABLE_KAPETZ
 #define STACK_ENABLE_HASH
-#define STACK_MAX_SIZE SIZE_MAX
+#define STACK_MAX_SIZE 1000
 #define STACK_DUMP_MAX_VALUES 10
 #define STACK_DEFAULT_CAPACITY 8
 #define STACK_POISON INT_MAX
 
 #ifdef STACK_ENABLE_KAPETZ
 typedef uint64_t kapetz_t;
-#define STACK_KAPETZ_VALUE 0xEDAEDAEDAEDAEDA8
-#endif
-
-static size_t minSize(size_t a, size_t b) {
-	return (a < b) ? a : b;
-}
 
 struct Stack {
 #ifdef STACK_ENABLE_KAPETZ
@@ -45,6 +44,32 @@ struct Stack {
 	kapetz_t bigKapetz;
 #endif
 };
+
+
+#ifdef STACK_RANDOM_KAPETZ
+static uint64_t _getRandomKapetz() {
+	static uint64_t kapetz = 0;
+	if(kapetz == 0) {
+		srand(0);
+		union {
+			int i[2];
+			uint64_t kapetz;
+		} kapetzU;
+		kapetzU.i[0] = rand(); kapetzU.i[1] = rand();
+		kapetz = kapetzU.kapetz;
+	}
+	return kapetz;
+}
+#define STACK_KAPETZ_VALUE _getRandomKapetz()
+#else
+#define STACK_KAPETZ_VALUE 0xEDAEDAEDAEDAEDA8
+#endif
+
+#endif
+
+static size_t minSize(size_t a, size_t b) {
+	return (a < b) ? a : b;
+}
 
 static size_t stackGetValuesSize(size_t capacity) {
 	return capacity * sizeof(stackValue_t);
@@ -148,7 +173,7 @@ static int stackVerify(struct Stack* stack) {
 	return stack->error;
 }
 
-const char *stackGetErrorDescription(int error) {
+static const char *stackGetErrorDescription(int error) {
 	switch(error) {
 	case STACK_OK:
 		return "OK";
@@ -183,6 +208,8 @@ struct Stack* stackCreate() {
 	struct Stack* stack = (struct Stack*) calloc(1, sizeof(struct Stack));
 
 	stack->capacity = STACK_DEFAULT_CAPACITY;
+
+	stack->error = STACK_OK;
 
 	stack->size = 0;
 	stackSetCapacity(stack);

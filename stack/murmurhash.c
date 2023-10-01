@@ -1,9 +1,13 @@
 #include "murmurhash.h"
 
-unsigned int murmurHash2 (const void* key, size_t len) {
+#include <assert.h>
+
+unsigned int murmurHash2 (const void* key, unsigned int len) {
+	assert(key);
+
 	const unsigned int m = 0x5bd1e995;
 	const unsigned int seed = 0;
-	const int r = 24;
+	const unsigned int r = 24;
 
 	unsigned int h = seed ^ len;
 
@@ -29,9 +33,11 @@ unsigned int murmurHash2 (const void* key, size_t len) {
 
 	switch (len) {
 		case 3:
-			h ^= data[2] << 16;
+			h ^= (unsigned int) data[2] << 16;
+			[[fallthrough]];
 		case 2:
-			h ^= data[1] << 8;
+			h ^= (unsigned int) data[1] << 8;
+			[[fallthrough]];
 		case 1:
 			h ^= data[0];
 			h *= m;
