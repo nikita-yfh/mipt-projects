@@ -68,9 +68,12 @@ static int vfprintLog(FILE *file, enum LogLevel level, const char* fmt, va_list 
 }
 
 int vprintLog(enum LogLevel level, const char* fmt, va_list args) {
+	va_list args2;
+	va_copy(args2, args);
+
 	if(htmlOutput)
 		vfprintLog(htmlOutput, level, fmt, args);
-	return vfprintLog(stderr, level, fmt, args);
+	return vfprintLog(stdout, level, fmt, args2);
 }
 
 int printLog(enum LogLevel level, const char *fmt, ...) {
