@@ -9,18 +9,7 @@
 
 #include "log.h"
 #include "murmurhash.h"
-
-
-// config
-
-#define STACK_RANDOM_KAPETZ
-#define STACK_RESIZE_ON_POP
-#define STACK_ENABLE_KAPETZ
-#define STACK_ENABLE_HASH
-#define STACK_MAX_SIZE INT_MAX
-#define STACK_DUMP_MAX_VALUES 10
-#define STACK_DEFAULT_CAPACITY 8
-#define STACK_POISON INT_MAX
+#include "config.h"
 
 #ifdef STACK_ENABLE_KAPETZ
 typedef uint64_t kapetz_t;
@@ -135,7 +124,7 @@ static unsigned int stackGetStructHash(struct Stack *stack) {
 static unsigned int stackGetDataHash(struct Stack *stack) {
 	assert(stack);
 
-	return murmurHash2(stack->values, stackGetValuesSize(stack->capacity));
+	return murmurHash2(stack->values, (unsigned int) stackGetValuesSize(stack->capacity));
 }
 
 static void stackRehash(struct Stack *stack) {
