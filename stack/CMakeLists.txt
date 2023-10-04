@@ -12,7 +12,7 @@ set(CMAKE_C_FLAGS
 -Wpacked -Wpointer-arith -Winit-self -Wredundant-decls -Wshadow \
 -Wsign-conversion -Wstrict-overflow=2 \
 -Wsuggest-attribute=noreturn -Wsuggest-final-methods -Wsuggest-final-types \
--Wswitch-default -Wswitch-enum -Wsync-nand -Wundef \
+-Wswitch-enum -Wsync-nand -Wundef \
 -Wunreachable-code -Wunused -Wvariadic-macros \
 -Wno-missing-field-initializers -Wno-narrowing \
 -Wno-varargs -Wstack-protector -fcheck-new \

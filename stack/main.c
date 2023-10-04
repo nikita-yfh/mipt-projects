@@ -33,23 +33,24 @@ int main() {
 	for(size_t index = 0; index < sizeof(intro) / sizeof(*intro); index++)
 		printLog(LOG_VERBOSE, intro[index]);
 
-	struct Stack *stack = stackCreate();
+	struct Stack stack;
+   	stackCreate(&stack);
 
-	stackDump(stack, LOG_DEBUG);
+	stackDump(&stack, LOG_DEBUG);
 
 	for(int i = 0; i < 10; i++) {
 		int value = i * 64;
-		int ret = stackPush(stack, value);
-		stackDump(stack, ret ? LOG_ERROR : LOG_DEBUG);
+		int ret = stackPush(&stack, value);
+		stackDump(&stack, ret ? LOG_ERROR : LOG_DEBUG);
 	}
 
 	int value = 0;
 	for(int i = 0; i < 10; i++) {
-		int ret = stackPop(stack, &value);
-		stackDump(stack, ret ? LOG_ERROR : LOG_DEBUG);
+		int ret = stackPop(&stack, &value);
+		stackDump(&stack, ret ? LOG_ERROR : LOG_DEBUG);
 	}
 
-	stackDelete(stack);
+	stackDelete(&stack);
 
 	closeHTMLLog();
 

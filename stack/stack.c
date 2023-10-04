@@ -3,37 +3,13 @@
 #include <math.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <stddef.h>
 #include <limits.h>
 #include <time.h>
 
 #include "log.h"
 #include "murmurhash.h"
-#include "config.h"
 
 #ifdef STACK_ENABLE_KAPETZ
-typedef uint64_t kapetz_t;
-
-struct Stack {
-#ifdef STACK_ENABLE_KAPETZ
-	kapetz_t smallKapetz;
-#endif
-
-	size_t size;
-	size_t capacity;
-
-	unsigned int structHash;
-	unsigned int dataHash;
-
-	int error;
-
-	stackValue_t* values;
-
-#ifdef STACK_ENABLE_KAPETZ
-	kapetz_t bigKapetz;
-#endif
-};
-
 
 #ifdef STACK_RANDOM_KAPETZ
 static uint64_t _getRandomKapetz() {
@@ -143,6 +119,9 @@ static int stackVerify(struct Stack* stack) {
 	if(!stack)
 		return STACK_INVALID_POINTER;
 
+	if(stack->error)
+		return stack->error;
+
 	if(stack->size > stack->capacity)
 		stack->error = STACK_INVALID_SIZE;
 	if(!stack->values)
@@ -193,47 +172,14 @@ static const char *stackGetErrorDescription(int error) {
 
 // Main functions
 
-struct Stack* stackCreate() {
-	struct Stack* stack = (struct Stack*) calloc(1, sizeof(struct Stack));
-
-	stack->capacity = STACK_DEFAULT_CAPACITY;
-
-	stack->error = STACK_OK;
-
-	stack->size = 0;
-	stackSetCapacity(stack);
-
-#ifdef STACK_ENABLE_KAPETZ
-	stack->smallKapetz        = STACK_KAPETZ_VALUE;
-	stack->bigKapetz          = STACK_KAPETZ_VALUE;
-#endif
-
-#ifdef STACK_ENABLE_HASH
-	stackRehash(stack);
-#endif
-
-	return stack;
-}
-
-int stackDelete(struct Stack* stack) {
-	assert(stack);
-
-	free(stack->values);
-	stack->values = NULL;
-
-#ifdef STACK_ENABLE_KAPETZ
-	stack->smallKapetz = 0;
-	stack->bigKapetz   = 0;
-#endif
-
-	free(stack);
-
-	return STACK_OK;
-}
-
 int stackPush(struct Stack* stack, stackValue_t value) {
 	int ret = stackVerify(stack);
 	if(ret) return ret;
+
+	if(stack->size == SIZE_MAX) {
+		stack->error = STACK_OVERFLOW;
+		return stack->error;
+	}
 
 	stack->size++;
 
@@ -260,18 +206,26 @@ int stackPop(struct Stack* stack, stackValue_t *value) {
 		return stack->error;
 	}
 
-	*value = *stackIndex(stack, --stack->size);
+	--stack->size;
+	if(value)
+		*value = *stackIndex(stack, --stack->size);
 
 	printLog(LOG_INFO, "Stack pop "STACK_FORMAT, *value);
 
 	ret = stackResize(stack);
+	if(ret)
+		return ret;
 #ifdef STACK_ENABLE_HASH
 	stackRehash(stack);
 #endif
-	return ret;
+	return stack->error;
 }
 
 void stackDump(struct Stack *stack, int level) {
+	if(!stack) {
+		printLog(level, "Stack is NULL");
+		return;
+	}
 	printLog(level, "{");
 #ifdef STACK_ENABLE_KAPETZ
 	printLog(level, "  smallKapetz = %lX,", stack->smallKapetz);
@@ -301,3 +255,45 @@ void stackDump(struct Stack *stack, int level) {
 	printLog(level, "  }");
 	printLog(level, "}");
 }
+
+int stackCreate(struct Stack* stack) {
+	if(!stack)
+		return STACK_INVALID_POINTER;
+
+	stack->capacity = STACK_DEFAULT_CAPACITY;
+
+	stack->error = STACK_OK;
+
+	stack->size = 0;
+	int ret = stackSetCapacity(stack);
+	if(!ret)
+		return ret;
+
+#ifdef STACK_ENABLE_KAPETZ
+	stack->smallKapetz        = STACK_KAPETZ_VALUE;
+	stack->bigKapetz          = STACK_KAPETZ_VALUE;
+#endif
+
+#ifdef STACK_ENABLE_HASH
+	stackRehash(stack);
+#endif
+	return STACK_OK;
+}
+
+int stackDelete(struct Stack* stack) {
+	if(!stack || stack->error == STACK_INVALID_POINTER)
+		return STACK_OK;
+
+	free(stack->values);
+	stack->values = NULL;
+
+#ifdef STACK_ENABLE_KAPETZ
+	stack->smallKapetz = 0;
+	stack->bigKapetz   = 0;
+#endif
+
+	stack->error = STACK_INVALID_POINTER;
+
+	return STACK_OK;
+}
+

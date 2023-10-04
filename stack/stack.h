@@ -2,11 +2,33 @@
 #define STACK_H
 
 #include <stdint.h>
+#include <stddef.h>
 
-struct Stack;
+#include "config.h"
 
-typedef int stackValue_t;
-#define STACK_FORMAT "%d"
+#ifdef STACK_ENABLE_KAPETZ
+typedef uint64_t kapetz_t;
+#endif
+
+struct Stack {
+#ifdef STACK_ENABLE_KAPETZ
+	kapetz_t smallKapetz;
+#endif
+
+	size_t size;
+	size_t capacity;
+
+	unsigned int structHash;
+	unsigned int dataHash;
+
+	int error;
+
+	stackValue_t* values;
+
+#ifdef STACK_ENABLE_KAPETZ
+	kapetz_t bigKapetz;
+#endif
+};
 
 enum STACK_STATE {
 	STACK_OK,
@@ -22,7 +44,7 @@ enum STACK_STATE {
 	STACK_INVALID_SIZE,
 };
 
-struct Stack *stackCreate();
+int stackCreate(struct Stack* stack);
 int stackDelete(struct Stack* stack);
 
 int stackPush(struct Stack* stack, stackValue_t value);
