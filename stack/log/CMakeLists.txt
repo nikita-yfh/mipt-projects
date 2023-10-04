@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project("stack")
+project("logger")
 
 set(CMAKE_C_FLAGS
 "-D _DEBUG -ggdb3 -g -O0 -Wall -Wextra \
@@ -24,8 +24,5 @@ integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,\
 returns-nonnull-attribute,shift,signed-integer-overflow,undefined,\
 unreachable,vla-bound,vptr")
 
-add_subdirectory("log")
-include_directories("log")
-
-add_library(${PROJECT_NAME} STATIC stack.c murmurhash.c)
+add_library(${PROJECT_NAME} STATIC log.c)
 
