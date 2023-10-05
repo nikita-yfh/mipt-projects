@@ -24,7 +24,7 @@ static void printHelp(const char *programName) {
 static int parseArgs(int argc, char *argv[], struct Input *input) {
 	assert(input);
 
-	const char *shortOptions = "ohv";
+	const char *shortOptions = "o:hv";
 	struct option longOptions[] = {
 		{"output",   required_argument, NULL, 'o'},
 		{"help",     no_argument,       NULL, 'h'},
@@ -32,9 +32,9 @@ static int parseArgs(int argc, char *argv[], struct Input *input) {
 		{NULL,       0,                 NULL, 0}
 	};
 
-	int arg = 0;
-	while((arg = getopt_long(argc, argv, shortOptions, longOptions, NULL)) != -1) {
-		switch(arg) {
+	int optionIndex = 0, option = 0;
+	while((option = getopt_long(argc, argv, shortOptions, longOptions, &optionIndex)) != -1) {
+		switch(option) {
 		case 'o':
 			input->outputFile = optarg;
 			break;
@@ -51,8 +51,13 @@ static int parseArgs(int argc, char *argv[], struct Input *input) {
 		}
 	}
 
+	if(!input->outputFile)
+		return -1;
+
 	if(optind != argc - 1)
 		return -1;
+
+	input->inputFile = argv[optind];
 
 	return 0;
 }
