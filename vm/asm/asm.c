@@ -1,74 +1,123 @@
-#include "instruction.h"
+#include "asm.h"
 
-#include <getopt.h>
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
 
+#include "instruction.h"
 #include "text.h"
+#include "utils.h"
 
-struct Input {
-	const char *inputFile;
-	const char *outputFile;
-};
 
-static void printHelp(const char *programName) {
-	printf(
-		"Usage: %s -o <input.ys> <output.yb> [-v] [-h]\n"
-		"    -o, --output <file>  Set file to process\n"
-		"    -v                   Print author and version\n"
-		"    -h                   Print usage\n\n", programName);
+static void stripCommand(char *str) {
+	assert(str);
 
+	char *newline = strchr(str, '\n');
+	if(newline)
+		*newline = '\0';
+
+	char *begin = strchr(str, ';');
+	if(begin)
+		*begin = '\0';
 }
 
-static int parseArgs(int argc, char *argv[], struct Input *input) {
-	assert(input);
+static uint32_t readNextNumber(struct AsmError *error) {
+	assert(error);
+	error->arg++;
 
-	const char *shortOptions = "o:hv";
-	struct option longOptions[] = {
-		{"output",   required_argument, NULL, 'o'},
-		{"help",     no_argument,       NULL, 'h'},
-		{"version",  no_argument,       NULL, 'v'},
-		{NULL,       0,                 NULL, 0}
-	};
+	const char *numberStr = strtok(NULL, " ");
 
-	int optionIndex = 0, option = 0;
-	while((option = getopt_long(argc, argv, shortOptions, longOptions, &optionIndex)) != -1) {
-		switch(option) {
-		case 'o':
-			input->outputFile = optarg;
-			break;
-		case 'h':
-			printHelp(argv[0]);
-			return 0;
-		case 'v':
-			printVersion(argv[0]);
-			return 0;
-		default:
-			fprintf(stderr,
-                "Unrecognized option: '-%c'\n", optopt);
+	if(!numberStr) {
+		error->message = "to few arguments";
+		return 0;
+	}
+	
+	union {
+		int i;
+		uint32_t u;
+		float f;
+	} number;
+
+	if(sscanf(numberStr, "%d", &number.i) != 1)
+		error->message = "invalid number value";
+
+	return number.u;
+}
+
+static int assembleString(const char *buffer, struct ProcessorInstruction *instruction,
+										struct AsmError *error) {
+	assert(buffer);
+	assert(error);
+
+	char str[1024];
+	strncpy(str, buffer, sizeof(str));
+	stripCommand(str);
+
+	const char *command = strtok(str, " ");
+	instruction->command = stringToCommand(command);
+	assert(instruction->command < C_COUNT);
+
+	error->arg = 0;
+
+	switch(instruction->command) {
+	case C_INVALID:
+		error->message = "invalid instruction";
+		break;
+	case C_PUSH:
+		instruction->arg2 = readNextNumber(error);
+		break;
+	}
+
+	if(!error->message) {
+		error->arg++;
+		if(strtok(NULL, " "))
+			error->message = "too much arguments";
+	}
+
+	return error->message ? -1 : 0;
+}
+
+static void printError(const char *str, const struct AsmError *error) {
+	fprintf(stderr, "%s:%u: \e[1;31mError:\e[0m %s\n",
+			error->file, error->line, error->message);
+
+	unsigned int arg = 0;
+	int highlight = 0;
+
+	while(*str) {
+		if(highlight == 0 && arg == error->arg) {
+			fputs("\e[1;35m", stderr);
+			highlight = 1;
+		}
+
+		if(*str == ' ') {
+			if(highlight) {
+				fputs("\e[0m", stderr);
+				highlight = 0;
+			}
+			arg++;
+		}
+		fputc(*str++, stderr);
+	}
+	fputs("\e[0m", stderr);
+}
+
+
+int assembleFile(FILE *in, FILE *out, struct AsmError *error) {
+	char buffer[1024];
+	unsigned int lineNumber = 0;
+
+	while(fgets(buffer, sizeof(buffer), in) != NULL) {
+		error->line = ++lineNumber;
+
+		struct ProcessorInstruction instruction = {};
+		if(assembleString(buffer, &instruction, error) != 0) {
+			printError(buffer, error);
 			return -1;
 		}
+
+		fwrite(&instruction, sizeof(instruction), 1, out);
 	}
-
-	if(!input->outputFile)
-		return -1;
-
-	if(optind != argc - 1)
-		return -1;
-
-	input->inputFile = argv[optind];
-
 	return 0;
 }
 
-int main(int argc, char *argv[]) {
-	struct Input input = {};
-
-	if(parseArgs(argc, argv, &input)) {
-		printHelp(argv[0]);
-		return -1;
-	}
-
-	return 0;
-}

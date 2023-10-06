@@ -2,9 +2,12 @@
 
 #include <string.h>
 
+#include "utils.h"
+
 static const char *commands[] = {
 	NULL,
 	"nop",
+	"hlt",
 	"push",
 	"pop",
 	"add",
@@ -17,8 +20,8 @@ static const char *commands[] = {
 };
 
 command_t stringToCommand(const char *command) {
-	for(int index = 1; index < C_COUNT; index++)
-		if(strcmp(command, commands[index]) == 0)
+	for(command_t index = 1; index < C_COUNT; index++)
+		if(stricmp(command, commands[index]) == 0)
 			return index;
 	return C_INVALID;
 }

@@ -31,12 +31,16 @@ set(COMMON_SOURCES
 	common/instruction.c
 	common/text.h
 	common/text.c
+	common/utils.h
+	common/utils.c
 )
 
 include_directories(common)
 
 set(ASSEMBLER_SOURCES
 	asm/asm.c
+	asm/asm.h
+	asm/main.c
 )
 
 set(DISASSEMBLER_SOURCES
