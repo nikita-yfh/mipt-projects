@@ -5,10 +5,12 @@
 #include <ctype.h>
 
 int stricmp(const char *a, const char *b) {
-	while(*a && *b && *a == *b) {
-		*a++;
-		*b++;
+	printf("%s %s\n", a, b);
+	while(*a && *b && tolower(*a) == tolower(*b)) {
+		a++;
+		b++;
 	}
+	printf("%c %c\n", *a, *b);
 	return tolower(*a) - tolower(*b);
 }
 
