@@ -45,6 +45,8 @@ set(ASSEMBLER_SOURCES
 
 set(DISASSEMBLER_SOURCES
 	disasm/disasm.c
+	disasm/disasm.h
+	disasm/main.c
 )
 
 set(PROCESSOR_SOURCES
@@ -52,4 +54,5 @@ set(PROCESSOR_SOURCES
 )
 
 add_executable(assembler ${ASSEMBLER_SOURCES} ${COMMON_SOURCES})
+add_executable(disassembler ${DISASSEMBLER_SOURCES} ${COMMON_SOURCES})
 

@@ -9,6 +9,7 @@ static const char *commands[] = {
 	"nop",
 	"hlt",
 	"push",
+	"push",
 	"pop",
 	"add",
 	"sub",

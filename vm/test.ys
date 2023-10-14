@@ -1,5 +1,5 @@
 PUSH 1
 PUSH 0
-AD 0
+ADD
 OUT
 HLT

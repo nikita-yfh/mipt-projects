@@ -64,7 +64,7 @@ static int assembleString(const char *buffer, struct ProcessorInstruction *instr
 		error->message = "invalid instruction";
 		break;
 	case C_PUSH:
-		instruction->arg2 = readNextNumber(error);
+		instruction->arg = readNextNumber(error);
 		break;
 	}
 
