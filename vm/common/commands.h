@@ -7,6 +7,7 @@ typedef uint8_t command_t;
 
 enum {
 	C_INVALID,
+
 	C_NOP,
 	C_HLT,
 	C_PUSH,

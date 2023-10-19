@@ -34,6 +34,8 @@ set(COMMON_SOURCES
 	common/version.h
 	common/version.c
 	common/colors.h
+	common/registers.h
+	common/registers.c
 )
 
 include_directories(common)

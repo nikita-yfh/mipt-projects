@@ -7,6 +7,7 @@
 
 static const char *commands[] = {
 	NULL,
+
 	"nop",
 	"hlt",
 	"push",
@@ -25,7 +26,7 @@ static const char *commands[] = {
 	"jb",
 	"jbe",
 	"je",
-	"jne"
+	"jne",
 };
 
 static_assert(sizeof(commands) / sizeof(const char*) == C_COUNT);
