@@ -8,7 +8,7 @@
 #include <ctype.h>
 
 #include "instruction.h"
-#include "text.h"
+#include "colors.h"
 #include "utils.h"
 
 struct Label {
@@ -84,11 +84,9 @@ static uint32_t readNextLabel(const struct Label *labels, unsigned int labelCoun
 	const char *jumpStr = strtok(NULL, " ");
 	sscanf(jumpStr, "%u", &offset);
 
-	for(unsigned int label = 0; label < labelCount; label++) {
-		printf("%s\n", labels[label].name);
+	for(unsigned int label = 0; label < labelCount; label++)
 		if(strcmp(labels[label].name, jumpStr) == 0)
 			offset = labels[label].offset;
-	}
 
 	if(offset == UINT_MAX)
 		error->message = "invalid jump label or offset";
@@ -156,7 +154,7 @@ static int assembleString(const char *buffer, struct ProcessorInstruction *instr
 }
 
 static void printError(const char *str, const struct AsmError *error) {
-	fprintf(stderr, "%s:%u: \e[1;31mError:\e[0m %s\n",
+	fprintf(stderr, "%s:%u: " COLOR_RED "Error:" COLOR_NONE " %s\n",
 			error->file, error->line, error->message);
 
 	unsigned int arg = 0;
@@ -164,20 +162,20 @@ static void printError(const char *str, const struct AsmError *error) {
 
 	while(*str) {
 		if(highlight == 0 && arg == error->arg) {
-			fputs("\e[1;35m", stderr);
+			fputs(COLOR_MAGENTA, stderr);
 			highlight = 1;
 		}
 
 		if(*str == ' ') {
 			if(highlight) {
-				fputs("\e[0m", stderr);
+				fputs(COLOR_NONE, stderr);
 				highlight = 0;
 			}
 			arg++;
 		}
 		fputc(*str++, stderr);
 	}
-	fputs("\e[0m", stderr);
+	fputs(COLOR_NONE, stderr);
 }
 
 int assembleFile(struct AsmInput *input, struct AsmError *error) {

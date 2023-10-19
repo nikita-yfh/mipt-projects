@@ -29,10 +29,11 @@ set(COMMON_SOURCES
 	common/commands.h
 	common/instruction.h
 	common/instruction.c
-	common/text.h
-	common/text.c
 	common/utils.h
 	common/utils.c
+	common/version.h
+	common/version.c
+	common/colors.h
 )
 
 include_directories(common)

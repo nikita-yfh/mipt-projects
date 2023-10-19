@@ -6,18 +6,23 @@
 #include <stdio.h>
 
 #include "version.h"
-#include "asm.h"
+#include "disasm.h"
+
+struct Input {
+	const char *inputFile;
+	const char *outputFile;
+};
 
 static void printHelp(const char *programName) {
 	printf(
-		"Usage: %s -o <input.ys> <output.yb> [-v] [-h]\n"
+		"Usage: %s -o <input.yb> <output.ys> [-v] [-h]\n"
 		"    -o, --output <file>  Set file to process\n"
 		"    -v                   Print author and version\n"
 		"    -h                   Print usage\n\n", programName);
 
 }
 
-static int parseArgs(int argc, char *argv[], struct AsmInput *input) {
+static int parseArgs(int argc, char *argv[], struct DisasmInput *input) {
 	assert(input);
 
 	const char *shortOptions = "o:hv";
@@ -63,7 +68,7 @@ static int parseArgs(int argc, char *argv[], struct AsmInput *input) {
 }
 
 int main(int argc, char *argv[]) {
-	struct AsmInput input = {};
+	struct DisasmInput input = {};
 
 	int ret = parseArgs(argc, argv, &input);
 	if(ret != 1)
@@ -78,10 +83,10 @@ int main(int argc, char *argv[]) {
 		perror("Failed to open output file");
 
 	if(input.in && input.out) {
-		struct AsmError error = {};
+		struct DisasmError error = {};
 		error.file = input.inputFile;
 
-		if(assembleFile(&input, &error) != 0)
+		if(disassembleFile(&input, &error) != 0)
 			return -1;
 	}
 
