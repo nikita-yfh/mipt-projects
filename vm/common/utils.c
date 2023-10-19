@@ -2,7 +2,9 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <stdlib.h>
 #include <ctype.h>
+#include <assert.h>
 
 int stricmp(const char *a, const char *b) {
 	while(*a && *b && tolower(*a) == tolower(*b)) {
@@ -26,19 +28,27 @@ size_t getFileSize(FILE *file) {
 	return (size_t) size;
 }
 
-size_t countStrings(FILE *file) {
-	assert(file);
-
-	long oldPosition = ftell(file);
-
-	size_t lines = 0;
-	while(!feof(file))
-		if(fgetc(file) == '\n')
-			lines++;
-
-	fseek(file, oldPosition, SEEK_SET);
-
-	return lines;
+void cutLines(char *data) {
+	while(*data != '\0') {
+		if(*data == '\n' || *data == '\r')
+			*data = '\0';
+		data++;
+	}
 }
 
+unsigned int countLines(const char *data) {
+	assert(data);
 
+	unsigned int count = 0;
+	while(*data != '\0') {
+		if(*data == '\n') {
+			data++;
+			while(*data == '\n' || *data == '\r')
+				data++;
+			count++;
+		} else
+			data++;
+	}
+
+	return count;
+}

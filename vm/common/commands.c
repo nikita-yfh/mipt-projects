@@ -1,6 +1,7 @@
 #include "commands.h"
 
 #include <string.h>
+#include <assert.h>
 
 #include "utils.h"
 
@@ -17,10 +18,21 @@ static const char *commands[] = {
 	"div",
 	"in",
 	"out",
-	"mod"
+	"mod",
+	"jmp",
+	"ja",
+	"jae",
+	"jb",
+	"jbe",
+	"je",
+	"jne"
 };
 
+static_assert(sizeof(commands) / sizeof(const char*) == C_COUNT);
+
 command_t stringToCommand(const char *command) {
+	assert(command);
+
 	for(command_t index = 1; index < C_COUNT; index++)
 		if(stricmp(command, commands[index]) == 0)
 			return index;

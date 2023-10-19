@@ -20,7 +20,13 @@ enum {
 	C_OUT,
 	C_MOD,
 	C_JMP,
-	C_JA,
+	C_JA,  // >
+	C_JAE, // >=
+	C_JB,  // <
+	C_JBE, // <=
+	C_JE,  // ==
+	C_JNE, // !=
+
 	C_COUNT
 };
 

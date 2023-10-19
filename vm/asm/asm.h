@@ -10,6 +10,14 @@ struct AsmError {
 	const char *message;
 };
 
-int assembleFile(FILE *in, FILE *out, struct AsmError *error);
+struct AsmInput {
+	const char *inputFile;
+	const char *outputFile;
+
+	FILE *in;
+	FILE *out;
+};
+
+int assembleFile(struct AsmInput *input, struct AsmError *error);
 
 #endif

@@ -8,11 +8,6 @@
 #include "text.h"
 #include "asm.h"
 
-struct Input {
-	const char *inputFile;
-	const char *outputFile;
-};
-
 static void printHelp(const char *programName) {
 	printf(
 		"Usage: %s -o <input.ys> <output.yb> [-v] [-h]\n"
@@ -22,7 +17,7 @@ static void printHelp(const char *programName) {
 
 }
 
-static int parseArgs(int argc, char *argv[], struct Input *input) {
+static int parseArgs(int argc, char *argv[], struct AsmInput *input) {
 	assert(input);
 
 	const char *shortOptions = "o:hv";
@@ -64,33 +59,33 @@ static int parseArgs(int argc, char *argv[], struct Input *input) {
 }
 
 int main(int argc, char *argv[]) {
-	struct Input input = {};
+	struct AsmInput input = {};
 
 	if(parseArgs(argc, argv, &input)) {
 		printHelp(argv[0]);
 		return -1;
 	}
 
-	FILE *in = fopen(input.inputFile, "r");
-	FILE *out = fopen(input.outputFile, "wb");
+	input.in = fopen(input.inputFile, "r");
+	input.out = fopen(input.outputFile, "wb");
 
-	if(!in)
+	if(!input.in)
 		perror("Failed to open input file");
-	if(!out)
+	if(!input.out)
 		perror("Failed to open output file");
 
-	if(in && out) {
+	if(input.in && input.out) {
 		struct AsmError error = {};
 		error.file = input.inputFile;
 
-		if(assembleFile(in, out, &error) != 0)
+		if(assembleFile(&input, &error) != 0)
 			return -1;
 	}
 
-	if(in)
-		fclose(in);
-	if(out)
-		fclose(out);
+	if(input.in)
+		fclose(input.in);
+	if(input.out)
+		fclose(input.out);
 
-	return (in && out) ? 0 : -1;
+	return (input.in && input.out) ? 0 : -1;
 }
