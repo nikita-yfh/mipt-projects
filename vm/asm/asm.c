@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <ctype.h>
 
+#include "registers.h"
 #include "instruction.h"
 #include "colors.h"
 #include "utils.h"
@@ -50,28 +51,31 @@ static void stripCommand(char *str) {
 		*begin = '\0';
 }
 
-static uint32_t readNextNumber(struct AsmError *error) {
+static uint32_t readNumber(const char *str, struct AsmError *error) {
 	assert(error);
-	error->arg++;
+	assert(str);
 
-	const char *numberStr = strtok(NULL, " ");
+	uint32_t value = 0;
 
-	if(!numberStr) {
-		error->message = "to few arguments";
+	if(sscanf(str, "%d", (int*)   &value) != 1 &&
+	   sscanf(str, "%f", (float*) &value) != 1) {
+		error->message = "invalid number value";
 		return 0;
 	}
-	
-	union {
-		int i;
-		uint32_t u;
-		float f;
-	} number;
 
-	if(sscanf(numberStr, "%d", &number.i) != 1
-		&& sscanf(numberStr, "%f", &number.f) != 1)
-		error->message = "invalid number value";
+	return value;
+}
 
-	return number.u;
+static reg_t readRegister(const char *str, struct AsmError *error) {
+	assert(error);
+	assert(str);
+
+	reg_t reg = stringToRegister(str);
+
+	if(reg == REG_INVALID)
+		error->message = "invalid register name";
+
+	return reg;
 }
 
 static uint32_t readNextLabel(const struct Label *labels, unsigned int labelCount,
@@ -127,8 +131,31 @@ static int assembleString(const char *buffer, struct ProcessorInstruction *instr
 		case C_INVALID:
 			error->message = "invalid instruction";
 			break;
-		case C_PUSH:
-			instruction->arg = readNextNumber(error);
+		case C_POP_REG: {
+			const char *str = strtok(NULL, " ");
+
+			if(!str) {
+				error->message = "to few arguments";
+				return -1;
+			}
+
+			instruction->arg = readRegister(str, error);
+			}
+			break;
+		case C_PUSH: {
+			const char *str = strtok(NULL, " ");
+
+			if(!str) {
+				error->message = "to few arguments";
+				return -1;
+			}
+
+			if(isalpha(*str)) {
+				instruction->command = C_PUSH_REG;
+				instruction->arg = readRegister(str, error);
+			} else
+				instruction->arg = readNumber(str, error);
+			}
 			break;
 		case C_JMP:
 		case C_JA:

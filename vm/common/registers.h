@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef uint32_t register_t;
+typedef uint32_t reg_t;
 
 enum {
 	REG_INVALID,
@@ -16,7 +16,7 @@ enum {
 	REG_COUNT
 };
 
-register_t stringToRegister(const char *command);
-const char *registerToString(register_t command);
+reg_t stringToRegister(const char *command);
+const char *registerToString(reg_t command);
 
 #endif

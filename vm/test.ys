@@ -4,6 +4,9 @@ ADD
 OUT
 HLT
 
+push rax
+pop rax
+
 add
 :a
 jmp a
