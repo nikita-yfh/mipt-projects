@@ -3,5 +3,7 @@ PUSH 0
 ADD
 OUT
 HLT
+
+add
 :a
 jmp a

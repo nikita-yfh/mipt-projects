@@ -160,9 +160,13 @@ static void printError(const char *str, const struct AsmError *error) {
 	unsigned int arg = 0;
 	int highlight = 0;
 
+	fprintf(stderr, "%4u |   ", error->line);
+
+	unsigned int redBegin = 0;
+	unsigned int redCount = 0;
 	while(*str) {
 		if(highlight == 0 && arg == error->arg) {
-			fputs(COLOR_MAGENTA, stderr);
+			fputs(COLOR_RED, stderr);
 			highlight = 1;
 		}
 
@@ -174,8 +178,23 @@ static void printError(const char *str, const struct AsmError *error) {
 			arg++;
 		}
 		fputc(*str++, stderr);
+
+		if(highlight)
+			redCount++;
+		else if(!redCount)
+			redBegin++;
 	}
-	fputs(COLOR_NONE, stderr);
+
+	fputs("\n"COLOR_NONE, stderr);
+	fputs("     |   ", stderr);
+
+	for(unsigned int i = 0; i < redBegin; i++)
+		fputc(' ', stderr);
+
+	fputs(COLOR_RED "^", stderr);
+	for(unsigned int i = 0; i < redCount - 1; i++)
+		fputc('~', stderr);
+	fputs("\n"COLOR_NONE, stderr);
 }
 
 int assembleFile(struct AsmInput *input, struct AsmError *error) {
@@ -197,19 +216,20 @@ int assembleFile(struct AsmInput *input, struct AsmError *error) {
 	struct ProcessorInstruction *code = (struct ProcessorInstruction*)
 				calloc(codeCount, sizeof(struct ProcessorInstruction));
 
-	char buffer[4096] = {};
 	unsigned int currentLine = 1;
 	pc = 0;
-	for(size_t offset = 0; offset < fileSize; offset += strlen(file + offset) + 1) {
+	size_t fileOffset = 0;
+	while(fileOffset < fileSize) {
 		error->line = currentLine++;
-		if(assembleString(file + offset, &code[pc], labels, labelCount, &pc, error) != 0)
+		if(assembleString(file + fileOffset, &code[pc], labels, labelCount, &pc, error) != 0)
 			break;
+		fileOffset += strlen(file + fileOffset) + 1;
 	}
 
 	if(!error->message)
 		fwrite(code, sizeof(struct ProcessorInstruction), codeCount, input->out);
 	else
-		printError(buffer, error);
+		printError(file + fileOffset, error);
 
 	free(file);
 	free(code);

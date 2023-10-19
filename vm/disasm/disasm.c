@@ -35,8 +35,7 @@ static int disassembleInstruction(const struct ProcessorInstruction *instruction
 	return 0;
 }
 
-static int checkFileSize(FILE *in, struct DisasmError *error) {
-	size_t fileSize = getFileSize(in);
+static int checkFileSize(size_t fileSize, struct DisasmError *error) {
 	if(fileSize % sizeof(struct ProcessorInstruction) != 0) {
 		error->message = "invalid file size";
 		error->instruction = (unsigned int)(fileSize / sizeof(struct ProcessorInstruction));
@@ -46,7 +45,8 @@ static int checkFileSize(FILE *in, struct DisasmError *error) {
 }
 
 int disassembleFile(struct DisasmInput *input, struct DisasmError *error) {
-	if(checkFileSize(input->in, error) != 0)
+	size_t fileSize = getFileSize(input->in);
+	if(checkFileSize(fileSize, error) != 0)
 		return -1;
 
 	struct ProcessorInstruction instruction = {};
