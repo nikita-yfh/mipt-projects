@@ -73,6 +73,9 @@ static int readLabel(const char *str, const struct Label *labels,
 	assert(value);
 	assert(str);
 
+	assert(*str == ':');
+	str++; // skip :
+
 	for(unsigned int label = 0; label < labelCount; label++) {
 		if(strcmp(labels[label].name, str) == 0) {
 			*value = labels[label].offset;
