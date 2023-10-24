@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef uint32_t reg_t;
+typedef uint8_t reg_t;
 
 enum {
 	REG_INVALID,

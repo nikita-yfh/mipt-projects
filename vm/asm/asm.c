@@ -11,6 +11,7 @@
 #include "instruction.h"
 #include "colors.h"
 #include "utils.h"
+#include "version.h"
 
 struct Label {
 	char name[128];
@@ -51,50 +52,124 @@ static void stripCommand(char *str) {
 		*begin = '\0';
 }
 
-static uint32_t readNumber(const char *str, struct AsmError *error) {
+static int readNumber(const char *str, arg_t *value, struct AsmError *error) {
 	assert(error);
 	assert(str);
-
-	uint32_t value = 0;
+	assert(value);
 
 	if(sscanf(str, "%d", (int*)   &value) != 1 &&
 	   sscanf(str, "%f", (float*) &value) != 1) {
 		error->message = "invalid number value";
-		return 0;
+		return -1;
 	}
-
-	return value;
+	return 0;
 }
 
-static reg_t readRegister(const char *str, struct AsmError *error) {
+static int readLabel(const char *str, const struct Label *labels,
+		unsigned int labelCount, arg_t *value, struct AsmError *error) {
+
+	assert(labels);
 	assert(error);
+	assert(value);
 	assert(str);
 
-	reg_t reg = stringToRegister(str);
+	for(unsigned int label = 0; label < labelCount; label++) {
+		if(strcmp(labels[label].name, str) == 0) {
+			*value = labels[label].offset;
+			return 0;
+		}
+	}
 
-	if(reg == REG_INVALID)
-		error->message = "invalid register name";
-
-	return reg;
+	error->message = "invalid label or offset";
+	return -1;
 }
 
-static uint32_t readNextLabel(const struct Label *labels, unsigned int labelCount,
-									struct AsmError *error) {
+static int readRegister(const char *str, reg_t *reg, struct AsmError *error) {
+	assert(error);
+	assert(str);
+	assert(reg);
+
+	*reg = stringToRegister(str);
+
+	if(*reg == REG_INVALID) {
+		error->message = "invalid register name"; 
+		return -1;
+	}
+	return 0;
+}
+
+static int readArgument(const char *argument, struct ProcessorInstruction *instruction,
+		const struct Label *labels, unsigned int labelCount, struct AsmError *error) {
+	if(!argument)
+		return 0;
+
+	assert(instruction);
 	assert(labels);
 	assert(error);
 
-	unsigned int offset = UINT_MAX;
+	if(*argument == ':') { // label
 
-	const char *jumpStr = strtok(NULL, " ");
-	sscanf(jumpStr, "%u", &offset);
+		if(instruction->flags & FLAG_IMM)
+			error->message = "instruction already has immutable const";
+		else
+			return readLabel(argument, labels, labelCount, &instruction->immutable, error);
+		return -1;
 
-	for(unsigned int label = 0; label < labelCount; label++)
-		if(strcmp(labels[label].name, jumpStr) == 0)
-			offset = labels[label].offset;
+	} else if(isdigit(*argument)) { // immutable const
 
-	if(offset == UINT_MAX)
-		error->message = "invalid jump label or offset";
-	return offset;
+		if(instruction->flags & FLAG_IMM)
+			error->message = "instruction already has immutable const";
+		else
+			return readNumber(argument, &instruction->immutable, error);
+		return -1;
+
+	} else if(isalpha(*argument)) { // register
+
+		if(instruction->flags & FLAG_REG)
+			error->message = "instruction already has register";
+		else
+			return readRegister(argument, &instruction->reg, error);
+		return -1;
+
+	}
+
+	error->message = "invalid argument";
+	return -1;
+}
+
+static int readMemoryAccess(const char *line, struct ProcessorInstruction *instruction,
+														struct AsmError *error) {
+	const char *beginBracket = strchr(line, '[');
+	const char *endBracket   = strchr(line, ']');
+
+	if(!beginBracket && !endBracket)
+		return 0;
+
+	if(!!beginBracket ^ !!endBracket) {
+		error->message = "mismatched bracket";
+		if(beginBracket)
+			error->offset = (unsigned int)(beginBracket - line);
+		else
+			error->offset = (unsigned int)(endBracket   - line);
+		return -1;
+	}
+
+	const char *nextBeginBracket = strchr(beginBracket, '[');
+	const char *nextEndBracket   = strchr(endBracket,   ']');
+
+	if(!nextBeginBracket && !nextEndBracket) {
+		instruction->flags |= FLAG_MEM;
+		return 0;
+	}
+
+	error->message = "mismatched bracket";
+
+	if(nextBeginBracket)
+		error->offset = (unsigned int)(nextBeginBracket - line);
+	if(nextEndBracket)
+		error->offset = (unsigned int)(nextEndBracket   - line);
+
+	return -1;
 }
 
 static int assembleString(const char *buffer, struct ProcessorInstruction *instruction,
@@ -122,59 +197,34 @@ static int assembleString(const char *buffer, struct ProcessorInstruction *instr
 			label++;
 		}
 	} else {
-		instruction->command = stringToCommand(strtok(line, " "));
+		const char *div = " []+";
+
+		if(readMemoryAccess(line, instruction, error))
+			return -1;
+
+		const char *commandString = strtok(line, div);
+
+		instruction->command = stringToCommand(commandString);
 		assert(instruction->command < C_COUNT);
 
-		error->arg = 0;
+		if(instruction->command == C_INVALID) {
+			error->offset = (unsigned int)(commandString - line);
+			error->message = "invalid command";
+		}
 
-		switch(instruction->command) {
-		case C_INVALID:
-			error->message = "invalid instruction";
-			break;
-		case C_POP_REG: {
-			const char *str = strtok(NULL, " ");
+		const char *arg1 = strtok(NULL, div);
+		const char *arg2 = strtok(NULL, div);
 
-			if(!str) {
-				error->message = "to few arguments";
-				return -1;
-			}
-
-			instruction->arg = readRegister(str, error);
-			}
-			break;
-		case C_PUSH: {
-			const char *str = strtok(NULL, " ");
-
-			if(!str) {
-				error->message = "to few arguments";
-				return -1;
-			}
-
-			if(isalpha(*str)) {
-				instruction->command = C_PUSH_REG;
-				instruction->arg = readRegister(str, error);
-			} else
-				instruction->arg = readNumber(str, error);
-			}
-			break;
-		case C_JMP:
-		case C_JA:
-		case C_JAE:
-		case C_JB:
-		case C_JBE:
-		case C_JE:
-		case C_JNE:
-			instruction->arg = readNextLabel(labels, labelCount, error);
-			break;
+		if(readArgument(arg1, instruction, labels, labelCount, error)) {
+			error->offset = (unsigned int)(arg1 - line);
+			return -1;
+		}
+		if(readArgument(arg2, instruction, labels, labelCount, error)) {
+			error->offset = (unsigned int)(arg2 - line);
+			return -1;
 		}
 
 		(*pc)++;
-	}
-
-	if(!error->message) {
-		error->arg++;
-		if(strtok(NULL, " "))
-			error->message = "too much arguments";
 	}
 
 	return error->message ? -1 : 0;
@@ -189,15 +239,16 @@ static void printError(const char *str, const struct AsmError *error) {
 
 	fprintf(stderr, "%4u |   ", error->line);
 
-	unsigned int redBegin = 0;
-	unsigned int redCount = 0;
+	unsigned int wordLength = 0;
+
+	unsigned int counter = 0;
 	while(*str) {
-		if(highlight == 0 && arg == error->arg) {
+		if(highlight == 0 && counter == error->offset) {
 			fputs(COLOR_RED, stderr);
 			highlight = 1;
 		}
 
-		if(*str == ' ') {
+		if(*str == ' ' || *str == '[' || *str == ']' || *str == '+') {
 			if(highlight) {
 				fputs(COLOR_NONE, stderr);
 				highlight = 0;
@@ -207,19 +258,19 @@ static void printError(const char *str, const struct AsmError *error) {
 		fputc(*str++, stderr);
 
 		if(highlight)
-			redCount++;
-		else if(!redCount)
-			redBegin++;
+			wordLength++;
+
+		counter++;
 	}
 
 	fputs("\n"COLOR_NONE, stderr);
 	fputs("     |   ", stderr);
 
-	for(unsigned int i = 0; i < redBegin; i++)
+	for(unsigned int i = 0; i < error->offset; i++)
 		fputc(' ', stderr);
 
 	fputs(COLOR_RED "^", stderr);
-	for(unsigned int i = 0; i < redCount - 1; i++)
+	for(unsigned int i = 0; i < wordLength - 1; i++)
 		fputc('~', stderr);
 	fputs("\n"COLOR_NONE, stderr);
 }
@@ -252,6 +303,9 @@ int assembleFile(struct AsmInput *input, struct AsmError *error) {
 			break;
 		fileOffset += strlen(file + fileOffset) + 1;
 	}
+
+	if(input->needHeader)
+		writeHeader(input->out);
 
 	if(!error->message)
 		fwrite(code, sizeof(struct ProcessorInstruction), codeCount, input->out);

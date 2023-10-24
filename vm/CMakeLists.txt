@@ -25,8 +25,6 @@ returns-nonnull-attribute,shift,signed-integer-overflow,undefined,\
 unreachable,vla-bound,vptr")
 
 set(COMMON_SOURCES
-	common/commands.c
-	common/commands.h
 	common/instruction.h
 	common/instruction.c
 	common/utils.h
@@ -57,5 +55,5 @@ set(PROCESSOR_SOURCES
 )
 
 add_executable(assembler ${ASSEMBLER_SOURCES} ${COMMON_SOURCES})
-add_executable(disassembler ${DISASSEMBLER_SOURCES} ${COMMON_SOURCES})
+#add_executable(disassembler ${DISASSEMBLER_SOURCES} ${COMMON_SOURCES})
 

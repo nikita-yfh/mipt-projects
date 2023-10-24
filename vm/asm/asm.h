@@ -5,7 +5,7 @@
 
 struct AsmError {
 	unsigned int line;
-	unsigned int arg;
+	unsigned int offset;
 	const char *file;
 	const char *message;
 };
@@ -16,6 +16,8 @@ struct AsmInput {
 
 	FILE *in;
 	FILE *out;
+
+	int needHeader;
 };
 
 int assembleFile(struct AsmInput *input, struct AsmError *error);

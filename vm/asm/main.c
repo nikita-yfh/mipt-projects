@@ -10,22 +10,26 @@
 
 static void printHelp(const char *programName) {
 	printf(
-		"Usage: %s -o <input.ys> <output.yb> [-v] [-h]\n"
+		"Usage: %s -o <input.ys> <output.yb> [-vhH]\n"
 		"    -o, --output <file>  Set file to process\n"
 		"    -v                   Print author and version\n"
-		"    -h                   Print usage\n\n", programName);
+		"    -h                   Print usage\n"
+		"    -H, --no-header      Don't add header to output binary\n\n", programName);
 
 }
 
 static int parseArgs(int argc, char *argv[], struct AsmInput *input) {
 	assert(input);
 
-	const char *shortOptions = "o:hv";
+	input->needHeader = 1;
+
+	const char *shortOptions = "o:hHv";
 	struct option longOptions[] = {
-		{"output",   required_argument, NULL, 'o'},
-		{"help",     no_argument,       NULL, 'h'},
-		{"version",  no_argument,       NULL, 'v'},
-		{NULL,       0,                 NULL, 0}
+		{"output",       required_argument, NULL, 'o'},
+		{"help",         no_argument,       NULL, 'h'},
+		{"version",      no_argument,       NULL, 'v'},
+		{"no-header",    no_argument,       NULL, 'H'},
+		{NULL,           0,                 NULL, 0}
 	};
 
 	int optionIndex = 0, option = 0;
@@ -37,6 +41,9 @@ static int parseArgs(int argc, char *argv[], struct AsmInput *input) {
 		case 'h':
 			printHelp(argv[0]);
 			return 0;
+		case 'H':
+			input->needHeader = 0;
+			break;
 		case 'v':
 			printVersion(argv[0]);
 			return 0;
