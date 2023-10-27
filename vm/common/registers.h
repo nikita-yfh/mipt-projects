@@ -13,7 +13,7 @@ enum {
 	REG_CX,
 	REG_DX,
 
-	REG_COUNT
+	REG_COUNT = REG_DX
 };
 
 reg_t stringToRegister(const char *command);

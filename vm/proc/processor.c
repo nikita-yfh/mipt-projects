@@ -84,13 +84,13 @@ int processorCreate(struct Processor *processor, const struct ProcessorInput *in
 		printLog(LOG_FATAL, "Failed to create main stack");
 		return -1;
 	} else
-		printLog(LOG_INFO, "Created main stack");
+		printLog(LOG_VERBOSE, "Created main stack");
 
 	if(stackCreate(&processor->callStack)) {
 		printLog(LOG_FATAL, "Failed to create call stack");
 		return -1;
 	} else 
-		printLog(LOG_INFO, "Created call stack");
+		printLog(LOG_VERBOSE, "Created call stack");
 
 	processor->memorySize = input->memorySize;
 	processor->memory = calloc(processor->memorySize, sizeof(arg_t));
@@ -117,17 +117,21 @@ int processorCreate(struct Processor *processor, const struct ProcessorInput *in
 }
 
 int processorDelete(struct Processor *processor) {
+	printLog(LOG_INFO, "Exiting...");
+
 	stackDelete(&processor->mainStack);
-	printLog(LOG_INFO, "Main stack was deleted");
+	printLog(LOG_VERBOSE, "Main stack was deleted");
 
 	stackDelete(&processor->callStack);
-	printLog(LOG_INFO, "Call stack was deleted");
+	printLog(LOG_VERBOSE, "Call stack was deleted");
 
 	free(processor->code);
-	printLog(LOG_INFO, "Code was deleted");
+	printLog(LOG_VERBOSE, "Code was deleted");
 
 	free(processor->memory);
-	printLog(LOG_INFO, "Memory was deleted");
+	printLog(LOG_VERBOSE, "Memory was deleted");
+
+	printLog(LOG_INFO, "Goodbye!");
 
 	return 0;
 }

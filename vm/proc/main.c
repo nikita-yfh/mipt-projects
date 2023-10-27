@@ -7,6 +7,7 @@
 
 #include "header.h"
 #include "processor.h"
+#include "log.h"
 
 static void printHelp(const char *programName) {
 	printf(
@@ -75,8 +76,13 @@ int main(int argc, char *argv[]) {
 	input.file = fopen(input.fileName, "rb");
 
 	if(!input.file)
-		perror("Failed to open file file");
+		printLog(LOG_ERROR, "Failed to open file '%s'", input.fileName);
 	else {
+		struct Processor processor = {};
+		if(!processorCreate(&processor, &input)) {
+
+		}
+		processorDelete(&processor);
 	}
 
 	if(input.file)

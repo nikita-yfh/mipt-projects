@@ -46,7 +46,7 @@ static stackValue_t* stackIndex(struct Stack *stack, size_t index) {
 }
 
 static int stackSetCapacity(struct Stack* stack) {
-	printLog(LOG_INFO, "Set stack capacity to %d", stack->capacity);
+	printLog(LOG_VERBOSE, "Set stack capacity to %d", stack->capacity);
 
 	if(!stack->values)
 		stack->values = calloc(1, stackGetValuesSize(stack->capacity));
@@ -62,14 +62,14 @@ static int stackSetCapacity(struct Stack* stack) {
 
 static int stackResize(struct Stack* stack) {
 	if(stack->size > stack->capacity) {
-		printLog(LOG_INFO, "Need to increase capacity");
+		printLog(LOG_VERBOSE, "Need to increase capacity");
 		stack->capacity = minSize(STACK_MAX_SIZE, stack->capacity * 2);
 		return stackSetCapacity(stack);
 	}
 #ifdef STACK_RESIZE_ON_POP
 	else if(stack->size * 2 < stack->capacity &&
 			stack->size >= STACK_DEFAULT_CAPACITY * 2) {
-		printLog(LOG_INFO, "Need to decrease capacity");
+		printLog(LOG_VERBOSE, "Need to decrease capacity");
 		stack->capacity /= 2;
 		return stackSetCapacity(stack);
 	}
