@@ -190,6 +190,9 @@ static int assembleString(const char *buffer, struct ProcessorInstruction *instr
 	strncpy(line, buffer, sizeof(line));
 	stripCommand(line);
 
+	if(!*line)
+		return 0;
+
 	if(*line == ':') {
 		const char *label = strtok(line + 1, "");
 		while(*label) {
