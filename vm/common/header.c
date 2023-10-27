@@ -1,7 +1,8 @@
-#include "version.h"
+#include "header.h"
 
 #include <stdio.h>
 #include <stdint.h>
+#include <assert.h>
 
 #include "colors.h"
 
@@ -16,29 +17,31 @@ static const char *nameArt =
 #define NIKITA "nikita-yfh"
 #define PROGRAM "ASM-yfh"
 
+static_assert(MIN_VERSION_CODE <= VERSION_CODE);
+static_assert(MIN_VERSION_CODE > 0);
+
 void printVersion(const char *programName) {
+	assert(programName);
+
 	printf(COLOR_GREEN"%s"COLOR_NONE, nameArt);
 	printf("This is "COLOR_BLUE"%s"COLOR_NONE" of "COLOR_MAGENTA PROGRAM COLOR_NONE
 		" v"VERSION" by "COLOR_GREEN"NIKITA"COLOR_NONE "(C)\n\n", programName);
 }
 
-struct Header {
-	uint32_t signature;
-	uint32_t version;
-};
-
 void writeHeader(FILE *file) {
+	assert(file);
+
 	struct Header header = {SIGNATURE, VERSION_CODE};
 	fwrite(&header, sizeof(header), 1, file);
 }
 
-int checkHeader(FILE *file) {
-	struct Header header = {};
-	if(!fread(&header, sizeof(header), 1, file))
-		return -1;
-	if(header.signature != SIGNATURE)
-		return -1;
-	if(header.version < MIN_VERSION_CODE || header.version > VERSION_CODE)
+int readHeader(FILE *file, struct Header *header) {
+	assert(file);
+	assert(header);
+
+	if(fread(header, sizeof(header), 1, file) != 1)
 		return -1;
 	return 0;
 }
+
+

@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "version.h"
+#include "header.h"
 #include "disasm.h"
 
 struct Input {

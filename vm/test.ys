@@ -3,10 +3,20 @@ PUSH 0
 ADD
 OUT
 HLT
-
 push rax
 pop rax
 
+
+
+
+
+
+
+
+AdD
 add
 :a
 jmp :a
+
+
+

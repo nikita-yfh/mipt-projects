@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #include "instruction.h"
-#include "version.h"
+#include "header.h"
 #include "utils.h"
 
 static int disassembleInstruction(const struct ProcessorInstruction *instruction,

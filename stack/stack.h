@@ -50,6 +50,7 @@ int stackDelete(struct Stack* stack);
 int stackPush(struct Stack* stack, stackValue_t value);
 int stackPop(struct Stack* stack, stackValue_t* value);
 
+int stackVerify(struct Stack* stack);
 void stackDump(struct Stack* stack, int level);
 
 #endif

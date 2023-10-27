@@ -29,8 +29,8 @@ set(COMMON_SOURCES
 	common/instruction.c
 	common/utils.h
 	common/utils.c
-	common/version.h
-	common/version.c
+	common/header.h
+	common/header.c
 	common/colors.h
 	common/registers.h
 	common/registers.c
@@ -51,9 +51,18 @@ set(DISASSEMBLER_SOURCES
 )
 
 set(PROCESSOR_SOURCES
-	processor/processor.c
+	proc/main.c
+	proc/processor.c
+	proc/processor.h
 )
 
+add_subdirectory(stack)
+include_directories(stack)
+include_directories(log)
+
 add_executable(assembler ${ASSEMBLER_SOURCES} ${COMMON_SOURCES})
+add_executable(processor ${PROCESSOR_SOURCES} ${COMMON_SOURCES})
 #add_executable(disassembler ${DISASSEMBLER_SOURCES} ${COMMON_SOURCES})
+
+target_link_libraries(processor stack logger)
 

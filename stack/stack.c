@@ -115,7 +115,7 @@ static void stackRehash(struct Stack *stack) {
 #endif
 
 
-static int stackVerify(struct Stack* stack) {
+int stackVerify(struct Stack* stack) {
 	if(!stack)
 		return STACK_INVALID_POINTER;
 

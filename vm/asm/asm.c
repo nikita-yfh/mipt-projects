@@ -11,7 +11,7 @@
 #include "instruction.h"
 #include "colors.h"
 #include "utils.h"
-#include "version.h"
+#include "header.h"
 
 struct Label {
 	char name[128];

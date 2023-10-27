@@ -48,6 +48,8 @@ struct ProcessorInstruction {
 	arg_t immutable;
 };
 
+#define MAX_CODE_SIZE (sizeof(struct ProcessorInstruction) * UINT32_MAX)
+
 command_t stringToCommand(const char *command);
 const char *commandToString(command_t command);
 

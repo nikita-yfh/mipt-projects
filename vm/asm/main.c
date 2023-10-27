@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "version.h"
+#include "header.h"
 #include "asm.h"
 
 static void printHelp(const char *programName) {
