@@ -111,7 +111,10 @@ int processorCreate(struct Processor *processor, const struct ProcessorInput *in
 	printLog(LOG_INFO, "Created %u registers, value 0x%02x",
 			REG_COUNT, input->defaultMemValue);
 
-	processor->pc = input->startCodeOffset;
+	processor->pc = input->initCodeOffset;
+
+	if(processor->pc >= processor->codeBytes)
+		printLog(LOG_WARNING, "Init code offset is bigger then last instruction index");
 
 	return 0;
 }
