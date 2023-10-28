@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project("stack")
 
-set(CMAKE_C_FLAGS
+set(CMAKE_C_FLAGS_DEBUG
 "-D _DEBUG -ggdb3 -g -O0 -Wall -Wextra \
 -Waggressive-loop-optimizations -Wmissing-declarations  \
 -Wcast-align -Wcast-qual -Wchar-subscripts \

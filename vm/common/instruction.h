@@ -30,12 +30,14 @@ enum COMMANGS {
 	C_OUT,
 	C_MOD,
 	C_JMP,
-	C_JA,  // >
-	C_JAE, // >=
-	C_JB,  // <
-	C_JBE, // <=
+	C_JG,  // >
+	C_JGE, // >=
+	C_JL,  // <
+	C_JLE, // <=
 	C_JE,  // ==
 	C_JNE, // !=
+	C_CALL,
+	C_RET,
 
 	C_COUNT
 };

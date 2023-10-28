@@ -18,7 +18,7 @@ struct ProcessorInput {
 	int ignoreHeader;
 	uint8_t defaultMemValue;
 
-	arg_t startCodeOffset;
+	arg_t initCodeOffset;
 };
 
 struct Processor {
@@ -40,5 +40,7 @@ int processorDelete(struct Processor *processor);
 
 int processorVerify(struct Processor *processor);
 void processorDump(struct Processor *processor);
+
+int processorExecNextCommand(struct Processor *processor);
 
 #endif

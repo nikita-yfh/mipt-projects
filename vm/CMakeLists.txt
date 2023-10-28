@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project("vm")
 
-set(CMAKE_C_FLAGS
+set(CMAKE_C_FLAGS_DEBUG
 "-D _DEBUG -ggdb3 -g -O0 -Wall -Wextra \
 -Waggressive-loop-optimizations -Wmissing-declarations  \
 -Wcast-align -Wcast-qual -Wchar-subscripts \
@@ -52,7 +52,8 @@ set(DISASSEMBLER_SOURCES
 
 set(PROCESSOR_SOURCES
 	proc/main.c
-	proc/processor.c
+	proc/operations.c
+	proc/instructions.c
 	proc/processor.h
 )
 

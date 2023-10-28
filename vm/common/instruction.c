@@ -20,12 +20,14 @@ static const char *commands[] = {
 	"out",
 	"mod",
 	"jmp",
-	"ja",
-	"jae",
-	"jb",
-	"jbe",
+	"jg",
+	"jge",
+	"jl",
+	"jle",
 	"je",
 	"jne",
+	"call",
+	"ret"
 };
 
 static_assert(sizeof(struct ProcessorInstruction) == 8);
