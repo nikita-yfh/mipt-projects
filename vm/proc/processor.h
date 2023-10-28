@@ -8,6 +8,14 @@
 
 #include "stack.h"
 
+#define PC_HLT UINT32_MAX; 
+
+enum ExecCommandStatus {
+	EXEC_ERR = -1,
+	EXEC_OK  =  0,
+	EXEC_END =  1
+};
+
 struct ProcessorInput {
 	FILE *file;
 	const char *fileName;
