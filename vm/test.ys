@@ -1,6 +1,6 @@
 PUSH 1
 PUSH 0
-ADD
+ADD 444
 OUT
 HLT
 push rax

@@ -57,8 +57,8 @@ static int readNumber(const char *str, arg_t *value, struct AsmError *error) {
 	assert(str);
 	assert(value);
 
-	if(sscanf(str, "%d", (int*)   &value) != 1 &&
-	   sscanf(str, "%f", (float*) &value) != 1) {
+	if(sscanf(str, "%d", (int*)   value) != 1 &&
+	   sscanf(str, "%f", (float*) value) != 1) {
 		error->message = "invalid number value";
 		return -1;
 	}
@@ -112,27 +112,33 @@ static int readArgument(const char *argument, struct ProcessorInstruction *instr
 
 	if(*argument == ':') { // label
 
-		if(instruction->flags & FLAG_IMM)
+		if(instruction->flags & FLAG_IMM) {
 			error->message = "instruction already has immutable const";
-		else
-			return readLabel(argument, labels, labelCount, &instruction->immutable, error);
-		return -1;
+			return -1;
+		}
+
+		instruction->flags |= FLAG_IMM;
+		return readLabel(argument, labels, labelCount, &instruction->immutable, error);
 
 	} else if(isdigit(*argument)) { // immutable const
-
-		if(instruction->flags & FLAG_IMM)
+									//
+		if(instruction->flags & FLAG_IMM) {
 			error->message = "instruction already has immutable const";
-		else
-			return readNumber(argument, &instruction->immutable, error);
-		return -1;
+			return -1;
+		}
+
+		instruction->flags |= FLAG_IMM;
+		return readNumber(argument, &instruction->immutable, error);
 
 	} else if(isalpha(*argument)) { // register
 
-		if(instruction->flags & FLAG_REG)
+		if(instruction->flags & FLAG_REG) {
 			error->message = "instruction already has register";
-		else
-			return readRegister(argument, &instruction->reg, error);
-		return -1;
+			return -1;
+		}
+
+		instruction->flags |= FLAG_REG;
+		return readRegister(argument, &instruction->reg, error);
 
 	}
 

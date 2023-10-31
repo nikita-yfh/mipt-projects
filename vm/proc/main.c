@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 	else {
 		struct Processor processor = {};
 		if(!processorCreate(&processor, &input)) {
-
+			processorRun(&processor);
 		}
 		processorDelete(&processor);
 	}

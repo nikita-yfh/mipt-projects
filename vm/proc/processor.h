@@ -11,9 +11,15 @@
 #define PC_HLT UINT32_MAX; 
 
 enum ExecCommandStatus {
-	EXEC_ERR = -1,
-	EXEC_OK  =  0,
-	EXEC_END =  1
+	EXEC_INVALID_FORMAT        = -7,
+	EXEC_INVALID_INSTRUCTION   = -6,
+	EXEC_INVALID_REGISTER      = -5,
+	EXEC_MATH_ERROR            = -4,
+	EXEC_STACK_OVERFLOW        = -3,
+	EXEC_STACK_EMPTY           = -2,
+	EXEC_OUT_OF_BOUNDS         = -1,
+	EXEC_OK                    =  0,
+	EXEC_END_PROGRAM           =  1
 };
 
 struct ProcessorInput {
@@ -49,6 +55,7 @@ int processorDelete(struct Processor *processor);
 int processorVerify(struct Processor *processor);
 void processorDump(struct Processor *processor);
 
+int processorRun(struct Processor *processor);
 int processorExecNextCommand(struct Processor *processor);
 
 #endif
