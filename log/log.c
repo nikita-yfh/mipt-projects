@@ -7,8 +7,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-static FILE *htmlOutput = NULL;
-
 static long long currentTimestamp() {
     struct timeval te;
     gettimeofday(&te, NULL); // get current time
@@ -46,8 +44,14 @@ static void printLineBegin(FILE *file, enum LogLevel level) {
 	char colorFormat[4096];
 	if(isatty(fileno(file)))
 		strcpy(colorFormat, logLevels[level].colorFormat);
-	else
+	else {
+		static int isFileBegin = 1;
+		if(isFileBegin) {
+			fputs("<pre>\n", file);
+			isFileBegin = 0;
+		}
 		snprintf(colorFormat, 4096, "<font color='#%06X'>", logLevels[level].colorCode);
+	}
 
 	fprintf(file, "[%04lld.%03lld] %s[%c] ", seconds, milliseconds,
 		colorFormat, logLevels[level].letter);
@@ -68,12 +72,7 @@ static int vfprintLog(FILE *file, enum LogLevel level, const char* fmt, va_list 
 }
 
 int vprintLog(enum LogLevel level, const char* fmt, va_list args) {
-	va_list args2;
-	va_copy(args2, args);
-
-	if(htmlOutput)
-		vfprintLog(htmlOutput, level, fmt, args);
-	return vfprintLog(stdout, level, fmt, args2);
+	vfprintLog(stderr, level, fmt, args);
 }
 
 int printLog(enum LogLevel level, const char *fmt, ...) {
@@ -82,22 +81,5 @@ int printLog(enum LogLevel level, const char *fmt, ...) {
 	int ret = vprintLog(level, fmt, args);
 	va_end(args);
 	return ret;
-}
-
-int openHTMLLog(const char *file) {
-	htmlOutput = fopen(file, "w");
-	if(!htmlOutput)
-		return -1;
-	fprintf(htmlOutput, "<pre>\n");
-	return 0;
-}
-
-int closeHTMLLog() {
-	if(htmlOutput) {
-		fprintf(htmlOutput, "</pre>\n");
-		fclose(htmlOutput);
-		return 0;
-	}
-	return -1;
 }
 

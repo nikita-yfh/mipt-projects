@@ -1,22 +1,5 @@
 PUSH 1
 PUSH 0
-ADD 444
+ADD 
 OUT
 HLT
-push rax
-pop rax
-
-
-
-
-
-
-
-
-AdD
-add
-:a
-jmp :a
-
-
-

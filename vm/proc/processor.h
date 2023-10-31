@@ -53,7 +53,7 @@ int processorCreate(struct Processor *processor, const struct ProcessorInput *in
 int processorDelete(struct Processor *processor);
 
 int processorVerify(struct Processor *processor);
-void processorDump(struct Processor *processor);
+void processorDump(struct Processor *processor, int level);
 
 int processorRun(struct Processor *processor);
 int processorExecNextCommand(struct Processor *processor);

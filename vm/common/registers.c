@@ -24,7 +24,7 @@ reg_t stringToRegister(const char *reg) {
 }
 
 const char *registerToString(reg_t reg) {
-	if(reg <= 1 || reg > REG_COUNT)
+	if(reg < 1 || reg > REG_COUNT)
 		return NULL;
 	return registers[reg - 1];
 }

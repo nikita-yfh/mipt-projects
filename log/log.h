@@ -15,7 +15,4 @@ enum LogLevel {
 int printLog(enum LogLevel level, const char* fmt, ...);
 int vprintLog(enum LogLevel level, const char* fmt, va_list args);
 
-int openHTMLLog(const char *file);
-int closeHTMLLog();
-
 #endif
