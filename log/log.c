@@ -29,7 +29,7 @@ static struct LogLevelS logLevels[] = {
 	{'F', "\e[1;31m", 0xFF0000}
 };
 
-static void printLineBegin(FILE *file, enum LogLevel level) {
+static void printLineBegin(FILE *file, enum LogLevel level, const char *function, int line) {
 	assert(level >= LOG_VERBOSE && level <= LOG_FATAL);
 
 	static long long timeBegin = 0;
@@ -53,8 +53,8 @@ static void printLineBegin(FILE *file, enum LogLevel level) {
 		snprintf(colorFormat, 4096, "<font color='#%06X'>", logLevels[level].colorCode);
 	}
 
-	fprintf(file, "[%04lld.%03lld] %s[%c] ", seconds, milliseconds,
-		colorFormat, logLevels[level].letter);
+	fprintf(file, "[%04lld.%03lld] %20s:%-3d %s[%c] ", seconds, milliseconds,
+		function, line, colorFormat, logLevels[level].letter);
 }
 
 static void printLineEnd(FILE *file) {
@@ -64,21 +64,17 @@ static void printLineEnd(FILE *file) {
 		fprintf(file, "</font>\n");
 }
 
-static int vfprintLog(FILE *file, enum LogLevel level, const char* fmt, va_list args) {
-	printLineBegin(file, level);
-	int ret = vfprintf(file, fmt, args);
-	printLineEnd(file);
+int _vprintLog(enum LogLevel level, const char *function, int line, const char* fmt, va_list args) {
+	printLineBegin(stderr, level, function, line);
+	int ret = vfprintf(stderr, fmt, args);
+	printLineEnd(stderr);
 	return ret;
 }
 
-int vprintLog(enum LogLevel level, const char* fmt, va_list args) {
-	vfprintLog(stderr, level, fmt, args);
-}
-
-int printLog(enum LogLevel level, const char *fmt, ...) {
+int _printLog(enum LogLevel level, const char *function, int line, const char *fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
-	int ret = vprintLog(level, fmt, args);
+	int ret = _vprintLog(level, function, line, fmt, args);
 	va_end(args);
 	return ret;
 }

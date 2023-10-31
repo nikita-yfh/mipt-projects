@@ -12,7 +12,10 @@ enum LogLevel {
 	LOG_FATAL
 };
 
-int printLog(enum LogLevel level, const char* fmt, ...);
-int vprintLog(enum LogLevel level, const char* fmt, va_list args);
+#define printLog(level, ...) \
+	_printLog(level, __func__, __LINE__, __VA_ARGS__)
+
+int _printLog(enum LogLevel level, const char *function, int line, const char* fmt, ...);
+int _vprintLog(enum LogLevel level, const char *function, int line, const char* fmt, va_list args);
 
 #endif
