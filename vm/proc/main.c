@@ -15,9 +15,11 @@ static void printHelp(const char *programName) {
 		"    -v, --version        Print author and version\n"
 		"    -h, --help           Print usage\n"
 		"    -l, --log            Print verbose log\n"
-		"    -m, --memory=<value> Memory size"
-		"    -o, --offset=<value> Program executing offset"
-		"    -H, --no-header      Skip header reading"
+		"    -m, --memory=<value> Memory size\n"
+		"    -o, --offset=<value> Program executing offset\n"
+		"    -V, --video=<width>,<height>,<offset>\n"
+		"                         Set video mode\n"
+		"    -H, --no-header      Skip header reading\n"
 		"    -I, --ignore-header  Ignore file header\n\n", programName);
 
 }
@@ -28,10 +30,29 @@ static int parseNumber(const char *str, arg_t *arg) {
 	return sscanf(str, "%u", arg) != 1;
 }
 
+static int parseVideoMode(const char *_str, struct ProcessorInput *input) {
+	char str[1024];
+	strncpy(str, _str, sizeof(str));
+
+	const char *widthStr  = strtok(str,  ",");
+	const char *heightStr = strtok(NULL, ",");
+	const char *offsetStr = strtok(NULL, ",");
+
+	if(offsetStr == NULL || strtok(NULL, ","))
+		return -1; // invalid arg count
+	
+	if(parseNumber(widthStr,  &input->videoWidth)  ||
+	   parseNumber(heightStr, &input->videoHeight) ||
+	   parseNumber(offsetStr, &input->videoOffset))
+		return -1;
+
+	return 0;
+}
+
 static int parseArgs(int argc, char *argv[], struct ProcessorInput *input) {
 	assert(input);
 
-	const char *shortOptions = "hvHIlm:o:";
+	const char *shortOptions = "hvHIlm:o:V:";
 	struct option longOptions[] = {
 		{"help",           no_argument,       NULL, 'h'},
 		{"version",        no_argument,       NULL, 'v'},
@@ -40,6 +61,7 @@ static int parseArgs(int argc, char *argv[], struct ProcessorInput *input) {
 		{"log",            no_argument,       NULL, 'l'},
 		{"memory",         required_argument, NULL, 'm'},
 		{"offset",         required_argument, NULL, 'o'},
+		{"video",          required_argument, NULL, 'V'},
 		{NULL,             0,                 NULL,  0 }
 	};
 
@@ -72,6 +94,13 @@ static int parseArgs(int argc, char *argv[], struct ProcessorInput *input) {
 				fprintf(stderr, "Invalid memory value\n");
 				return -1;
 			}
+			break;
+		case 'V':
+			if(parseVideoMode(optarg, input)) {
+				fprintf(stderr, "Invalid video mode\n");
+				return -1;
+			}
+			input->videoEnable = 1;
 			break;
 		default:
 			fprintf(stderr,

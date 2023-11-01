@@ -2,6 +2,7 @@
 #include "header.h"
 #include "log.h"
 #include "utils.h"
+#include "graphics.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -116,6 +117,15 @@ int processorCreate(struct Processor *processor, const struct ProcessorInput *in
 	if(processor->pc >= processor->codeSize)
 		printLog(LOG_WARNING, "Init code offset is bigger then last instruction index");
 
+	if(input->videoEnable) {
+		if(graphicsInit(processor->memory + input->videoOffset,
+				input->videoWidth, input->videoHeight)) {
+			printLog(LOG_ERROR, "Graphics init failed: %s", graphicsGetError());
+			return -1;
+		}
+	}
+
+	processor->videoEnable = input->videoEnable;
 	processor->verboseLog = input->verboseLog;
 
 	return 0;
@@ -123,6 +133,9 @@ int processorCreate(struct Processor *processor, const struct ProcessorInput *in
 
 int processorDelete(struct Processor *processor) {
 	printLog(LOG_INFO, "Exiting...");
+
+	graphicsQuit();
+	printLog(LOG_VERBOSE, "Graphics quited");
 
 	stackDelete(&processor->mainStack);
 	printLog(LOG_VERBOSE, "Main stack was deleted");
@@ -204,6 +217,14 @@ int processorRun(struct Processor *processor) {
 		if(processor->verboseLog)
 			processorDump(processor, LOG_VERBOSE);
 		int ret = processorExecNextCommand(processor);
+
+		if(processor->videoEnable) {
+			if(graphicsUpdate()) {
+				printLog(LOG_WARNING, "Program stopped");
+				return EXEC_OK;
+			}
+		}
+
 		if(ret == EXEC_END_PROGRAM)
 			return EXEC_OK;
 		else if(ret < 0) {

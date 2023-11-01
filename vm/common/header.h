@@ -11,6 +11,9 @@
 
 #define SIGNATURE 0x6866796E
 
+#define NIKITA "nikita-yfh"
+#define PROGRAM "ASM-yfh"
+
 typedef uint32_t version_t;
 typedef uint32_t signature_t;
 

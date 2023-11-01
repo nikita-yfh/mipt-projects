@@ -33,6 +33,11 @@ struct ProcessorInput {
 	int verboseLog;
 	uint8_t defaultMemValue;
 
+	int videoEnable;
+	arg_t videoWidth;
+	arg_t videoHeight;
+	arg_t videoOffset;
+
 	arg_t initCodeOffset;
 };
 
@@ -50,6 +55,7 @@ struct Processor {
 	arg_t memorySize;
 
 	int verboseLog;
+	int videoEnable;
 };
 
 int processorCreate(struct Processor *processor, const struct ProcessorInput *input);

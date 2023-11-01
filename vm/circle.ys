@@ -1,0 +1,8 @@
+push 0xFFFFFFFF
+pop [0]
+
+push [0]
+out
+
+:a
+jmp a

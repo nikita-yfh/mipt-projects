@@ -14,9 +14,6 @@ static const char *nameArt =
 	"/_/  |_/____/_/  /_/          \\__, /_/ /_/ /_/\n"
 	"                             /____/\n";
 
-#define NIKITA "nikita-yfh"
-#define PROGRAM "ASM-yfh"
-
 static_assert(MIN_VERSION_CODE <= VERSION_CODE);
 static_assert(MIN_VERSION_CODE > 0);
 
