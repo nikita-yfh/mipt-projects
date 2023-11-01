@@ -5,4 +5,4 @@ push [0]
 out
 
 :a
-jmp a
+jmp :a
