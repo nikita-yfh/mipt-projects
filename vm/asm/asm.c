@@ -177,16 +177,16 @@ static int readMemoryAccess(const char *line, struct ProcessorInstruction *instr
 	if(!!beginBracket ^ !!endBracket) {
 		error->message = "mismatched bracket";
 		if(beginBracket)
-			error->offset = (unsigned int)(beginBracket - line);
+			error->offset = (unsigned int) (beginBracket - line);
 		else
-			error->offset = (unsigned int)(endBracket   - line);
+			error->offset = (unsigned int) (endBracket   - line);
 		return -1;
 	}
 
 	const char *nextBeginBracket = strchr(beginBracket, '[');
 	const char *nextEndBracket   = strchr(endBracket,   ']');
 
-	if(!nextBeginBracket && !nextEndBracket) {
+	if(!nextBeginBracket || !nextEndBracket) {
 		instruction->flags |= FLAG_MEM;
 		return 0;
 	}
@@ -194,9 +194,9 @@ static int readMemoryAccess(const char *line, struct ProcessorInstruction *instr
 	error->message = "mismatched bracket";
 
 	if(nextBeginBracket)
-		error->offset = (unsigned int)(nextBeginBracket - line);
+		error->offset = (unsigned int) (nextBeginBracket - line);
 	if(nextEndBracket)
-		error->offset = (unsigned int)(nextEndBracket   - line);
+		error->offset = (unsigned int) (nextEndBracket   - line);
 
 	return -1;
 }
@@ -302,8 +302,9 @@ static void printError(const char *str, const struct AsmError *error) {
 		fputc(' ', stderr);
 
 	fputs(COLOR_RED "^", stderr);
-	for(unsigned int i = 0; i < wordLength - 1; i++)
-		fputc('~', stderr);
+	if(wordLength)
+		for(unsigned int i = 0; i <= wordLength; i++)
+			fputc('~', stderr);
 	fputs("\n"COLOR_NONE, stderr);
 }
 
