@@ -1,3 +1,43 @@
+; запихиваем параметры
+push 1
+pop rax
+push 1
+pop rbx
+
+; сколько чисел надо
+push 30
+pop rcx
+
+
+call :fib
+
+
 :fib
 
-jmp :fib
+; проверяем, надо ли заканчивать это все
+push rcx
+push rcx
+jne :end
+push 1
+sub
+pop rcx
+
+; запоминаем предыдущее в стеке
+push rbx
+; считаем следующее
+push rax
+push rbx
+add
+; восстанавливаем из стека
+pop rbx
+pop rax
+
+pop rax
+out
+
+; рекурсия наше все
+call :fib
+
+:end
+ret
+

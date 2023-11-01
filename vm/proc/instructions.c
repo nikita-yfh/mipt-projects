@@ -19,7 +19,7 @@ static int getArgument(struct Processor *processor,
 		return EXEC_INVALID_FORMAT;
 
 	if(instruction->flags & FLAG_REG)
-		if(instruction->reg != 0 || instruction->reg >= REG_COUNT)
+		if(instruction->reg == 0 || instruction->reg >= REG_COUNT)
 			return EXEC_INVALID_REGISTER;
 
 	if((instruction->flags & (FLAG_REG | FLAG_IMM)) == (FLAG_REG | FLAG_IMM)) { // reg + imm
