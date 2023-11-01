@@ -18,17 +18,33 @@ enum FLAGS {
 enum COMMANGS {
 	C_INVALID,
 
-	C_NOP,
+	C_NOP, // maybe usable
 	C_HLT,
 	C_PUSH,
 	C_POP,
+
+	// decimal
 	C_ADD,
 	C_SUB,
 	C_MUL,
 	C_DIV,
+	C_MOD,
 	C_IN,
 	C_OUT,
-	C_MOD,
+
+	// floating-point
+	C_ADDF,
+	C_SUBF,
+	C_MULF,
+	C_DIVF,
+	C_SQRT,
+	C_INF,
+	C_OUTF,
+
+	C_DF, // to floating-point
+	C_FD, // from floating-point
+
+	// simple jumps
 	C_JMP,
 	C_JG,  // >
 	C_JGE, // >=
@@ -36,6 +52,8 @@ enum COMMANGS {
 	C_JLE, // <=
 	C_JE,  // ==
 	C_JNE, // !=
+
+	// functions
 	C_CALL,
 	C_RET,
 

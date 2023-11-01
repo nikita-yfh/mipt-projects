@@ -12,13 +12,26 @@ static const char *commands[] = {
 	"hlt",
 	"push",
 	"pop",
+
 	"add",
 	"sub",
 	"mul",
 	"div",
+	"mod",
 	"in",
 	"out",
-	"mod",
+
+	"fadd",
+	"fsub",
+	"fmul",
+	"fdiv",
+	"sqrt",
+	"fin",
+	"fout",
+
+	"df",
+	"fd",
+
 	"jmp",
 	"jg",
 	"jge",
@@ -26,6 +39,7 @@ static const char *commands[] = {
 	"jle",
 	"je",
 	"jne",
+
 	"call",
 	"ret"
 };

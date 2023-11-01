@@ -3,6 +3,7 @@
 #include "log.h"
 
 #include <assert.h>
+#include <math.h>
 
 enum Direction {
 	DIR_IN,
@@ -117,6 +118,32 @@ static int funcIMath(struct Processor *processor, struct ProcessorInstruction *i
 	return EXEC_OK;
 }
 
+static int funcFMath(struct Processor *processor, struct ProcessorInstruction *instruction) {
+	float a = NAN, b = NAN, c = NAN;
+	STACK_POP(processor, (stackValue_t*) &b);
+	STACK_POP(processor, (stackValue_t*) &a);
+
+	switch(instruction->command) {
+		case C_ADD: c = a + b; break;
+		case C_SUB: c = a - b; break;
+		case C_MUL: c = a * b; break;
+		case C_DIV: c = a / b; break;
+		default: assert(0);
+	}
+
+	STACK_PUSH(processor, *((stackValue_t*) &c));
+
+	return EXEC_OK;
+}
+
+static int funcSqrt(struct Processor *processor, struct ProcessorInstruction*) {
+	float a = NAN;
+	STACK_POP(processor, (stackValue_t*) &a);
+	float b = sqrtf(a);
+	STACK_PUSH(processor, *((stackValue_t*) &b));
+	return EXEC_OK;
+}
+
 static int funcIn(struct Processor *processor, struct ProcessorInstruction*) {
 	stackValue_t a = 0;
 	scanf("%d", &a);
@@ -128,6 +155,36 @@ static int funcOut(struct Processor *processor, struct ProcessorInstruction*) {
 	stackValue_t a = 0;
 	STACK_POP(processor, &a);
 	printf("%d\n", a);
+	return EXEC_OK;
+}
+
+static int funcFIn(struct Processor *processor, struct ProcessorInstruction*) {
+	float a = NAN;
+	scanf("%f", &a);
+	STACK_PUSH(processor, *((stackValue_t*) &a));
+	return EXEC_OK;
+}
+
+static int funcFOut(struct Processor *processor, struct ProcessorInstruction*) {
+	float a = 0;
+	STACK_POP(processor, (stackValue_t*) &a);
+	printf("%g\n", a);
+	return EXEC_OK;
+}
+
+static int funcDF(struct Processor *processor, struct ProcessorInstruction*) {
+	stackValue_t d = 0;
+	STACK_POP(processor, &d);
+	float f = (float) d;
+	STACK_PUSH(processor, *((stackValue_t*) &f));
+	return EXEC_OK;
+}
+
+static int funcFD(struct Processor *processor, struct ProcessorInstruction*) {
+	float f = NAN;
+	STACK_POP(processor, (stackValue_t*) &f);
+	int d = (int) f;
+	STACK_PUSH(processor, d);
 	return EXEC_OK;
 }
 
@@ -188,13 +245,26 @@ static instructionFunction_t *functions[] = {
 	funcHlt,
 	funcPush,
 	funcPop,
+
+	funcIMath,
 	funcIMath,
 	funcIMath,
 	funcIMath,
 	funcIMath,
 	funcIn,
 	funcOut,
-	funcIMath,
+
+	funcFMath,
+	funcFMath,
+	funcFMath,
+	funcFMath,
+	funcSqrt,
+	funcFIn,
+	funcFOut,
+
+	funcDF,
+	funcFD,
+
 	funcJump,
 	funcJcmp,
 	funcJcmp,
@@ -202,6 +272,7 @@ static instructionFunction_t *functions[] = {
 	funcJcmp,
 	funcJcmp,
 	funcJcmp,
+
 	funcCall,
 	funcRet
 };
