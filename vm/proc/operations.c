@@ -173,7 +173,7 @@ void processorDump(struct Processor *processor, int level) {
 
 	printLog(level, "Registers: ");
 	for(reg_t reg = 0; reg < REG_COUNT; reg++)
-		printLog(level, "%s = %d", registerToString(reg + 1), processor->registers[reg]);
+		printLog(level, "%s = %d", registerToString(reg), processor->registers[reg]);
 	printLog(level, "Main stack: ");
 	stackDump(&processor->mainStack, level);
 

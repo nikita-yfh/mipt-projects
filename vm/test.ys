@@ -9,7 +9,7 @@ push 30
 pop rcx
 
 
-call :fib
+;call :fib
 
 
 :fib

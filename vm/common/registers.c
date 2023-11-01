@@ -19,12 +19,12 @@ reg_t stringToRegister(const char *reg) {
 
 	for(reg_t index = 0; index < REG_COUNT; index++)
 		if(stricmp(reg, registers[index]) == 0)
-			return index + 1;
+			return index;
 	return REG_INVALID;
 }
 
 const char *registerToString(reg_t reg) {
-	if(reg < 1 || reg > REG_COUNT)
+	if(reg >= REG_COUNT)
 		return NULL;
-	return registers[reg - 1];
+	return registers[reg];
 }

@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#define VERSION "1.0.0"
+#define VERSION "1.0.1"
 
-#define VERSION_CODE 1
-#define MIN_VERSION_CODE 1
+#define VERSION_CODE 2
+#define MIN_VERSION_CODE 2
 
 #define SIGNATURE 0x6866796E
 
