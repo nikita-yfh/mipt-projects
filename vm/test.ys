@@ -1,5 +1,3 @@
-PUSH 1
-PUSH 0
-ADD 
-OUT
-HLT
+:fib
+
+jmp :fib

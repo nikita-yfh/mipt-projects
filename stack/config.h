@@ -4,8 +4,8 @@
 #define STACK_DEFAULT_CAPACITY 128
 #define STACK_POISON INT32_MAX
 //#define STACK_RANDOM_KAPETZ
-#define STACK_ENABLE_KAPETZ
-#define STACK_ENABLE_HASH
+//#define STACK_ENABLE_KAPETZ
+//#define STACK_ENABLE_HASH
 
 typedef int32_t stackValue_t;
 #define STACK_FORMAT "%d"

@@ -208,7 +208,7 @@ int stackPop(struct Stack* stack, stackValue_t *value) {
 
 	--stack->size;
 	if(value)
-		*value = *stackIndex(stack, --stack->size);
+		*value = *stackIndex(stack, stack->size);
 
 	printLog(LOG_INFO, "Stack pop "STACK_FORMAT, *value);
 
