@@ -116,6 +116,8 @@ int processorCreate(struct Processor *processor, const struct ProcessorInput *in
 	if(processor->pc >= processor->codeSize)
 		printLog(LOG_WARNING, "Init code offset is bigger then last instruction index");
 
+	processor->verboseLog = input->verboseLog;
+
 	return 0;
 }
 
@@ -168,12 +170,28 @@ int processorVerify(struct Processor *processor) {
 	return stackVerify(&processor->mainStack) || stackVerify(&processor->callStack);
 }
 
+static void printInstruction(const struct ProcessorInstruction *instruction, int level) {
+	char stringBuffer[128] = "";
+	char hexBuffer[10];
+
+	const unsigned char *bytes = (const unsigned char*) instruction;
+	for(unsigned int i = 0; i < sizeof(struct ProcessorInstruction); i++) {
+		snprintf(hexBuffer, sizeof(hexBuffer), "%02x ", *bytes);
+		strcat(stringBuffer, hexBuffer);
+		bytes++;
+	}
+	printLog(level, stringBuffer);
+}
+
 void processorDump(struct Processor *processor, int level) {
 	printLog(level, "pc = %08X", processor->pc);
+	printLog(level, "Current instruction: ");
+	printInstruction(&processor->code[processor->pc], level);
 
 	printLog(level, "Registers: ");
 	for(reg_t reg = 0; reg < REG_COUNT; reg++)
 		printLog(level, "%s = %d", registerToString(reg), processor->registers[reg]);
+
 	printLog(level, "Main stack: ");
 	stackDump(&processor->mainStack, level);
 
@@ -183,6 +201,8 @@ void processorDump(struct Processor *processor, int level) {
 
 int processorRun(struct Processor *processor) {
 	while(processor->pc < processor->codeSize) {
+		if(processor->verboseLog)
+			processorDump(processor, LOG_VERBOSE);
 		int ret = processorExecNextCommand(processor);
 		if(ret == EXEC_END_PROGRAM)
 			return EXEC_OK;

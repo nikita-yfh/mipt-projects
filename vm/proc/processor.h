@@ -30,6 +30,7 @@ struct ProcessorInput {
 
 	int skipHeader;
 	int ignoreHeader;
+	int verboseLog;
 	uint8_t defaultMemValue;
 
 	arg_t initCodeOffset;
@@ -47,6 +48,8 @@ struct Processor {
 
 	arg_t *memory;
 	arg_t memorySize;
+
+	int verboseLog;
 };
 
 int processorCreate(struct Processor *processor, const struct ProcessorInput *input);

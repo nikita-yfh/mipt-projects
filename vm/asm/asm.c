@@ -25,10 +25,17 @@ static int checkLabel(const char *buffer, unsigned int *pc, struct Label *label)
 	if(!*buffer)
 		return 0;
 
-	if(*buffer++ != ':') {
-		(*pc)++;
+	if(*buffer != ':') {
+
+		while(*buffer == ' ')
+			buffer++;
+
+		if(*buffer != ';')
+			(*pc)++;
+
 		return 0;
 	}
+	buffer++;
 	while(*buffer == ' ')
 		buffer++;
 

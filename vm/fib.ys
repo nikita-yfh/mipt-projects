@@ -17,7 +17,7 @@ pop rcx
 ; проверяем, надо ли заканчивать это все
 push rcx
 push rcx
-jne :end
+je :end
 push 1
 sub
 pop rcx
@@ -32,12 +32,14 @@ add
 pop rbx
 pop rax
 
-pop rax
+push rax
 out
 
 ; рекурсия наше все
 call :fib
 
-:end
 ret
+
+:end
+hlt
 

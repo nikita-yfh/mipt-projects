@@ -12,11 +12,9 @@
 static void printHelp(const char *programName) {
 	printf(
 		"Usage: %s [-vhH] <file.yb>\n"
-		"    -o, --output <file>  Set file to process\n"
-		"    -v                   Print author and version\n"
-		"    -h                   Print usage\n"
-		"    -l                   Print log\n"
-		"    -L                   Print verbose log\n"
+		"    -v, --version        Print author and version\n"
+		"    -h, --help           Print usage\n"
+		"    -l, --log            Print verbose log\n"
 		"    -H, --no-header      Skip header reading"
 		"    -I, --ignore-header  Ignore file header\n\n", programName);
 
@@ -25,13 +23,14 @@ static void printHelp(const char *programName) {
 static int parseArgs(int argc, char *argv[], struct ProcessorInput *input) {
 	assert(input);
 
-	const char *shortOptions = "hvHI";
+	const char *shortOptions = "hvHIl";
 	struct option longOptions[] = {
 		{"help",           no_argument,       NULL, 'h'},
 		{"version",        no_argument,       NULL, 'v'},
 		{"no-header",      no_argument,       NULL, 'H'},
 		{"ignore-header",  no_argument,       NULL, 'I'},
-		{NULL,             0,                 NULL, 0}
+		{"log",            no_argument,       NULL, 'l'},
+		{NULL,             0,                 NULL,  0 }
 	};
 
 	int optionIndex = 0, option = 0;
@@ -49,6 +48,9 @@ static int parseArgs(int argc, char *argv[], struct ProcessorInput *input) {
 		case 'v':
 			printVersion(argv[0]);
 			return 0;
+		case 'l':
+			input->verboseLog = 1;
+			break;
 		default:
 			fprintf(stderr,
                 "Unrecognized option: '-%c'\n", optopt);
