@@ -183,10 +183,10 @@ static int readMemoryAccess(const char *line, struct ProcessorInstruction *instr
 		return -1;
 	}
 
-	const char *nextBeginBracket = strchr(beginBracket, '[');
-	const char *nextEndBracket   = strchr(endBracket,   ']');
+	const char *nextBeginBracket = strchr(beginBracket + 1, '[');
+	const char *nextEndBracket   = strchr(endBracket   + 1, ']');
 
-	if(!nextBeginBracket || !nextEndBracket) {
+	if(!nextBeginBracket && !nextEndBracket) {
 		instruction->flags |= FLAG_MEM;
 		return 0;
 	}
