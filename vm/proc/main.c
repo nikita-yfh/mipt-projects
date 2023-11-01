@@ -15,9 +15,9 @@ static void printHelp(const char *programName) {
 		"    -v, --version        Print author and version\n"
 		"    -h, --help           Print usage\n"
 		"    -l, --log            Print verbose log\n"
-		"    -H, --no-header      Skip header reading"
 		"    -m, --memory=<value> Memory size"
 		"    -o, --offset=<value> Program executing offset"
+		"    -H, --no-header      Skip header reading"
 		"    -I, --ignore-header  Ignore file header\n\n", programName);
 
 }

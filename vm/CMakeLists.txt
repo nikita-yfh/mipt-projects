@@ -57,6 +57,9 @@ set(PROCESSOR_SOURCES
 	proc/processor.h
 )
 
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
+
 add_subdirectory(stack)
 include_directories(stack)
 include_directories(log)
@@ -65,5 +68,5 @@ add_executable(assembler ${ASSEMBLER_SOURCES} ${COMMON_SOURCES})
 add_executable(processor ${PROCESSOR_SOURCES} ${COMMON_SOURCES})
 #add_executable(disassembler ${DISASSEMBLER_SOURCES} ${COMMON_SOURCES})
 
-target_link_libraries(processor stack logger m)
+target_link_libraries(processor stack logger m ${SDL2_LIBRARIES})
 
