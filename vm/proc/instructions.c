@@ -124,10 +124,10 @@ static int funcFMath(struct Processor *processor, struct ProcessorInstruction *i
 	STACK_POP(processor, (stackValue_t*) &a);
 
 	switch(instruction->command) {
-		case C_ADD: c = a + b; break;
-		case C_SUB: c = a - b; break;
-		case C_MUL: c = a * b; break;
-		case C_DIV: c = a / b; break;
+		case C_FADD: c = a + b; break;
+		case C_FSUB: c = a - b; break;
+		case C_FMUL: c = a * b; break;
+		case C_FDIV: c = a / b; break;
 		default: assert(0);
 	}
 

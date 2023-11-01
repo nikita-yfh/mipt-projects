@@ -64,8 +64,15 @@ static int readNumber(const char *str, arg_t *value, struct AsmError *error) {
 	assert(str);
 	assert(value);
 
-	if(sscanf(str, "%d", (int*)   value) != 1 &&
-	   sscanf(str, "%f", (float*) value) != 1) {
+	if(strchr(str, '.') != NULL) {
+		if(sscanf(str, "%f", (float*) value) != 1) {
+			error->message = "invalid float value";
+			return -1;
+		}
+		return 0;
+	}
+
+	if(sscanf(str, "%d", (int*)   value) != 1) {
 		error->message = "invalid number value";
 		return -1;
 	}

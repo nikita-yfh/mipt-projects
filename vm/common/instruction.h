@@ -33,13 +33,13 @@ enum COMMANGS {
 	C_OUT,
 
 	// floating-point
-	C_ADDF,
-	C_SUBF,
-	C_MULF,
-	C_DIVF,
+	C_FADD,
+	C_FSUB,
+	C_FMUL,
+	C_FDIV,
 	C_SQRT,
-	C_INF,
-	C_OUTF,
+	C_FIN,
+	C_FOUT,
 
 	C_DF, // to floating-point
 	C_FD, // from floating-point
