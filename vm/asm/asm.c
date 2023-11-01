@@ -220,9 +220,9 @@ static int assembleString(const char *buffer, struct ProcessorInstruction *instr
 		return 0;
 
 	if(*line == ':') {
-		const char *label = strtok(line + 1, "");
+		const char *label = strtok(line + 1, " ");
 		while(*label) {
-			if(!isalpha(*label)) {
+			if(!isalpha(*label) && !isdigit(*label) && *label != '_') {
 				error->message = "invalid label";
 				break;
 			}

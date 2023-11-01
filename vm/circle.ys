@@ -1,8 +1,139 @@
-push 0xFFFFFFFF
-pop [0]
+; аргументы командной строки: -V 500,500,0 -m 250000
 
-push [0]
+push 0
+pop rdx
+
+:loopx
+
+push rdx
+push 1
+add
+pop rdx
+
+; push rdx
+; df
+; push 50.0
+; fdiv
+; pop rax
+; 
+; call :sin
+; push rax
+; push 200.0
+; fmul
+; push 250.0
+; fadd
+; fd
+; pop rbx
+
+push rdx
+pop rax
+
+push 250
+pop rbx
+
+push rax
 out
+push rbx
+out
+
+call :pixel
+
+push rax
+out
+push rbx
+out
+
+push rdx
+push 500
+sub
+je :loopx
 
 :a
 jmp :a
+
+:pixel
+push rax
+push rbx
+push 500
+mul
+add
+pop rbx
+push 0xFFFFFFFF
+pop [rbx]
+ret
+
+:sin
+
+; push rax
+; jg :positive
+; 
+; push 0.0
+; push rax
+; fsub
+; pop rax
+; call :sin
+; ret
+; 
+; :positive
+; 
+; push rax
+; push 6.28
+; fsub
+; jl :lesstwopi
+; 
+; push rax
+; push 6.28
+; fsub
+; call :sin
+; ret
+; 
+; :lesstwopi
+; 
+; push rax
+; push 3.14
+; fsub
+; jl :lesspi
+; 
+; push rax
+; push 3.14
+; fsub
+; call :sin
+; push 0.0
+; push rax
+; fsub
+; pop rax
+; ret
+; 
+; :lesspi
+; 
+; push rax
+; push 1.57
+; fsub
+; jl :lesshalfpi
+; 
+; :lesshalfpi
+
+push rax
+push rax
+push rax
+push rax
+fmul
+fmul
+push 6.0
+fdiv
+fsub
+push rax
+push rax
+push rax
+push rax
+push rax
+fmul
+fmul
+fmul
+fmul
+push 120.0
+fdiv
+fadd
+pop rax
+ret
+
