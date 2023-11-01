@@ -16,20 +16,30 @@ static void printHelp(const char *programName) {
 		"    -h, --help           Print usage\n"
 		"    -l, --log            Print verbose log\n"
 		"    -H, --no-header      Skip header reading"
+		"    -m, --memory=<value> Memory size"
+		"    -o, --offset=<value> Program executing offset"
 		"    -I, --ignore-header  Ignore file header\n\n", programName);
 
+}
+
+static int parseNumber(const char *str, arg_t *arg) {
+	if(str[0] == '0' && str[1] == 'x')
+		return sscanf(str + 2, "%x", arg) != 1;
+	return sscanf(str, "%u", arg) != 1;
 }
 
 static int parseArgs(int argc, char *argv[], struct ProcessorInput *input) {
 	assert(input);
 
-	const char *shortOptions = "hvHIl";
+	const char *shortOptions = "hvHIlm:o:";
 	struct option longOptions[] = {
 		{"help",           no_argument,       NULL, 'h'},
 		{"version",        no_argument,       NULL, 'v'},
 		{"no-header",      no_argument,       NULL, 'H'},
 		{"ignore-header",  no_argument,       NULL, 'I'},
 		{"log",            no_argument,       NULL, 'l'},
+		{"memory",         required_argument, NULL, 'm'},
+		{"offset",         required_argument, NULL, 'o'},
 		{NULL,             0,                 NULL,  0 }
 	};
 
@@ -50,6 +60,18 @@ static int parseArgs(int argc, char *argv[], struct ProcessorInput *input) {
 			return 0;
 		case 'l':
 			input->verboseLog = 1;
+			break;
+		case 'o':
+			if(parseNumber(optarg, &input->initCodeOffset)) {
+				fprintf(stderr, "Invalid program executing offset\n");
+				return -1;
+			}
+			break;
+		case 'm':
+			if(parseNumber(optarg, &input->memorySize)) {
+				fprintf(stderr, "Invalid memory value\n");
+				return -1;
+			}
 			break;
 		default:
 			fprintf(stderr,
