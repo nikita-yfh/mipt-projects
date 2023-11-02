@@ -37,8 +37,11 @@ push rdx
 sqrt
 fsub
 push 2.0
+push rax
+fmul
 fdiv
 fout
+
 push 0.0
 push rbx
 fsub
@@ -46,6 +49,8 @@ push rdx
 sqrt
 fadd
 push 2.0
+push rax
+fmul
 fdiv
 fout
 hlt
