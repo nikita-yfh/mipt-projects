@@ -60,6 +60,8 @@ push 0.0
 push rbx
 push rax
 fdiv
+push 2.0
+fdiv
 fout
 hlt
 
