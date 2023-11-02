@@ -208,6 +208,7 @@ ret
 
 push rax
 push 1.57
+fsub
 jl :sinlesshalfpi
 
 push rax
