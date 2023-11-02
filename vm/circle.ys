@@ -32,7 +32,7 @@ pop rbx
 push rdx
 pop rax
 
-push 0xFF0000FF
+push 0xFFFF0000
 pop rcx
 
 call :pixel
@@ -211,6 +211,20 @@ fmul
 push 24.0
 fdiv
 fadd
+push rax
+push rax
+push rax
+push rax
+push rax
+push rax
+fmul
+fmul
+fmul
+fmul
+fmul
+push 720.0
+fdiv
+fsub
 pop rax
 ret
 
@@ -236,6 +250,22 @@ fmul
 push 120.0
 fdiv
 fadd
+push rax
+push rax
+push rax
+push rax
+push rax
+push rax
+push rax
+fmul
+fmul
+fmul
+fmul
+fmul
+fmul
+push 5040.0
+fdiv
+fsub
 pop rax
 ret
 
