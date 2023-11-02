@@ -15,14 +15,14 @@ pop rdx
 ; вычисление синуса
 push rdx
 df
-push 20.0
+push 40.0
 fdiv
 pop rax
 call :cos
 push rax
-push 100.0
+push 200.0
 fmul
-push 250.0
+push 500.0
 fadd
 fd
 pop rbx
@@ -38,7 +38,7 @@ pop rcx
 call :pixel
 
 push rdx
-push 500
+push 1000
 sub
 jl :loopx
 
@@ -50,7 +50,7 @@ pop rdx
 :loopc
 
 push rdx
-push 0.01
+push 0.001
 fadd
 pop rdx
 
@@ -58,9 +58,9 @@ push rdx
 pop rax
 call :sin
 push rax
-push 200.0
+push 400.0
 fmul
-push 250.0
+push 500.0
 fadd
 fd
 pop rbx
@@ -69,16 +69,45 @@ push rdx
 pop rax
 call :cos
 push rax
-push 200.0
+push 400.0
 fmul
-push 250.0
+push 500.0
 fadd
 fd
 pop rax
 
 push 0xFF00FF00
 pop rcx
+call :pixel
 
+push rdx
+push 10.0
+fmul
+pop rax
+call :sin
+push rax
+push 400.0
+fmul
+push 500.0
+fadd
+fd
+pop rbx
+
+push rdx
+push 9.0
+fmul
+pop rax
+call :sin
+push rax
+push 400.0
+fmul
+push 500.0
+fadd
+fd
+pop rax
+
+push 0xFFFFFF00
+pop rcx
 call :pixel
 
 push rdx
@@ -93,20 +122,20 @@ hlt
 push rax
 jl :loh
 push rax
-push 500
+push 1000
 sub
 jge :loh
 
 push rbx
 jl :loh
 push rbx
-push 500
+push 1000
 sub
 jge :loh
 
 push rax
 push rbx
-push 500
+push 1000
 mul
 add
 pop rbx
