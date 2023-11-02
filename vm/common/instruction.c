@@ -41,7 +41,8 @@ static const char *commands[] = {
 	"jne",
 
 	"call",
-	"ret"
+	"ret",
+	"upd"
 };
 
 static_assert(sizeof(struct ProcessorInstruction) == 8);

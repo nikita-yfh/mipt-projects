@@ -218,13 +218,6 @@ int processorRun(struct Processor *processor) {
 			processorDump(processor, LOG_VERBOSE);
 		int ret = processorExecNextCommand(processor);
 
-		if(processor->videoEnable) {
-			if(graphicsUpdate()) {
-				printLog(LOG_WARNING, "Program stopped");
-				return EXEC_OK;
-			}
-		}
-
 		if(ret == EXEC_END_PROGRAM)
 			return EXEC_OK;
 		else if(ret < 0) {

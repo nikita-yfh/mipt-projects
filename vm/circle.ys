@@ -10,109 +10,211 @@ push 1
 add
 pop rdx
 
-; push rdx
-; df
-; push 50.0
-; fdiv
-; pop rax
-; 
-; call :sin
-; push rax
-; push 200.0
-; fmul
-; push 250.0
-; fadd
-; fd
-; pop rbx
+; rdx = x
+
+; вычисление синуса
+push rdx
+df
+push 20.0
+fdiv
+pop rax
+call :cos
+push rax
+push 100.0
+fmul
+push 250.0
+fadd
+fd
+pop rbx
+
+; пихаем
 
 push rdx
 pop rax
 
-push 250
-pop rbx
-
-push rax
-out
-push rbx
-out
+push 0xFF0000FF
+pop rcx
 
 call :pixel
-
-push rax
-out
-push rbx
-out
 
 push rdx
 push 500
 sub
-je :loopx
+jl :loopx
 
-:a
-jmp :a
+; рисуем окружность
+
+push 0.0
+pop rdx
+
+:loopc
+
+push rdx
+push 0.01
+fadd
+pop rdx
+
+push rdx
+pop rax
+call :sin
+push rax
+push 200.0
+fmul
+push 250.0
+fadd
+fd
+pop rbx
+
+push rdx
+pop rax
+call :cos
+push rax
+push 200.0
+fmul
+push 250.0
+fadd
+fd
+pop rax
+
+push 0xFF00FF00
+pop rcx
+
+call :pixel
+
+push rdx
+push 6.28
+fsub
+jl :loopc
+
+hlt
 
 :pixel
+; проверка на адекватность
+push rax
+jl :loh
+push rax
+push 500
+sub
+jge :loh
+
+push rbx
+jl :loh
+push rbx
+push 500
+sub
+jge :loh
+
 push rax
 push rbx
 push 500
 mul
 add
 pop rbx
-push 0xFFFFFFFF
+push rcx
 pop [rbx]
+upd
+:loh
+ret
+
+:cos
+push 1.57
+push rax
+fsub
+pop rax
+call :sin
 ret
 
 :sin
+push rax
+jge :sinmorezero
 
-; push rax
-; jg :positive
-; 
-; push 0.0
-; push rax
-; fsub
-; pop rax
-; call :sin
-; ret
-; 
-; :positive
-; 
-; push rax
-; push 6.28
-; fsub
-; jl :lesstwopi
-; 
-; push rax
-; push 6.28
-; fsub
-; call :sin
-; ret
-; 
-; :lesstwopi
-; 
-; push rax
-; push 3.14
-; fsub
-; jl :lesspi
-; 
-; push rax
-; push 3.14
-; fsub
-; call :sin
-; push 0.0
-; push rax
-; fsub
-; pop rax
-; ret
-; 
-; :lesspi
-; 
-; push rax
-; push 1.57
-; fsub
-; jl :lesshalfpi
-; 
-; :lesshalfpi
+; y = -sin -x
+push 0.0
+push rax
+fsub
+pop rax
+call :sin
+push 0.0
+push rax
+fsub
+pop rax
+ret
 
+:sinmorezero
+
+push rax
+push 6.28
+fsub
+jl :sinlesstwopi
+
+; y = sin (x - 2pi)
+push rax
+push 6.28
+fsub
+pop rax
+call :sin
+ret
+
+:sinlesstwopi
+
+push rax
+push 3.14
+fsub
+upd
+jl :sinlessonepi
+
+; y = -sin (x - pi)
+push rax
+push 3.14
+fsub
+pop rax
+call :sin
+push 0.0
+push rax
+fsub
+pop rax
+ret
+
+:sinlessonepi
+
+push rax
+push 1.57
+jl :sinlesshalfpi
+
+push rax
+push 1.57
+fsub
+pop rax
+call :_cos
+ret
+
+:sinlesshalfpi
+
+call :_sin
+ret
+
+:_cos
+push 1.0
+push rax
+push rax
+fmul
+push 2.0
+fdiv
+fsub
+push rax
+push rax
+push rax
+push rax
+fmul
+fmul
+fmul
+push 24.0
+fdiv
+fadd
+pop rax
+ret
+
+:_sin
 push rax
 push rax
 push rax

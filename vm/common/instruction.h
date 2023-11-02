@@ -57,6 +57,8 @@ enum COMMANGS {
 	C_CALL,
 	C_RET,
 
+	C_UPD,
+
 	C_COUNT
 };
 

@@ -1,5 +1,6 @@
 #include "processor.h"
 #include "instruction.h"
+#include "graphics.h"
 #include "log.h"
 
 #include <assert.h>
@@ -220,6 +221,12 @@ static int funcJcmp(struct Processor *processor, struct ProcessorInstruction *in
 	return EXEC_OK;
 }
 
+static int funcUpd(struct Processor *processor, struct ProcessorInstruction *instruction) {
+	if(processor->videoEnable)
+		graphicsUpdate();
+	return EXEC_OK;
+}
+
 static int funcCall(struct Processor *processor, struct ProcessorInstruction *instruction) {
 	arg_t *address = NULL;
 	GET_ARGUMENT(processor, instruction, DIR_IN, &address);
@@ -274,7 +281,9 @@ static instructionFunction_t *functions[] = {
 	funcJcmp,
 
 	funcCall,
-	funcRet
+	funcRet,
+
+	funcUpd
 };
 
 static_assert(sizeof(functions) / sizeof(*functions) == C_COUNT);
