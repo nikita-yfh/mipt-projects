@@ -47,12 +47,16 @@ int graphicsQuit() {
 }
 
 int graphicsUpdate() {
+	memcpy(video.surface->pixels, video.mem, video.memSize);
+	SDL_UpdateWindowSurface(video.window);
+	return 0;
+}
+
+int graphicsIsQuit() {
 	while(SDL_PollEvent(&video.event)) {
 		if(video.event.type == SDL_QUIT)
 			return 1;
 	}
-	memcpy(video.surface->pixels, video.mem, video.memSize);
-	SDL_UpdateWindowSurface(video.window);
 	return 0;
 }
 

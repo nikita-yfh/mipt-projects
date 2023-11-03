@@ -221,7 +221,7 @@ static int funcJcmp(struct Processor *processor, struct ProcessorInstruction *in
 	return EXEC_OK;
 }
 
-static int funcUpd(struct Processor *processor, struct ProcessorInstruction *instruction) {
+static int funcUpd(struct Processor *processor, struct ProcessorInstruction*) {
 	if(processor->videoEnable)
 		graphicsUpdate();
 	return EXEC_OK;
@@ -289,6 +289,9 @@ static instructionFunction_t *functions[] = {
 static_assert(sizeof(functions) / sizeof(*functions) == C_COUNT);
 
 int processorExecNextCommand(struct Processor *processor) {
+	if(graphicsIsQuit())
+		processor->pc = PC_HLT;
+
 	if(processor->pc >= processor->codeSize)
 		return EXEC_END_PROGRAM;
 

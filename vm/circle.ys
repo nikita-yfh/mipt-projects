@@ -81,7 +81,7 @@ pop rcx
 call :pixel
 
 push rdx
-push 10.0
+push 19.0
 fmul
 pop rax
 call :sin
@@ -94,7 +94,7 @@ fd
 pop rbx
 
 push rdx
-push 9.0
+push 5.0
 fmul
 pop rax
 call :sin
