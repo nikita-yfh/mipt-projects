@@ -49,6 +49,7 @@ int graphicsQuit() {
 int graphicsUpdate() {
 	memcpy(video.surface->pixels, video.mem, video.memSize);
 	SDL_UpdateWindowSurface(video.window);
+	SDL_Delay(32); //30 fps
 	return 0;
 }
 

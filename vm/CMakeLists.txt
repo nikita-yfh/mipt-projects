@@ -62,6 +62,8 @@ add_subdirectory(stack)
 include_directories(stack)
 include_directories(log)
 
+add_executable(badapplegen badapplegen.c)
+
 add_executable(assembler ${ASSEMBLER_SOURCES} ${COMMON_SOURCES})
 add_executable(processor ${PROCESSOR_SOURCES} ${COMMON_SOURCES})
 #add_executable(disassembler ${DISASSEMBLER_SOURCES} ${COMMON_SOURCES})
