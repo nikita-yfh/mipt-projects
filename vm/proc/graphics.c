@@ -5,8 +5,11 @@
 #include "header.h"
 
 struct Video {
-	SDL_Window *window;
+	int windowWidth;
+	int windowHeight;
+
 	SDL_Surface *surface;
+	SDL_Window *window;
 	SDL_Event event;
 
 	void *mem;
@@ -22,12 +25,15 @@ const char *graphicsGetError() {
 int graphicsInit(void *mem, arg_t width, arg_t height) {
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 	video.window = SDL_CreateWindow(PROGRAM, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-			(int) width, (int) height, SDL_WINDOW_SHOWN);
+			(int) width, (int) height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+
+	video.windowWidth  = (int) width;
+	video.windowHeight = (int) height;
 
 	if(!video.window)
 		return -1;
 
-	video.surface = SDL_GetWindowSurface(video.window);
+	video.surface = SDL_CreateRGBSurface(0, video.windowWidth, video.windowHeight, 32, 0, 0, 0, 0);
 	if(!video.surface)
 		return -1;
 
@@ -47,16 +53,24 @@ int graphicsQuit() {
 }
 
 int graphicsUpdate() {
+	SDL_Surface *windowSurface = SDL_GetWindowSurface(video.window);
+	if(!windowSurface)
+		return -1;
+
 	memcpy(video.surface->pixels, video.mem, video.memSize);
+	SDL_BlitScaled(video.surface, NULL, windowSurface, NULL);
+
 	SDL_UpdateWindowSurface(video.window);
 	SDL_Delay(32); //30 fps
 	return 0;
 }
 
-int graphicsIsQuit() {
+int graphicsUpdateEvents() {
 	while(SDL_PollEvent(&video.event)) {
-		if(video.event.type == SDL_QUIT)
+		switch(video.event.type) {
+		case SDL_QUIT:
 			return 1;
+		}
 	}
 	return 0;
 }

@@ -10,6 +10,6 @@ const char *graphicsGetError();
 
 int graphicsUpdate();
 
-int graphicsIsQuit();
+int graphicsUpdateEvents();
 
 #endif

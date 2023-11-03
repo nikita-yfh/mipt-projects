@@ -289,7 +289,7 @@ static instructionFunction_t *functions[] = {
 static_assert(sizeof(functions) / sizeof(*functions) == C_COUNT);
 
 int processorExecNextCommand(struct Processor *processor) {
-	if(graphicsIsQuit())
+	if(graphicsUpdateEvents())
 		processor->pc = PC_HLT;
 
 	if(processor->pc >= processor->codeSize)
