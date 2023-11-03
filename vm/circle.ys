@@ -42,6 +42,8 @@ push 1000
 sub
 jl :loopx
 
+upd
+
 ; рисуем окружность
 
 push 0.0
@@ -115,6 +117,12 @@ push 6.28
 fsub
 jl :loopc
 
+upd
+
+:a
+upd
+jmp :a
+
 hlt
 
 :pixel
@@ -141,7 +149,6 @@ add
 pop rbx
 push rcx
 pop [rbx]
-upd
 :loh
 ret
 
@@ -189,7 +196,6 @@ ret
 push rax
 push 3.14
 fsub
-upd
 jl :sinlessonepi
 
 ; y = -sin (x - pi)
