@@ -5,7 +5,7 @@ push 1
 pop rbx
 
 ; сколько чисел надо
-push 30
+in
 pop rcx
 
 
