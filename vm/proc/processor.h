@@ -46,12 +46,12 @@ struct Processor {
 	struct Stack callStack;
 
 	arg_t pc; 
-	struct ProcessorInstruction *code;
+	struct ProcessorInstruction *code; // TODO: again, this is an array, extract
 	arg_t codeSize;
 
 	arg_t registers[REG_COUNT];
 
-	arg_t *memory;
+	arg_t *memory; // TODO: and again, an array
 	arg_t memorySize;
 
 	int verboseLog;

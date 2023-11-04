@@ -1,3 +1,5 @@
+// TODO: utils name is lazy, try to name it a bit more precisely
+
 #include "utils.h"
 
 #include <stdio.h>

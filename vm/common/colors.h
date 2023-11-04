@@ -9,4 +9,10 @@
 #define COLOR_MAGENTA  "\e[35;1m"
 #define COLOR_CYAN     "\e[36;1m"
 
+
+// TODO: maybe some wrapping of those ^ macros could be nice?
+//
+//       ==> Like so:
+//       #define TEXT_RED(text) COLOR_RED text COLOR_NONE
+
 #endif

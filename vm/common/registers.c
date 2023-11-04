@@ -13,6 +13,9 @@ static const char *registers[] = {
 };
 
 static_assert(sizeof(registers) / sizeof(const char*) == REG_COUNT);
+// TODO:      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ extract
+
+// TODO: yeah, the idea is the same as in instructions.c, generalizable?
 
 reg_t stringToRegister(const char *reg) {
 	assert(reg);

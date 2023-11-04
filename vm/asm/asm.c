@@ -14,7 +14,7 @@
 #include "header.h"
 
 struct Label {
-	char name[128];
+	char name[128]; // TODO: extract size in a constant
 	unsigned int offset;
 };
 
@@ -22,7 +22,7 @@ static int checkLabel(const char *buffer, unsigned int *pc, struct Label *label)
 	assert(buffer);
 	assert(label);
 
-	if(!*buffer)
+	if(!*buffer) // TODO: I think it's better to be explicit *buffer != '\0'
 		return 0;
 
 	if(*buffer != ':') {
@@ -36,10 +36,13 @@ static int checkLabel(const char *buffer, unsigned int *pc, struct Label *label)
 		return 0;
 	}
 	buffer++;
-	while(*buffer == ' ')
+	while(*buffer == ' ') // TODO: extract, skip blanks?
 		buffer++;
 
 	strncpy(label->name, buffer, sizeof(label->name));
+
+        // TODO: Funny idea, but it exploits global state. Should be used with care
+        //       and carefully documented or reconsidered :)
 	strtok(label->name, " ");
 
 	label->offset = *pc;
@@ -93,7 +96,7 @@ static int readLabel(const char *str, const struct Label *labels,
 	assert(value);
 	assert(str);
 
-	assert(*str == ':');
+	assert(*str == ':'); // TODO: this seems like a common pattern (ensure + skip), extractable?
 	str++; // skip :
 
 	for(unsigned int label = 0; label < labelCount; label++) {
@@ -168,6 +171,8 @@ static int readArgument(const char *argument, struct ProcessorInstruction *instr
 
 static int readMemoryAccess(const char *line, struct ProcessorInstruction *instruction,
 														struct AsmError *error) {
+	// TODO: Don't use TAB's for code alignment, people with other tab size will have everything
+	//       horribly misaligned (like I do with 4 spaces per tab with AsmError *error parameter
 	const char *beginBracket = strchr(line, '[');
 	const char *endBracket   = strchr(line, ']');
 
@@ -212,7 +217,7 @@ static int assembleString(const char *buffer, struct ProcessorInstruction *instr
 	if(!*buffer)
 		return 0;
 
-	char line[1024];
+	char line[1024]; // TODO: extract to const (also, why even copy it?)
 	strncpy(line, buffer, sizeof(line));
 	stripCommand(line);
 
@@ -243,6 +248,8 @@ static int assembleString(const char *buffer, struct ProcessorInstruction *instr
 			error->offset = (unsigned int)(commandString - line);
 			error->message = "invalid command";
 		}
+
+                // TODO: below args are parsed twice, can you extract it?
 
 		const char *arg1 = strtok(NULL, div);
 		const char *arg2 = strtok(NULL, div);
@@ -311,19 +318,25 @@ static void printError(const char *str, const struct AsmError *error) {
 int assembleFile(struct AsmInput *input, struct AsmError *error) {
 	size_t fileSize = getFileSize(input->in);
 
+        // TODO: such low-lever operations like calloc have no place
+        //       in such high-level function like assembleFile.
 	char *file = (char*) calloc(fileSize, sizeof(char*));
 	fread(file, fileSize, 1, input->in);
 
+        // TODO: same thing here:
 	struct Label *labels = (struct Label*) calloc(countLines(file), sizeof(struct Label));
 	cutLines(file);
-	unsigned int labelCount = 0;
+	unsigned int labelCount = 0; // TODO: can you have an abstraction of such arrays (labels + labelCount)?
 
 	unsigned int pc = 0;
+
+        // TODO: this whole thing with labels seems like extractable for sure!
 	for(size_t offset = 0; offset < fileSize; offset += strlen(file + offset) + 1)
 		if(checkLabel(file + offset, &pc, &labels[labelCount]))
 			labelCount++;
 
 	unsigned int codeCount = pc;
+        // TODO: Why not separate assembling in buffer from assembling to file?
 	struct ProcessorInstruction *code = (struct ProcessorInstruction*)
 				calloc(codeCount, sizeof(struct ProcessorInstruction));
 
@@ -334,7 +347,9 @@ int assembleFile(struct AsmInput *input, struct AsmError *error) {
 		error->line = currentLine++;
 		if(assembleString(file + fileOffset, &code[pc], labels, labelCount, &pc, error) != 0)
 			break;
-		fileOffset += strlen(file + fileOffset) + 1;
+		fileOffset += strlen(file + fileOffset) + 1; // TODO: Isn't it time to split lines for real?
+                                                               //        Or, at least, extract this iteration technic
+                                                               //        (but better ditch it all together as it's slow)
 	}
 
 	if(input->needHeader)

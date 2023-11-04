@@ -299,6 +299,9 @@ fmul
 fmul
 fmul
 fmul
+
+; TODO: What about a function for powers?
+
 push 5040.0
 fdiv
 fsub

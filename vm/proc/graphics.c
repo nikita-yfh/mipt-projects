@@ -57,8 +57,13 @@ int graphicsUpdate() {
 	if(!windowSurface)
 		return -1;
 
+        // TODO: can you avoid memcpy of whole buffer of pixels on every update?
 	memcpy(video.surface->pixels, video.mem, video.memSize);
 	SDL_BlitScaled(video.surface, NULL, windowSurface, NULL);
+
+        // TODO: Also, you do nothing to ensure scaling with consistent aspect ratio
+        //       Because of this I can extend window breaking drawn circle and making
+        //       it an ellips.
 
 	SDL_UpdateWindowSurface(video.window);
 	SDL_Delay(32); //30 fps

@@ -93,6 +93,7 @@ int processorCreate(struct Processor *processor, const struct ProcessorInput *in
 	} else 
 		printLog(LOG_VERBOSE, "Created call stack");
 
+        // TODO: Prefer designated initializers for constructors
 	processor->memorySize = input->memorySize;
 	processor->memory = calloc(processor->memorySize, sizeof(arg_t));
 
