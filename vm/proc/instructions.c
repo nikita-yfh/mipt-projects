@@ -246,6 +246,12 @@ static int funcRet(struct Processor *processor, struct ProcessorInstruction*) {
 	return EXEC_OK;
 }
 
+// TODO: it's ok, but try to complete DSL. 
+//       Also the idea that order of this functions matters is horrifying.
+
+//       You can use C extension to write { [COMMAND] = funcNop, ... }, or,
+//       again, make a nice DSL :)
+
 static instructionFunction_t *functions[] = {
 	NULL,
 	funcNop,
@@ -287,6 +293,8 @@ static instructionFunction_t *functions[] = {
 };
 
 static_assert(sizeof(functions) / sizeof(*functions) == C_COUNT);
+//            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TODO: this thing is so common it's a crime it's not in stdlib,
+//                                                         but you can make it less painful by implementing such yourself!
 
 int processorExecNextCommand(struct Processor *processor) {
 	if(graphicsUpdateEvents())

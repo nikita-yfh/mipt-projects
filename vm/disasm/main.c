@@ -74,6 +74,10 @@ int main(int argc, char *argv[]) {
 	if(ret != 1)
 		return ret;
 
+        // TODO: read my comments about asm, this is very similar.
+        //       Also, maybe extreme similarities in input/output
+        //       can give you a hint about an abstraction that is
+        //       possible to introduce here.
 	input.in = fopen(input.inputFile, "r");
 	input.out = fopen(input.outputFile, "wb");
 
