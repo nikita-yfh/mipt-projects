@@ -12,43 +12,7 @@
 #include "colors.h"
 #include "utils.h"
 #include "header.h"
-
-struct Label {
-	char name[128]; // TODO: extract size in a constant
-	unsigned int offset;
-};
-
-static int checkLabel(const char *buffer, unsigned int *pc, struct Label *label) {
-	assert(buffer);
-	assert(label);
-
-	if(!*buffer) // TODO: I think it's better to be explicit *buffer != '\0'
-		return 0;
-
-	if(*buffer != ':') {
-
-		while(*buffer == ' ')
-			buffer++;
-
-		if(*buffer != ';')
-			(*pc)++;
-
-		return 0;
-	}
-	buffer++;
-	while(*buffer == ' ') // TODO: extract, skip blanks?
-		buffer++;
-
-	strncpy(label->name, buffer, sizeof(label->name));
-
-        // TODO: Funny idea, but it exploits global state. Should be used with care
-        //       and carefully documented or reconsidered :)
-	strtok(label->name, " ");
-
-	label->offset = *pc;
-
-	return 1;
-}
+#include "labels.h"
 
 static void stripCommand(char *str) {
 	assert(str);
@@ -88,26 +52,21 @@ static int readNumber(const char *str, arg_t *value, struct AsmError *error) {
 	return 0;
 }
 
-static int readLabel(const char *str, const struct Label *labels,
-		unsigned int labelCount, arg_t *value, struct AsmError *error) {
+static int readLabel(const char *str, const struct Labels *labels, arg_t *value, struct AsmError *error) {
 
 	assert(labels);
 	assert(error);
 	assert(value);
 	assert(str);
 
-	assert(*str == ':'); // TODO: this seems like a common pattern (ensure + skip), extractable?
-	str++; // skip :
+	str = skipChar(str, ':');
 
-	for(unsigned int label = 0; label < labelCount; label++) {
-		if(strcmp(labels[label].name, str) == 0) {
-			*value = labels[label].offset;
-			return 0;
-		}
+	if(labelsGetOffset(labels, str, value)) {
+		error->message = "invalid label or offset";
+		return -1;
 	}
 
-	error->message = "invalid label or offset";
-	return -1;
+	return 0;
 }
 
 static int readRegister(const char *str, reg_t *reg, struct AsmError *error) {
@@ -125,7 +84,7 @@ static int readRegister(const char *str, reg_t *reg, struct AsmError *error) {
 }
 
 static int readArgument(const char *argument, struct ProcessorInstruction *instruction,
-		const struct Label *labels, unsigned int labelCount, struct AsmError *error) {
+						const struct Labels *labels, struct AsmError *error) {
 	if(!argument)
 		return 0;
 
@@ -141,7 +100,7 @@ static int readArgument(const char *argument, struct ProcessorInstruction *instr
 		}
 
 		instruction->flags |= FLAG_IMM;
-		return readLabel(argument, labels, labelCount, &instruction->immutable, error);
+		return readLabel(argument, labels, &instruction->immutable, error);
 
 	} else if(isdigit(*argument)) { // immutable const
 									//
@@ -171,8 +130,6 @@ static int readArgument(const char *argument, struct ProcessorInstruction *instr
 
 static int readMemoryAccess(const char *line, struct ProcessorInstruction *instruction,
 														struct AsmError *error) {
-	// TODO: Don't use TAB's for code alignment, people with other tab size will have everything
-	//       horribly misaligned (like I do with 4 spaces per tab with AsmError *error parameter
 	const char *beginBracket = strchr(line, '[');
 	const char *endBracket   = strchr(line, ']');
 
@@ -182,9 +139,9 @@ static int readMemoryAccess(const char *line, struct ProcessorInstruction *instr
 	if(!!beginBracket ^ !!endBracket) {
 		error->message = "mismatched bracket";
 		if(beginBracket)
-			error->offset = (unsigned int) (beginBracket - line);
+			error->column = (unsigned int) (beginBracket - line);
 		else
-			error->offset = (unsigned int) (endBracket   - line);
+			error->column = (unsigned int) (endBracket   - line);
 		return -1;
 	}
 
@@ -199,16 +156,15 @@ static int readMemoryAccess(const char *line, struct ProcessorInstruction *instr
 	error->message = "mismatched bracket";
 
 	if(nextBeginBracket)
-		error->offset = (unsigned int) (nextBeginBracket - line);
+		error->column = (unsigned int) (nextBeginBracket - line);
 	if(nextEndBracket)
-		error->offset = (unsigned int) (nextEndBracket   - line);
+		error->column = (unsigned int) (nextEndBracket   - line);
 
 	return -1;
 }
 
 static int assembleString(const char *buffer, struct ProcessorInstruction *instruction,
-							const struct Label *labels, unsigned int labelCount,
-							unsigned int *pc, struct AsmError *error) {
+					const struct Labels *labels, unsigned int *pc, struct AsmError *error) {
 	assert(buffer);
 	assert(error);
 	assert(instruction);
@@ -245,22 +201,16 @@ static int assembleString(const char *buffer, struct ProcessorInstruction *instr
 		assert(instruction->command < C_COUNT);
 
 		if(instruction->command == C_INVALID) {
-			error->offset = (unsigned int)(commandString - line);
+			error->column = (unsigned int)(commandString - line);
 			error->message = "invalid command";
 		}
 
-                // TODO: below args are parsed twice, can you extract it?
-
-		const char *arg1 = strtok(NULL, div);
-		const char *arg2 = strtok(NULL, div);
-
-		if(readArgument(arg1, instruction, labels, labelCount, error)) {
-			error->offset = (unsigned int)(arg1 - line);
-			return -1;
-		}
-		if(readArgument(arg2, instruction, labels, labelCount, error)) {
-			error->offset = (unsigned int)(arg2 - line);
-			return -1;
+		for(int arg = 0; arg < 2; arg++) {
+			const char *argString = strtok(NULL, div);
+			if(readArgument(argString, instruction, labels, error)) {
+				error->column = (unsigned int)(argString - line);
+				return -1;
+			}
 		}
 
 		(*pc)++;
@@ -282,7 +232,7 @@ static void printError(const char *str, const struct AsmError *error) {
 
 	unsigned int counter = 0;
 	while(*str) {
-		if(highlight == 0 && counter == error->offset) {
+		if(highlight == 0 && counter == error->column) {
 			fputs(COLOR_RED, stderr);
 			highlight = 1;
 		}
@@ -305,7 +255,7 @@ static void printError(const char *str, const struct AsmError *error) {
 	fputs("\n"COLOR_NONE, stderr);
 	fputs("     |   ", stderr);
 
-	for(unsigned int i = 0; i < error->offset; i++)
+	for(unsigned int i = 0; i < error->column; i++)
 		fputc(' ', stderr);
 
 	fputs(COLOR_RED "^", stderr);
@@ -324,45 +274,38 @@ int assembleFile(struct AsmInput *input, struct AsmError *error) {
 	fread(file, fileSize, 1, input->in);
 
         // TODO: same thing here:
-	struct Label *labels = (struct Label*) calloc(countLines(file), sizeof(struct Label));
+	struct Labels labels = {};
+	labelsCreate(&labels, countLines(file));
+
 	cutLines(file);
-	unsigned int labelCount = 0; // TODO: can you have an abstraction of such arrays (labels + labelCount)?
+	unsigned int codeCount = labelsCheckFileAndCountCode(&labels, file, fileSize);
 
-	unsigned int pc = 0;
-
-        // TODO: this whole thing with labels seems like extractable for sure!
-	for(size_t offset = 0; offset < fileSize; offset += strlen(file + offset) + 1)
-		if(checkLabel(file + offset, &pc, &labels[labelCount]))
-			labelCount++;
-
-	unsigned int codeCount = pc;
         // TODO: Why not separate assembling in buffer from assembling to file?
 	struct ProcessorInstruction *code = (struct ProcessorInstruction*)
 				calloc(codeCount, sizeof(struct ProcessorInstruction));
 
-	unsigned int currentLine = 1;
-	pc = 0;
-	size_t fileOffset = 0;
-	while(fileOffset < fileSize) {
-		error->line = currentLine++;
-		if(assembleString(file + fileOffset, &code[pc], labels, labelCount, &pc, error) != 0)
+	unsigned int pc = 0;
+	unsigned int lineNumber = 1;
+	const char *fileEnd = file + fileSize;
+	const char *line = NULL;
+
+	for(line = file; line < fileEnd; line = skipNull(line)) {
+		error->line = lineNumber++;
+		if(assembleString(line, &code[pc], &labels, &pc, error) != 0)
 			break;
-		fileOffset += strlen(file + fileOffset) + 1; // TODO: Isn't it time to split lines for real?
-                                                               //        Or, at least, extract this iteration technic
-                                                               //        (but better ditch it all together as it's slow)
 	}
 
-	if(input->needHeader)
+	if(!input->skipHeader)
 		writeHeader(input->out);
 
 	if(!error->message)
 		fwrite(code, sizeof(struct ProcessorInstruction), codeCount, input->out);
 	else
-		printError(file + fileOffset, error);
+		printError(line, error);
 
 	free(file);
 	free(code);
-	free(labels);
+	labelsDelete(&labels);
 
 	return error->message ? -1 : 0;
 }

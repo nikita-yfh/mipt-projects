@@ -1,5 +1,3 @@
-// TODO: utils name is lazy, try to name it a bit more precisely
-
 #include "utils.h"
 
 #include <stdio.h>
@@ -7,6 +5,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <assert.h>
+#include <string.h>
 
 int stricmp(const char *a, const char *b) {
 	while(*a && *b && tolower(*a) == tolower(*b)) {
@@ -15,7 +14,6 @@ int stricmp(const char *a, const char *b) {
 	}
 	return tolower(*a) - tolower(*b);
 }
-
 size_t getFileSize(FILE *file) {
 	assert(file);
 
@@ -53,4 +51,30 @@ unsigned int countLines(const char *data) {
 	}
 
 	return count;
+}
+
+const char *skipChar(const char *str, char c) {
+	assert(*str == c);
+	return str + 1;
+}
+
+const char *skipBlanks(const char *str) {
+	while(*str == ' ')
+		str++;
+	return str;
+}
+
+unsigned long strlenToChar(const char *str, char c) {
+	const char *space = strchr(str, c);
+	if(!space)
+		return strlen(str);
+
+	assert(space >= str);
+
+	return (unsigned int) (space - str);
+}
+
+const char *skipNull(const char *str) {
+	assert(str);
+	return str + strlen(str) + 1;
 }

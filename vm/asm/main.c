@@ -21,8 +21,6 @@ static void printHelp(const char *programName) {
 static int parseArgs(int argc, char *argv[], struct AsmInput *input) {
 	assert(input);
 
-	input->needHeader = 1;
-
 	const char *shortOptions = "o:hHv";
 	struct option longOptions[] = {
 		{"output",       required_argument, NULL, 'o'},
@@ -42,7 +40,7 @@ static int parseArgs(int argc, char *argv[], struct AsmInput *input) {
 			printHelp(argv[0]);
 			return 0;
 		case 'H':
-			input->needHeader = 0;
+			input->skipHeader = true;
 			break;
 		case 'v':
 			printVersion(argv[0]);

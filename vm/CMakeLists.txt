@@ -37,6 +37,8 @@ include_directories(common)
 set(ASSEMBLER_SOURCES
 	asm/asm.c
 	asm/asm.h
+	asm/labels.h
+	asm/labels.c
 	asm/main.c
 )
 

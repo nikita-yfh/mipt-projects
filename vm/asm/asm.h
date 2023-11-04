@@ -2,10 +2,12 @@
 #define ASM_H
 
 #include <stdio.h>
-        // TODO: this seems like an extractable thing as it
-        // unambiguously represents location in source code:
+#include <stdbool.h>
+
+struct AsmError {
+
 	unsigned int line;
-	unsigned int offset;
+	unsigned int column;
 	const char *file;
 
 	const char *message;
@@ -30,13 +32,7 @@ struct AsmInput {
 	FILE *in;
 	FILE *out;
 
-        // TODO: for bools use bool from stdbool.h or builtin
-        //       bool from C++ (We allow it here if you don't mind),
-        //       it conveys intent better and it's free!
-	int needHeader;
-
-        // TODO: Also, what are the reason to not include header?
-        //       And what it really is. Add a comment with more info!
+	bool skipHeader;
 };
 
 int assembleFile(struct AsmInput *input, struct AsmError *error);
