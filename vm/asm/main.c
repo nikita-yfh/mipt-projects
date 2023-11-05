@@ -74,28 +74,10 @@ int main(int argc, char *argv[]) {
 	if(ret != 1)
 		return ret;
 
-	input.in = fopen(input.inputFile, "r");
-	input.out = fopen(input.outputFile, "wb");
-
-	if(!input.in) // TODO: extract opening and handle there?
-		perror("Failed to open input file");
-	if(!input.out)
-		perror("Failed to open output file");
-
-	if(input.in && input.out) {
-		struct AsmError error = {};
-		error.file = input.inputFile;
-
-                // TODO: This is the main thing you do in main and yet it lost in between less important things,
-                //       meaning less important things should be extracted further and take even less space.
-		if(assembleFile(&input, &error) != 0)
+	if(!openFiles(&input)) {
+		if(assembleFile(&input) != 0)
 			return -1;
 	}
 
-	if(input.in) // TODO: common destructor instead?
-		fclose(input.in);
-	if(input.out)
-		fclose(input.out);
-
-	return (input.in && input.out) ? 0 : -1;
+	return closeFiles(&input);
 }

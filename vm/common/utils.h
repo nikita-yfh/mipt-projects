@@ -3,8 +3,7 @@
 
 #include <stdio.h>
 
-void cutLines(char *data);
-unsigned int countLines(const char *data);
+unsigned int cutLines(char *data);
 size_t getFileSize(FILE *file);
 int stricmp(const char *a, const char *b);
 

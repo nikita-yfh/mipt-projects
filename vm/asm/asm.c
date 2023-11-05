@@ -219,18 +219,22 @@ static int assembleString(const char *buffer, struct ProcessorInstruction *instr
 	return error->message ? -1 : 0;
 }
 
-static void printError(const char *str, const struct AsmError *error) {
+static void printError(const struct AsmError *error) {
+	assert(error);
+
 	fprintf(stderr, "%s:%u: " COLOR_RED "Error:" COLOR_NONE " %s\n",
-			error->file, error->line, error->message);
+			error->fileName, error->lineNumber, error->message);
 
 	unsigned int arg = 0;
 	int highlight = 0;
 
-	fprintf(stderr, "%4u |   ", error->line);
+	fprintf(stderr, "%4u |   ", error->lineNumber);
 
 	unsigned int wordLength = 0;
 
 	unsigned int counter = 0;
+
+	const char *str = error->line;
 	while(*str) {
 		if(highlight == 0 && counter == error->column) {
 			fputs(COLOR_RED, stderr);
@@ -265,48 +269,93 @@ static void printError(const char *str, const struct AsmError *error) {
 	fputs("\n"COLOR_NONE, stderr);
 }
 
-int assembleFile(struct AsmInput *input, struct AsmError *error) {
-	size_t fileSize = getFileSize(input->in);
+static int assembleBuffer(const char *lines, unsigned int lineCount,
+							struct ProcessorInstruction **code, unsigned int *codeSize,
+							struct AsmError *error) {
 
-        // TODO: such low-lever operations like calloc have no place
-        //       in such high-level function like assembleFile.
-	char *file = (char*) calloc(fileSize, sizeof(char*));
-	fread(file, fileSize, 1, input->in);
-
-        // TODO: same thing here:
 	struct Labels labels = {};
-	labelsCreate(&labels, countLines(file));
+	labelsCreate(&labels, lineCount);
 
-	cutLines(file);
-	unsigned int codeCount = labelsCheckFileAndCountCode(&labels, file, fileSize);
+	unsigned int codeCount = labelsCheckFileAndCountCode(&labels, lines, lineCount);
 
-        // TODO: Why not separate assembling in buffer from assembling to file?
-	struct ProcessorInstruction *code = (struct ProcessorInstruction*)
-				calloc(codeCount, sizeof(struct ProcessorInstruction));
+	*code = (struct ProcessorInstruction*) calloc(codeCount, sizeof(struct ProcessorInstruction));
+	*codeSize = codeCount;
 
 	unsigned int pc = 0;
-	unsigned int lineNumber = 1;
-	const char *fileEnd = file + fileSize;
-	const char *line = NULL;
 
-	for(line = file; line < fileEnd; line = skipNull(line)) {
-		error->line = lineNumber++;
-		if(assembleString(line, &code[pc], &labels, &pc, error) != 0)
-			break;
+	for(unsigned int lineNumber = 0; lineNumber < lineCount; lineNumber++) {
+		error->lineNumber = lineNumber + 1;
+		error->line = lines;
+
+		if(assembleString(lines, &(*code)[pc], &labels, &pc, error) != 0) {
+			labelsDelete(&labels);
+			return -1;
+		}
+
+		lines = skipNull(lines);
 	}
 
-	if(!input->skipHeader)
-		writeHeader(input->out);
+	labelsDelete(&labels);
 
-	if(!error->message)
+	return 0;
+}
+
+int assembleFile(struct AsmInput *input) {
+	assert(input);
+	assert(input->in);
+	assert(input->out);
+	assert(input->inputFile);
+	assert(input->outputFile);
+
+	struct AsmError error = {};
+	error.fileName = input->inputFile;
+
+	size_t fileSize = getFileSize(input->in);
+
+	char *file = (char*) calloc(fileSize, sizeof(char*));
+	fread(file, fileSize, 1, input->in);
+	unsigned int lineCount = cutLines(file);
+
+	struct ProcessorInstruction *code = NULL;
+	unsigned int codeCount = 0;
+
+	if(!assembleBuffer(file, lineCount, &code, &codeCount, &error)) {
+
+		if(!input->skipHeader)
+			writeHeader(input->out);
+
 		fwrite(code, sizeof(struct ProcessorInstruction), codeCount, input->out);
-	else
-		printError(line, error);
+
+	} else
+		printError(&error);
 
 	free(file);
 	free(code);
-	labelsDelete(&labels);
 
-	return error->message ? -1 : 0;
+	return error.message ? -1 : 0;
+}
+
+int openFiles(struct AsmInput *input) {
+	input->in = fopen(input->inputFile, "r");
+	input->out = fopen(input->outputFile, "wb");
+
+	if(!input->in) {
+		perror("Failed to open input file");
+		return -1;
+	}
+	if(!input->out) {
+		perror("Failed to open output file");
+		return -1;
+	}
+	
+	return 0;
+}
+
+int closeFiles(struct AsmInput *input) {
+	if(input->in)
+		fclose(input->in);
+	if(input->out)
+		fclose(input->out);
+	return (input->in && input->out) ? 0 : -1;
 }
 

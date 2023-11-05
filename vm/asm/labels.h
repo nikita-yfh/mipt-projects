@@ -19,7 +19,7 @@ void labelsDelete(struct Labels *labels);
 
 int labelsGetOffset(const struct Labels *labels, const char *str, unsigned int *offset);
 
-unsigned int labelsCheckFileAndCountCode(struct Labels *labels, const char *file, size_t fileSize);
+unsigned int labelsCheckFileAndCountCode(struct Labels *labels, const char *lines, unsigned int lineCount);
 
 #endif
 

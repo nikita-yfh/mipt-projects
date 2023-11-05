@@ -46,12 +46,16 @@ int labelsGetOffset(const struct Labels *labels, const char *str, unsigned int *
 	return -1;
 }
 
-unsigned int labelsCheckFileAndCountCode(struct Labels *labels, const char *file, size_t fileSize) {
+unsigned int labelsCheckFileAndCountCode(struct Labels *labels, const char *lines, unsigned int lineCount) {
 	unsigned int pc = 0;
 
-	for(size_t offset = 0; offset < fileSize; offset += strlen(file + offset) + 1)
-		if(checkLabel(file + offset, &pc, &labels->labels[labels->count]))
+	for(unsigned int lineNumber = 0; lineNumber < lineCount; lineNumber++) {
+		if(checkLabel(lines, &pc, &labels->labels[labels->count]))
 			labels->count++;
+
+		lines = skipNull(lines);
+	}
+
 	return pc;
 }
 

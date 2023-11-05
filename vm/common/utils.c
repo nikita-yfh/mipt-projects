@@ -28,29 +28,17 @@ size_t getFileSize(FILE *file) {
 	return (size_t) size;
 }
 
-void cutLines(char *data) {
+unsigned int cutLines(char *data) {
+	unsigned int lines = 1;
 	while(*data != '\0') {
-		if(*data == '\n' || *data == '\r')
+		if(*data == '\n' || *data == '\r') {
+			if(*data == '\n')
+				lines++;
 			*data = '\0';
+		}
 		data++;
 	}
-}
-
-unsigned int countLines(const char *data) {
-	assert(data);
-
-	unsigned int count = 0;
-	while(*data != '\0') {
-		if(*data == '\n') {
-			data++;
-			while(*data == '\n' || *data == '\r')
-				data++;
-			count++;
-		} else
-			data++;
-	}
-
-	return count;
+	return lines;
 }
 
 const char *skipChar(const char *str, char c) {

@@ -66,7 +66,7 @@ int graphicsUpdate() {
         //       it an ellips.
 
 	SDL_UpdateWindowSurface(video.window);
-	SDL_Delay(32); //30 fps
+	SDL_Delay(100); //30 fps
 	return 0;
 }
 
