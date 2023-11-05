@@ -5,8 +5,8 @@
 #include "header.h"
 
 struct Video {
-	int windowWidth;
-	int windowHeight;
+	int minWindowWidth;
+	int minWindowHeight;
 
 	SDL_Surface *surface;
 	SDL_Window *window;
@@ -27,13 +27,15 @@ int graphicsInit(void *mem, arg_t width, arg_t height) {
 	video.window = SDL_CreateWindow(PROGRAM, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 			(int) width, (int) height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
-	video.windowWidth  = (int) width;
-	video.windowHeight = (int) height;
+	video.minWindowWidth  = (int) width;
+	video.minWindowHeight = (int) height;
 
 	if(!video.window)
 		return -1;
 
-	video.surface = SDL_CreateRGBSurface(0, video.windowWidth, video.windowHeight, 32, 0, 0, 0, 0);
+	video.surface = SDL_CreateRGBSurfaceFrom(mem,
+			video.minWindowWidth, video.minWindowHeight,
+			32, video.minWindowWidth * 4, 0, 0, 0, 0);
 	if(!video.surface)
 		return -1;
 
@@ -57,17 +59,25 @@ int graphicsUpdate() {
 	if(!windowSurface)
 		return -1;
 
-        // TODO: can you avoid memcpy of whole buffer of pixels on every update?
-	memcpy(video.surface->pixels, video.mem, video.memSize);
 	SDL_BlitScaled(video.surface, NULL, windowSurface, NULL);
 
-        // TODO: Also, you do nothing to ensure scaling with consistent aspect ratio
-        //       Because of this I can extend window breaking drawn circle and making
-        //       it an ellips.
-
 	SDL_UpdateWindowSurface(video.window);
-	SDL_Delay(100); //30 fps
+	SDL_Delay(100); //10 fps
 	return 0;
+}
+
+static void graphicsFixWindowSize() {
+	int windowWidth, windowHeight;
+	SDL_GetWindowSize(video.window, &windowWidth, &windowHeight);
+
+	if(windowWidth < video.minWindowWidth)
+		windowWidth = video.minWindowWidth;
+	if(windowHeight < video.minWindowHeight)
+		windowHeight = video.minWindowHeight;
+
+	windowHeight = windowWidth * video.minWindowHeight / video.minWindowWidth;
+
+	SDL_SetWindowSize(video.window, windowWidth, windowHeight);
 }
 
 int graphicsUpdateEvents() {
@@ -75,6 +85,9 @@ int graphicsUpdateEvents() {
 		switch(video.event.type) {
 		case SDL_QUIT:
 			return 1;
+		case SDL_WINDOWEVENT:
+			graphicsFixWindowSize();
+			break;
 		}
 	}
 	return 0;
