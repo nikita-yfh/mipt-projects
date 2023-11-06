@@ -38,7 +38,7 @@ static int checkLabel(const char *buffer, unsigned int *pc, struct Label *label)
 int labelsGetOffset(const struct Labels *labels, const char *str, unsigned int *offset) {
 	for(unsigned int labelIndex = 0; labelIndex < labels->count; labelIndex++) {
 		struct Label *label = &labels->labels[labelIndex];
-		if(strncmp(str, label->name, label->length) == 0) {
+		if(strncmp(str, label->name, label->length + 1) == 0) {
 			*offset = label->offset;
 			return 0;
 		}
