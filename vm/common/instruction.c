@@ -5,62 +5,38 @@
 
 #include "utils.h"
 
-static const char *commands[] = { // TODO: read my commands on such arrays from proc
-	NULL,
-
-	"nop",
-	"hlt",
-	"push",
-	"pop",
-
-	"add",
-	"sub",
-	"mul",
-	"div",
-	"mod",
-	"in",
-	"out",
-
-	"fadd",
-	"fsub",
-	"fmul",
-	"fdiv",
-	"sqrt",
-	"fin",
-	"fout",
-
-	"df",
-	"fd",
-
-	"jmp",
-	"jg",
-	"jge",
-	"jl",
-	"jle",
-	"je",
-	"jne",
-
-	"call",
-	"ret",
-	"upd"
-};
-
-static_assert(sizeof(struct ProcessorInstruction) == 8);
-static_assert(sizeof(commands) / sizeof(const char*) == C_COUNT);
-
-// TODO: also, is there a way to extract commands from names?
 command_t stringToCommand(const char *command) {
 	assert(command);
 
-	for(command_t index = 1; index < C_COUNT; index++)
-		if(stricmp(command, commands[index]) == 0)
-			return index;
+#define DEF_COMMAND(name, number, arg, code)	\
+	if(stricmp(command, name) == 0)				\
+		return number;
+#include "commands.gen.h"
+#undef DEF_COMMAND
+
 	return C_INVALID;
 }
 
-// TODO: and the same thing vice versa
 const char *commandToString(command_t command) {
-	if(command <= 1 || command >= C_COUNT)
-		return NULL;
-	return commands[command];
+	switch(command) {
+
+#define DEF_COMMAND(name, number, arg, code)	\
+	case number: return name;
+#include "commands.gen.h"
+#undef DEF_COMMAND
+
+	default: return NULL;
+	}
+}
+
+bool needArgument(command_t command) {
+	switch(command) {
+
+#define DEF_COMMAND(name, number, arg, code)	\
+	case number: return arg;
+#include "commands.gen.h"
+#undef DEF_COMMAND
+
+	default: return NULL;
+	}
 }

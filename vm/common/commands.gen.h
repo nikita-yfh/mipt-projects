@@ -1,6 +1,8 @@
 #define DEF_COMMAND_MATH(name, number, op, checkZero)	\
 	DEF_COMMAND(name, number, false, {					\
-		stackValue_t a = 0, b = 0, c = 0;				\
+		stackValue_t a = 0;								\
+		stackValue_t b = 0;								\
+		stackValue_t c = 0;								\
 		STACK_POP(processor, &b);						\
 		STACK_POP(processor, &a);						\
 		if(checkZero && b == 0)							\
@@ -12,15 +14,18 @@
 
 #define DEF_COMMAND_FMATH(name, number, op)				\
 	DEF_COMMAND(name, number, false, {					\
-		float a = NAN, b = NAN, c = NAN;				\
+		float a = NAN;									\
+		float b = NAN;									\
+		float c = NAN;									\
 		STACK_POP(processor, (stackValue_t*) &b);		\
 		STACK_POP(processor, (stackValue_t*) &a);		\
+		c = a op b;										\
 		STACK_PUSH(processor, *((stackValue_t*) &c));	\
 		return EXEC_OK;									\
 	})
 
 #define DEF_JUMP(name, number, op)						\
-	DEF_COMMAND(name, number, false, {					\
+	DEF_COMMAND(name, number, true, {					\
 		arg_t *address = NULL;							\
 		GET_ARGUMENT(processor, instruction,			\
 				DIR_IN, &address);						\
@@ -72,19 +77,19 @@ DEF_COMMAND("in", 0x0A, false, {
 	return EXEC_OK;
 })
 
-DEF_COMMAND("out", 0x0A, false, {
+DEF_COMMAND("out", 0x0B, false, {
 	stackValue_t a = 0;
 	STACK_POP(processor, &a);
 	printf("%d\n", a);
 	return EXEC_OK;
 })
 
-DEF_COMMAND_FMATH("fadd", 0x0B, +);
-DEF_COMMAND_FMATH("fsub", 0x0C, -);
-DEF_COMMAND_FMATH("fmul", 0x0D, *);
-DEF_COMMAND_FMATH("fdiv", 0x0E, /);
+DEF_COMMAND_FMATH("fadd", 0x0C, +);
+DEF_COMMAND_FMATH("fsub", 0x0D, -);
+DEF_COMMAND_FMATH("fmul", 0x0E, *);
+DEF_COMMAND_FMATH("fdiv", 0x0F, /);
 
-DEF_COMMAND("sqrt", 0x0F, false, {
+DEF_COMMAND("sqrt", 0x10, false, {
 	float a = NAN;
 	STACK_POP(processor, (stackValue_t*) &a);
 	float b = sqrtf(a);
@@ -92,21 +97,21 @@ DEF_COMMAND("sqrt", 0x0F, false, {
 	return EXEC_OK;
 })
 
-DEF_COMMAND("fin", 0x10, false, {
+DEF_COMMAND("fin", 0x11, false, {
 	float a = NAN;
 	scanf("%f", &a);
 	STACK_PUSH(processor, *((stackValue_t*) &a));
 	return EXEC_OK;
 })
 
-DEF_COMMAND("fout", 0x11, false, {
+DEF_COMMAND("fout", 0x12, false, {
 	float a = 0;
 	STACK_POP(processor, (stackValue_t*) &a);
 	printf("%g\n", a);
 	return EXEC_OK;
 })
 
-DEF_COMMAND("df", 0x12, false, {
+DEF_COMMAND("df", 0x13, false, {
 	stackValue_t d = 0;
 	STACK_POP(processor, &d);
 	float f = (float) d;
@@ -114,19 +119,11 @@ DEF_COMMAND("df", 0x12, false, {
 	return EXEC_OK;
 })
 
-DEF_COMMAND("fd", 0x13, false, {
+DEF_COMMAND("fd", 0x14, false, {
 	float f = NAN;
 	STACK_POP(processor, (stackValue_t*) &f);
 	int d = (int) f;
 	STACK_PUSH(processor, d);
-	return EXEC_OK;
-})
-
-DEF_COMMAND("jmp", 0x14, true, {
-	arg_t *address = NULL;
-	GET_ARGUMENT(processor, instruction, DIR_IN, &address);
-	
-	processor->pc = *address;
 	return EXEC_OK;
 })
 
@@ -137,7 +134,6 @@ DEF_JUMP("jle", 0x18, <= 0)
 DEF_JUMP("jl",  0x19, <  0)
 DEF_JUMP("je",  0x1A, == 0)
 DEF_JUMP("jne", 0x1B, != 0)
-
 
 DEF_COMMAND("call", 0x1C, true, {
 	arg_t *address = NULL;
@@ -163,4 +159,3 @@ DEF_COMMAND("upd", 0x1E, false, {
 		graphicsUpdate();
 	return EXEC_OK;
 })
-

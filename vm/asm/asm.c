@@ -198,7 +198,6 @@ static int assembleString(const char *buffer, struct ProcessorInstruction *instr
 		const char *commandString = strtok(line, div);
 
 		instruction->command = stringToCommand(commandString);
-		assert(instruction->command < C_COUNT);
 
 		if(instruction->command == C_INVALID) {
 			error->column = (unsigned int)(commandString - line);
@@ -211,6 +210,15 @@ static int assembleString(const char *buffer, struct ProcessorInstruction *instr
 				error->column = (unsigned int)(argString - line);
 				return -1;
 			}
+		}
+
+		bool needArg = needArgument(instruction->command);
+		if(needArg && !instruction->flags) {
+			error->message = "Missing arguments";
+			return -1;
+		} else if(!needArg && instruction->flags) {
+			error->message = "Excess arguments";
+			return -1;
 		}
 
 		(*pc)++;
