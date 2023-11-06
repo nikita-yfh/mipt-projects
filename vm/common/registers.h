@@ -6,13 +6,7 @@
 typedef uint8_t reg_t;
 
 enum {
-	REG_AX,
-	REG_BX,
-	REG_CX,
-	REG_DX,
-
-	REG_COUNT,
-
+	REG_COUNT = 4,
 	REG_INVALID = 0xFF
 };
 

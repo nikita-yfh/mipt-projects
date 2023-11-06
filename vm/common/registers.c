@@ -2,32 +2,27 @@
 
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include "utils.h"
 
-static const char *registers[] = {
-	"rax",
-	"rbx",
-	"rcx",
-	"rdx"
-};
-
-static_assert(sizeof(registers) / sizeof(const char*) == REG_COUNT);
-// TODO:      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ extract
-
-// TODO: yeah, the idea is the same as in instructions.c, generalizable?
-
 reg_t stringToRegister(const char *reg) {
 	assert(reg);
+	if(strlen(reg) != 3)
+		return REG_INVALID;
 
-	for(reg_t index = 0; index < REG_COUNT; index++)
-		if(stricmp(reg, registers[index]) == 0)
-			return index;
-	return REG_INVALID;
+	int letter = tolower(reg[1]);
+	if(tolower(reg[0]) != 'r' || letter < 'a' || letter >= 'a' + REG_COUNT || reg[2] != 'x')
+		return REG_INVALID;
+	return (reg_t) (letter - 'a');
 }
 
 const char *registerToString(reg_t reg) {
 	if(reg >= REG_COUNT)
 		return NULL;
-	return registers[reg];
+
+	static char str[] = "r-x";
+	str[1] = (char) ('a' + reg);
+
+	return str;
 }
