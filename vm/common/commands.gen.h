@@ -1,3 +1,15 @@
+// TODO:
+
+// When I open this file separately, my language server thinks
+// that it's wrong as there is a lot of undefined "DEF_COMMAND"
+
+// I think it's a good practice to silence lang tools in such
+// cases, it can be done by adding something like to this file:
+
+// #ifndef DEF_COMMAND
+// #define DEF_COMMAND(...)
+// #endif
+
 #define DEF_COMMAND_MATH(name, number, op, checkZero)	\
 	DEF_COMMAND(name, number, false, {					\
 		stackValue_t a = 0;								\
@@ -12,6 +24,7 @@
 		return EXEC_OK;									\
 	})
 
+// TODO: These two (^ and v) are almost identical, can they be made to share code?
 #define DEF_COMMAND_FMATH(name, number, op)				\
 	DEF_COMMAND(name, number, false, {					\
 		float a = NAN;									\
@@ -56,6 +69,8 @@ DEF_COMMAND("push", 0x03, true, {
 DEF_COMMAND("pop", 0x04, true, {
 	stackValue_t var = 0;
 	STACK_POP(processor, &var);
+	// TODO: Is there anything that prevents pop from accepting immediate?
+	//       Let's say "pop 42"? There is nothing that expresses it in DSL
 
 	arg_t *arg = NULL;
 	GET_ARGUMENT(processor, instruction, DIR_OUT, &arg);

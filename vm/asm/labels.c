@@ -6,6 +6,9 @@
 
 #include "utils.h"
 
+// TODO: naming suggests that this function checks already known label
+//       for following some kinds of rules. But it checks if there is
+//       a label in general. Try to improve
 static int checkLabel(const char *buffer, unsigned int *pc, struct Label *label) {
 	assert(buffer);
 	assert(label);
@@ -46,6 +49,10 @@ int labelsGetOffset(const struct Labels *labels, const char *str, unsigned int *
 	return -1;
 }
 
+// TODO: naming, seems like this function does too much and named weirdly.
+//       Maybe you can separate code counting from label parsing, or just give it a better name)
+
+//       Seems it's a lot like first assembler pass (meanining this logic is duplicated elsewhere)
 unsigned int labelsCheckFileAndCountCode(struct Labels *labels, const char *lines, unsigned int lineCount) {
 	unsigned int pc = 0;
 

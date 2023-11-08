@@ -37,6 +37,6 @@ bool needArgument(command_t command) {
 #include "commands.gen.h"
 #undef DEF_COMMAND
 
-	default: return NULL;
+	default: return NULL; // TODO: it's a bool-returning function, why NULL?
 	}
 }

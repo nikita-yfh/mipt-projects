@@ -33,6 +33,7 @@ struct ProcessorInput {
 	int verboseLog;
 	uint8_t defaultMemValue;
 
+        // TODO: maybe video parameters can isolated?
 	int videoEnable;
 	arg_t videoWidth;
 	arg_t videoHeight;
@@ -46,7 +47,7 @@ struct Processor {
 	struct Stack callStack;
 
 	arg_t pc; 
-	struct ProcessorInstruction *code; // TODO: again, this is an array, extract
+	struct ProcessorInstruction *code; // TODO: again, this is an array, extract (you can make macro-based generic array)
 	arg_t codeSize;
 
 	arg_t registers[REG_COUNT];

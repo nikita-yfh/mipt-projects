@@ -61,6 +61,8 @@ typedef int instructionFunction_t(struct Processor*, struct ProcessorInstruction
 			return EXEC_STACK_OVERFLOW;										\
 	} while(0)
 
+// TODO: do not use names like "ret", it lazy and utterly meaningless
+//       also, I think pattern if (error) return error; can be extracted.
 #define GET_ARGUMENT(processor, instruction, direction, argument)			\
 	do {																	\
 		int ret = getArgument(processor, instruction, direction, argument);	\

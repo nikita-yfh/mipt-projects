@@ -24,6 +24,9 @@ struct AsmInput {
 	bool skipHeader;
 };
 
+// TODO: if these are meant to be constructors and destructors of AsmInput,
+//       than name them like that. Since AsmInput is not just list of "files", 
+//       openFiles doesn't make a lot of sense.
 int    openFiles(struct AsmInput *input);
 int   closeFiles(struct AsmInput *input);
 int assembleFile(struct AsmInput *input);
