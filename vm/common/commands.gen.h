@@ -127,7 +127,14 @@ DEF_COMMAND("fd", 0x14, false, {
 	return EXEC_OK;
 })
 
-DEF_JUMP("jmp", 0x15, || true)
+DEF_COMMAND("jmp", 0x15, true, {
+	arg_t *address = NULL;
+	GET_ARGUMENT(processor, instruction,
+			DIR_IN, &address);
+	processor->pc = *address;
+	return EXEC_OK;
+})
+
 DEF_JUMP("jge", 0x16, >= 0)
 DEF_JUMP("jg",  0x17, >  0)
 DEF_JUMP("jle", 0x18, <= 0)

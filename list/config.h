@@ -11,6 +11,10 @@ typedef int listValue_t;
 #define LIST_FORMAT "%d"
 #endif
 
+#ifndef LIST_DEFAULT_VALUE
+#define LIST_DEFAULT_VALUE -1
+#endif
+
 #ifndef LIST_INIT_CAPACITY
 #define LIST_INIT_CAPACITY 10
 #endif
@@ -19,7 +23,8 @@ typedef int listValue_t;
 #define LIST_RESIZE_KOEF 2
 #endif
 
-typedef int listIndex_t;
+typedef size_t listIndex_t;
+#define LIST_INVALID_INDEX SIZE_MAX
 
 #endif
 

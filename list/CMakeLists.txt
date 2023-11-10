@@ -29,6 +29,9 @@ set(SOURCES
 add_subdirectory("log")
 include_directories("log")
 
-add_executable(list ${SOURCES})
-target_link_libraries(list logger)
+add_library(list STATIC ${SOURCES})
+
+add_executable(listTest "test.c")
+
+target_link_libraries(listTest logger list)
 

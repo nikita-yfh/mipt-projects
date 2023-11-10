@@ -40,9 +40,9 @@ call :pixel
 push rdx
 push 1000
 sub
-jl :loopx
 
 upd
+jl :loopx
 
 ; рисуем окружность
 
@@ -52,7 +52,7 @@ pop rdx
 :loopc
 
 push rdx
-push 0.001
+push 0.005
 fadd
 pop rdx
 
@@ -83,7 +83,7 @@ pop rcx
 call :pixel
 
 push rdx
-push 19.0
+push 4.0
 fmul
 pop rax
 call :sin
@@ -115,9 +115,10 @@ call :pixel
 push rdx
 push 6.28
 fsub
-jl :loopc
 
 upd
+
+jl :loopc
 
 :a
 upd
