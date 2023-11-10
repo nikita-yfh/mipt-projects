@@ -11,6 +11,8 @@ static int checkLabel(const char *buffer, unsigned int *pc, struct Label *label)
 	assert(label);
 	assert(pc);
 
+	buffer = skipBlanks(buffer);
+
 	if(*buffer == '\0')
 		return 0;
 

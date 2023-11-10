@@ -47,7 +47,7 @@ const char *skipChar(const char *str, char c) {
 }
 
 const char *skipBlanks(const char *str) {
-	while(*str == ' ')
+	while(*str == ' ' || *str == '\t')
 		str++;
 	return str;
 }

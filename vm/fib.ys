@@ -1,45 +1,47 @@
-; запихиваем параметры
-push 1
-pop rax
-push 1
-pop rbx
+		; сколько чисел надо
+		in
 
-; сколько чисел надо
-in
-pop rcx
+		call :fib
 
-
-;call :fib
+		push rax
+		out
+		
+		hlt
 
 
 :fib
+		; проверяем, надо ли заканчивать это все
+		pop rbx
+		push rbx
+		push 1
+		sub
+		jle :end
 
-; проверяем, надо ли заканчивать это все
-push rcx
-push rcx
-je :end
-push 1
-sub
-pop rcx
+		push rbx ; потом восстановить
+		
+		push rbx
+		push 1
+		sub
+		call :fib
+		pop rbx ; восстанавливаем
 
-; запоминаем предыдущее в стеке
-push rbx
-; считаем следующее
-push rax
-push rbx
-add
-; восстанавливаем из стека
-pop rbx
-pop rax
+		push rax
+		
+		push rbx
+		push 2
+		sub
+		call :fib
+		push rax
+		
+		add
+		pop rax
 
-push rax
-out
-
-; рекурсия наше все
-call :fib
-
-ret
+		ret
 
 :end
-hlt
+		push 1
+		pop rax
+
+		ret
+
 
