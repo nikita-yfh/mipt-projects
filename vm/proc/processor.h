@@ -49,7 +49,7 @@ struct Processor {
 	struct ProcessorInstruction *code; // TODO: again, this is an array, extract
 	arg_t codeSize;
 
-	arg_t registers[REG_COUNT];
+	arg_t registers[REG_COUNT + 1];
 
 	arg_t *memory; // TODO: and again, an array
 	arg_t memorySize;

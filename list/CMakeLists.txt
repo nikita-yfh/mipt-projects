@@ -30,6 +30,7 @@ add_subdirectory("log")
 include_directories("log")
 
 add_library(list STATIC ${SOURCES})
+target_link_libraries(list logger)
 
 add_executable(listTest "test.c")
 

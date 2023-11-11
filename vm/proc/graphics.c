@@ -62,7 +62,7 @@ int graphicsUpdate() {
 	SDL_BlitScaled(video.surface, NULL, windowSurface, NULL);
 
 	SDL_UpdateWindowSurface(video.window);
-	//SDL_Delay(100); //10 fps
+	SDL_Delay(100); //10 fps
 	return 0;
 }
 
