@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <unistd.h>
+#include <stdio.h>
 
 static void* myRealloc(void *mem, size_t num, size_t size) {
 	if(mem)
@@ -150,6 +152,23 @@ listValue_t *listGetValue(struct List *list, listIndex_t index) {
 const listValue_t *listGetValueC(const struct List *list, listIndex_t index) {
 	listCheckUsableNode(list, index);
 	return &list->values[index];
+}
+
+int listDump(const struct List *list) {
+	char tmpFileName[128] = "";
+
+	snprintf(tmpFileName, sizeof(tmpFileName), P_tmpdir"/graph%d.dot", getpid());
+
+	FILE *dot = fopen(tmpFileName, "w");
+
+	fprintf(dot, "digraph G { test->test2 }\n");
+
+	fclose(dot);
+
+	insertGraphLog(LOG_VERBOSE, tmpFileName, "List [%p] dump:", list);
+	remove(tmpFileName);
+
+	return 0;
 }
 
 
