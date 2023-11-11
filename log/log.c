@@ -6,6 +6,10 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <limits.h>
+
+#include "colors.h"
 
 static long long currentTimestamp() {
     struct timeval te;
@@ -75,6 +79,52 @@ int _printLog(enum LogLevel level, const char *function, int line, const char *f
 	va_list args;
 	va_start(args, fmt);
 	int ret = _vprintLog(level, function, line, fmt, args);
+	va_end(args);
+	return ret;
+}
+
+static int printGraphSvg(FILE *file, const char *commandLine) {
+
+	FILE *dot = popen(commandLine, "r");
+
+	bool needWrite = false;
+
+	char line[1024];
+	while(fgets(line, sizeof(line), dot)) {
+		if(strncmp(line, "<svg", 4) == 0)
+			needWrite = true;
+		if(needWrite)
+			fputs(line, file);
+	}
+
+	pclose(dot);
+
+	return 0;
+}
+
+static int printGraph(FILE *file, const char *tmpFile) {
+	if(isatty(fileno(file))) {
+		fprintf(file, COLOR_MAGENTA"<image is missing, see HTML log>\n"COLOR_NONE);
+		return 0;
+	}
+
+	char commandLine[PATH_MAX] = "";
+	snprintf(commandLine, sizeof(commandLine), "dot -Tsvg '%s'", tmpFile);
+
+	return printGraphSvg(file, commandLine);
+}
+
+int _vinsertGraphLog(enum LogLevel level, const char *tmpFile,
+		const char *function, int lineNumber, const char *titleFmt, va_list args) {
+	_vprintLog(level, function, lineNumber, titleFmt, args);
+	return printGraph(stderr, tmpFile);
+}
+
+int _insertGraphLog(enum LogLevel level, const char *file,
+		const char *function, int lineNumber, const char *titleFmt, ...) {
+	va_list args;
+	va_start(args, titleFmt);
+	int ret = _vinsertGraphLog(level, file, function, lineNumber, titleFmt, args);
 	va_end(args);
 	return ret;
 }

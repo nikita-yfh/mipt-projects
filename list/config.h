@@ -25,7 +25,6 @@ typedef int listValue_t;
 
 typedef size_t listIndex_t;
 #define LIST_INVALID_INDEX SIZE_MAX
-
 #define LIST_DUMMY_INDEX 0
 
 #endif

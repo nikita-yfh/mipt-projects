@@ -20,5 +20,7 @@ set(CMAKE_C_FLAGS_DEBUG
 -flto-odr-type-merging -fno-omit-frame-pointer \
 -Wstack-usage=8192 -pie -fPIE -Werror=vla")
 
+add_definitions(-DLOG_IMAGES)
+
 add_library(${PROJECT_NAME} STATIC log.c)
 

@@ -82,6 +82,9 @@ static listIndex_t listUseNode(struct List *list, listIndex_t prev, listIndex_t 
 	list->freeNode = list->next[freeIndex];
 	list->prev[freeIndex] = prev;
 	list->next[freeIndex] = next;
+
+	list->next[prev] = freeIndex;
+	list->prev[next] = freeIndex;
 	return freeIndex;
 }
 
@@ -138,4 +141,15 @@ listIndex_t listGetHead(const struct List *list) {
 listIndex_t listGetTail(const struct List *list) {
 	return list->prev[LIST_DUMMY_INDEX];
 }
+
+listValue_t *listGetValue(struct List *list, listIndex_t index) {
+	listCheckUsableNode(list, index);
+	return &list->values[index];
+}
+
+const listValue_t *listGetValueC(const struct List *list, listIndex_t index) {
+	listCheckUsableNode(list, index);
+	return &list->values[index];
+}
+
 

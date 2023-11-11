@@ -29,6 +29,9 @@ listIndex_t listGetPrevNode(const struct List *list, listIndex_t node);
 
 listIndex_t listDeleteNode(struct List *list, listIndex_t node);
 
+listValue_t			*listGetValue (struct List *list,		listIndex_t node);
+const listValue_t	*listGetValueC(const struct List *list,	listIndex_t node);
+
 int listVerify(const struct List *list);
 int listDump(const struct List *list);
 
