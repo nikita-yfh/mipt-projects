@@ -161,7 +161,42 @@ int listDump(const struct List *list) {
 
 	FILE *dot = fopen(tmpFileName, "w");
 
-	fprintf(dot, "digraph G { test->test2 }\n");
+	fprintf(dot, "digraph G {\n");
+	fprintf(dot, "splines=ortho;\n");
+	fprintf(dot, "node [shape=box style=filled];\n");
+	fprintf(dot, "HEAD [shape=box style=filled];\n");
+	fprintf(dot, "TAIL [shape=box style=filled];\n");
+	fprintf(dot, "FREE [shape=box style=filled];\n");
+
+	fprintf(dot, "HEAD->Node%lu;\n", listGetHead(list));
+	fprintf(dot, "TAIL->Node%lu;\n", listGetTail(list));
+	fprintf(dot, "FREE->Node%lu;\n", list->freeNode);
+
+	for(listIndex_t index = LIST_DUMMY_INDEX; index < list->capacity; index++) {
+		const char *color = "";
+		if(index != LIST_DUMMY_INDEX)
+			color = "color=\"#00FF00\" fillcolor=\"#AAFFAA\"";
+		if(list->prev[index] == LIST_INVALID_INDEX)
+			color = "color=\"#FF0000\" fillcolor=\"#FFAAAA\"";
+
+		fprintf(dot, "Node%lu[%s shape=record label=\"{Node%lu|%d|prev = %ld|next = %ld}\"];\n",
+			  	index, color, index, list->values[index], (long) list->prev[index], (long) list->next[index]);
+
+		if(list->next[index] < list->capacity)
+			fprintf(dot, "Node%lu->Node%lu;\n", index, list->next[index]);
+		if(list->prev[index] < list->capacity)
+			fprintf(dot, "Node%lu->Node%lu;\n", index, list->prev[index]);
+	}
+
+	fprintf(dot, "{ rank = same; ");
+	for(listIndex_t index = LIST_DUMMY_INDEX; index < list->capacity; index++)
+		fprintf(dot, "Node%lu ", index);
+	fprintf(dot, "}\n");
+
+	fprintf(dot, "{ rank = same; HEAD; TAIL; FREE; }\n");
+
+
+	fprintf(dot, "}\n");
 
 	fclose(dot);
 
@@ -170,5 +205,4 @@ int listDump(const struct List *list) {
 
 	return 0;
 }
-
 

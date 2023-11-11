@@ -1,5 +1,6 @@
 #include "list.h"
 #include <assert.h>
+#include <stdio.h>
 #include "log.h"
 
 int main() {
@@ -9,11 +10,11 @@ int main() {
 	listDump(&list);
 
 	listInsertNodeAfter(&list, listGetHead(&list), 42);
+	listDump(&list);
 	listInsertNodeAfter(&list, listGetHead(&list), 32);
+	listDump(&list);
 	listInsertNodeAfter(&list, listGetHead(&list), 22);
-
-	printf("%d\n", *listGetValueC(&list, listGetHead(&list)));
-	printf("%d\n", *listGetValueC(&list, listGetTail(&list)));
+	listDump(&list);
 
 	listDelete(&list);
 	return 0;
