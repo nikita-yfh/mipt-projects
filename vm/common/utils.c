@@ -52,6 +52,7 @@ const char *skipBlanks(const char *str) {
 	return str;
 }
 
+// TODO: naming seems confusing. Maybe distanceToChar?
 unsigned long strlenToChar(const char *str, char c) {
 	const char *space = strchr(str, c);
 	if(!space)
@@ -62,6 +63,7 @@ unsigned long strlenToChar(const char *str, char c) {
 	return (unsigned int) (space - str);
 }
 
+// TODO: this name seems a bit confusing too, maybe skipString?
 const char *skipNull(const char *str) {
 	assert(str);
 	return str + strlen(str) + 1;

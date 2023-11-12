@@ -45,6 +45,8 @@ DEF_COMMAND("push", 0x03, true, {
 DEF_COMMAND("pop", 0x04, true, {
 	stackValue_t var = 0;
 	STACK_POP(processor, &var);
+	// TODO: Is there anything that prevents pop from accepting immediate?
+	//       Let's say "pop 42"? There is nothing that expresses it in DSL
 
 	arg_t *arg = NULL;
 	GET_ARGUMENT(processor, instruction, DIR_OUT, &arg);

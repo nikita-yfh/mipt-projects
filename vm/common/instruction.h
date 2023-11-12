@@ -26,6 +26,7 @@ struct ProcessorInstruction {
 	arg_t immutable;
 };
 
+// TODO: this could be a const size_t instead
 #define MAX_CODE_SIZE (sizeof(struct ProcessorInstruction) * UINT32_MAX)
 
 command_t stringToCommand(const char *command);
