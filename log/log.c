@@ -25,16 +25,17 @@ struct LogLevelS {
 };
 
 static struct LogLevelS logLevels[] = {
-	{'V', "\e[1;37m", 0x808080},
-	{'D', "\e[1;35m", 0xFF00FF},
-	{'I', "\e[1;32m", 0x00FF00},
-	{'W', "\e[1;33m", 0xEEAA00},
-	{'E', "\e[1;31m", 0xFF0000},
-	{'F', "\e[1;31m", 0xFF0000}
+	{'V', COLOR_GRAY,     0x808080},
+	{'D', COLOR_MAGENTA,  0xFF00FF},
+	{'I', COLOR_GREEN,    0x00FF00},
+	{'W', COLOR_YELLOW,   0xEEAA00},
+	{'E', COLOR_RED,      0xFF0000},
+	{'F', COLOR_RED,      0xFF0000},
+	{'!', COLOR_BLACK,    0x000000}
 };
 
 static void printLineBegin(FILE *file, enum LogLevel level, const char *function, int line) {
-	assert(level >= LOG_VERBOSE && level <= LOG_FATAL);
+	assert(level >= 0 && level < LOG_COUNT);
 
 	static long long timeBegin = 0;
 	if(timeBegin == 0)

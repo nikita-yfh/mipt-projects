@@ -99,8 +99,6 @@ listValue_t			*listGetValue (struct List *list,		listIndex_t node);
 /// То же самое, что и ListGetValue, но с константами
 const listValue_t	*listGetValueC(const struct List *list,	listIndex_t node);
 
-int listVerify(const struct List *list);
-
 /*
  * Дамп списка в виде блок-схемы с помощью Graphviz.
  * @param [in]		list		Указатель на структуру списка
