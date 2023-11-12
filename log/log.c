@@ -27,7 +27,7 @@ struct LogLevelS {
 static struct LogLevelS logLevels[] = {
 	{'V', COLOR_GRAY,     0x808080},
 	{'D', COLOR_MAGENTA,  0xFF00FF},
-	{'I', COLOR_GREEN,    0x00FF00},
+	{'I', COLOR_GREEN,    0x00DD00},
 	{'W', COLOR_YELLOW,   0xEEAA00},
 	{'E', COLOR_RED,      0xFF0000},
 	{'F', COLOR_RED,      0xFF0000},
