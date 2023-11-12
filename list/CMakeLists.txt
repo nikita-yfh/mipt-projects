@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project("logger")
+project("stack")
 
 set(CMAKE_C_FLAGS_DEBUG
 "-D _DEBUG -ggdb3 -g -O0 -Wall -Wextra \
@@ -20,7 +20,19 @@ set(CMAKE_C_FLAGS_DEBUG
 -flto-odr-type-merging -fno-omit-frame-pointer \
 -Wstack-usage=8192 -pie -fPIE -Werror=vla")
 
-add_definitions(-DLOG_IMAGES)
+set(SOURCES
+	"list.c"
+	"list.h"
+	"config.h"
+)
 
-add_library(${PROJECT_NAME} STATIC log.c)
+add_subdirectory("log")
+include_directories("log")
+
+add_library(list STATIC ${SOURCES})
+target_link_libraries(list logger)
+
+add_executable(listTest "test.c")
+
+target_link_libraries(listTest logger list)
 

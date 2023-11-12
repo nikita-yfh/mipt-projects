@@ -1,69 +1,106 @@
-fin
-pop rax
-fin
-pop rbx
-fin
-pop rcx
+		fin
+		pop rax
+		fin
+		pop rbx
+		fin
+		pop rcx
+		
+		push rax
+		je :lin
 
-call :discr
+		call :discr
 
-push rdx
-jg :tworoots
+		push rdx
+		jg :tworoots
 
-push rdx
-je :oneroot
+		push rdx
+		je :oneroot
 
-jmp :noroots
+		jmp :noroots
 
 :discr
-push rbx
-push rbx
-fmul
-push 4.0
-push rax
-push rcx
-fmul
-fmul
-fsub
-pop rdx
+		push rbx
+		push rbx
+		fmul
+		push 4.0
+		push rax
+		push rcx
+		fmul
+		fmul
+		fsub
+		pop rdx
 
-ret
+		ret
 
 :tworoots
-push 0.0
-push rbx
-fsub
-push rdx
-sqrt
-fsub
-push 2.0
-push rax
-fmul
-fdiv
-fout
+		push 2
+		out
+		
+		push 0.0
+		push rbx
+		fsub
+		push rdx
+		sqrt
+		fsub
+		push 2.0
+		push rax
+		fmul
+		fdiv
+		fout
 
-push 0.0
-push rbx
-fsub
-push rdx
-sqrt
-fadd
-push 2.0
-push rax
-fmul
-fdiv
-fout
-hlt
+		push 0.0
+		push rbx
+		fsub
+		push rdx
+		sqrt
+		fadd
+		push 2.0
+		push rax
+		fmul
+		fdiv
+		fout
+		hlt
 
 :oneroot
-push 0.0
-push rbx
-push rax
-fdiv
-push 2.0
-fdiv
-fout
-hlt
+		push 1
+		out
+		
+		push 0.0
+		push rbx
+		push rax
+		fdiv
+		push 2.0
+		fdiv
+		fout
+		hlt
+		
+:lin
+		push rcx
+		je :inf
+		
+		push rbx
+		je :noroots
+		
+		push 1
+		out
+		
+		push 0.0
+		push rcx
+		fsub
+		push rbx
+		fdiv
+		fout
+		hlt
+
+:inf
+		push 1.0
+		push 0.0
+		fdiv
+		fout
+		hlt
 
 :noroots
-hlt
+		push 0
+		out
+		
+		hlt

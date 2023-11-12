@@ -27,7 +27,6 @@ set(COMMON_SOURCES
 	common/utils.c
 	common/header.h
 	common/header.c
-	common/colors.h
 	common/registers.h
 	common/registers.c
 )

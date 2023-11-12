@@ -7,48 +7,6 @@
 #include <stdbool.h>
 #include <math.h>
 
-enum Direction {
-	DIR_IN,
-	DIR_OUT
-};
-
-static int getArgument(struct Processor *processor,
-		struct ProcessorInstruction *instruction, int direction, arg_t **argument) {
-	assert(processor);
-	assert(instruction);
-	assert(argument);
-
-	if(direction == DIR_OUT && (instruction->flags & (FLAG_IMM | FLAG_MEM)) == FLAG_IMM)
-		return EXEC_INVALID_FORMAT;
-
-	if(instruction->flags & FLAG_REG)
-		if(instruction->reg >= REG_COUNT)
-			return EXEC_INVALID_REGISTER;
-
-	if((instruction->flags & (FLAG_REG | FLAG_IMM)) == (FLAG_REG | FLAG_IMM)) { // reg + imm
-		static arg_t temp;
-		temp = processor->registers[instruction->reg] + instruction->immutable;
-		*argument = &temp;
-	}
-	else if((instruction->flags & (FLAG_REG | FLAG_IMM)) == FLAG_REG) // only reg
-		*argument = &processor->registers[instruction->reg];
-	else if((instruction->flags & (FLAG_REG | FLAG_IMM)) == FLAG_IMM) // only imm
-		*argument = &instruction->immutable;
-
-	if(*argument && (instruction->flags & FLAG_MEM) == FLAG_MEM) {
-		if(**argument >= processor->memorySize)
-			return EXEC_OUT_OF_BOUNDS;
-		*argument = &processor->memory[**argument];
-	}
-
-	if(!*argument)
-		return EXEC_INVALID_FORMAT;
-
-	return EXEC_OK;
-}
-
-typedef int instructionFunction_t(struct Processor*, struct ProcessorInstruction *instruction);
-
 #define STACK_POP(processor, var)											\
 	do {																	\
 		if(stackPop(&processor->mainStack, var))							\
@@ -70,6 +28,52 @@ typedef int instructionFunction_t(struct Processor*, struct ProcessorInstruction
 			return ret;														\
 		assert(*argument);													\
 	} while(0)
+
+#define REGS processor->registers
+
+#define REG_TEMP processor->registers[REG_COUNT]
+
+
+enum Direction {
+	DIR_IN,
+	DIR_OUT
+};
+
+static int getArgument(struct Processor *processor,
+		struct ProcessorInstruction *instruction, int direction, arg_t **argument) {
+	assert(processor);
+	assert(instruction);
+	assert(argument);
+
+	if(direction == DIR_OUT && (instruction->flags & (FLAG_IMM | FLAG_MEM)) == FLAG_IMM)
+		return EXEC_INVALID_FORMAT;
+
+	if(instruction->flags & FLAG_REG)
+		if(instruction->reg >= REG_COUNT)
+			return EXEC_INVALID_REGISTER;
+
+	if((instruction->flags & (FLAG_REG | FLAG_IMM)) == (FLAG_REG | FLAG_IMM)) { // reg + imm
+		REG_TEMP = REGS[instruction->reg] + instruction->immutable;
+		*argument = &REG_TEMP;
+	}
+	else if((instruction->flags & (FLAG_REG | FLAG_IMM)) == FLAG_REG) // only reg
+		*argument = &REGS[instruction->reg];
+	else if((instruction->flags & (FLAG_REG | FLAG_IMM)) == FLAG_IMM) // only imm
+		*argument = &instruction->immutable;
+
+	if(*argument && (instruction->flags & FLAG_MEM) == FLAG_MEM) {
+		if(**argument >= processor->memorySize)
+			return EXEC_OUT_OF_BOUNDS;
+		*argument = &processor->memory[**argument];
+	}
+
+	if(!*argument)
+		return EXEC_INVALID_FORMAT;
+
+	return EXEC_OK;
+}
+
+typedef int instructionFunction_t(struct Processor*, struct ProcessorInstruction *instruction);
 
 int processorExecNextCommand(struct Processor *processor) {
 	if(graphicsUpdateEvents())

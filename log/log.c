@@ -6,6 +6,10 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <limits.h>
+
+#include "colors.h"
 
 static long long currentTimestamp() {
     struct timeval te;
@@ -21,16 +25,17 @@ struct LogLevelS {
 };
 
 static struct LogLevelS logLevels[] = {
-	{'V', "\e[1;37m", 0x808080},
-	{'D', "\e[1;35m", 0xFF00FF},
-	{'I', "\e[1;32m", 0x00FF00},
-	{'W', "\e[1;33m", 0xEEAA00},
-	{'E', "\e[1;31m", 0xFF0000},
-	{'F', "\e[1;31m", 0xFF0000}
+	{'V', COLOR_GRAY,     0x808080},
+	{'D', COLOR_MAGENTA,  0xFF00FF},
+	{'I', COLOR_GREEN,    0x00DD00},
+	{'W', COLOR_YELLOW,   0xEEAA00},
+	{'E', COLOR_RED,      0xFF0000},
+	{'F', COLOR_RED,      0xFF0000},
+	{'!', COLOR_BLACK,    0x000000}
 };
 
 static void printLineBegin(FILE *file, enum LogLevel level, const char *function, int line) {
-	assert(level >= LOG_VERBOSE && level <= LOG_FATAL);
+	assert(level >= 0 && level < LOG_COUNT);
 
 	static long long timeBegin = 0;
 	if(timeBegin == 0)
@@ -75,6 +80,52 @@ int _printLog(enum LogLevel level, const char *function, int line, const char *f
 	va_list args;
 	va_start(args, fmt);
 	int ret = _vprintLog(level, function, line, fmt, args);
+	va_end(args);
+	return ret;
+}
+
+static int printGraphSvg(FILE *file, const char *commandLine) {
+
+	FILE *dot = popen(commandLine, "r");
+
+	bool needWrite = false;
+
+	char line[1024];
+	while(fgets(line, sizeof(line), dot)) {
+		if(strncmp(line, "<svg", 4) == 0)
+			needWrite = true;
+		if(needWrite)
+			fputs(line, file);
+	}
+
+	pclose(dot);
+
+	return 0;
+}
+
+static int printGraph(FILE *file, const char *tmpFile) {
+	if(isatty(fileno(file))) {
+		fprintf(file, COLOR_MAGENTA"<image is missing, see HTML log>\n"COLOR_NONE);
+		return 0;
+	}
+
+	char commandLine[PATH_MAX] = "";
+	snprintf(commandLine, sizeof(commandLine), "dot -Tsvg '%s'", tmpFile);
+
+	return printGraphSvg(file, commandLine);
+}
+
+int _vinsertGraphLog(enum LogLevel level, const char *tmpFile,
+		const char *function, int lineNumber, const char *titleFmt, va_list args) {
+	_vprintLog(level, function, lineNumber, titleFmt, args);
+	return printGraph(stderr, tmpFile);
+}
+
+int _insertGraphLog(enum LogLevel level, const char *file,
+		const char *function, int lineNumber, const char *titleFmt, ...) {
+	va_list args;
+	va_start(args, titleFmt);
+	int ret = _vinsertGraphLog(level, file, function, lineNumber, titleFmt, args);
 	va_end(args);
 	return ret;
 }

@@ -170,7 +170,11 @@ static int assembleString(const char *buffer, struct ProcessorInstruction *instr
 	assert(instruction);
 	assert(labels);
 
-	if(!*buffer)
+	buffer = skipBlanks(buffer);
+
+	error->line = buffer;
+
+	if(*buffer == '\0')
 		return 0;
 
 	char line[1024]; // TODO: extract to const (also, why even copy it?)
@@ -293,7 +297,6 @@ static int assembleBuffer(const char *lines, unsigned int lineCount,
 
 	for(unsigned int lineNumber = 0; lineNumber < lineCount; lineNumber++) {
 		error->lineNumber = lineNumber + 1;
-		error->line = lines;
 
 		if(assembleString(lines, &(*code)[pc], &labels, &pc, error) != 0) {
 			labelsDelete(&labels);

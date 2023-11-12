@@ -1,52 +1,28 @@
-// TODO:
+#ifdef DEF_COMMAND
 
-// When I open this file separately, my language server thinks
-// that it's wrong as there is a lot of undefined "DEF_COMMAND"
-
-// I think it's a good practice to silence lang tools in such
-// cases, it can be done by adding something like to this file:
-
-// #ifndef DEF_COMMAND
-// #define DEF_COMMAND(...)
-// #endif
-
-#define DEF_COMMAND_MATH(name, number, op, checkZero)	\
-	DEF_COMMAND(name, number, false, {					\
-		stackValue_t a = 0;								\
-		stackValue_t b = 0;								\
-		stackValue_t c = 0;								\
-		STACK_POP(processor, &b);						\
-		STACK_POP(processor, &a);						\
-		if(checkZero && b == 0)							\
-			return EXEC_MATH_ERROR;						\
-		c = a op b;										\
-		STACK_PUSH(processor, c);						\
-		return EXEC_OK;									\
+#define DEF_COMMAND_MATH(name, number, op, checkZero, type, def)	\
+	DEF_COMMAND(name, number, false, {								\
+		type a = def;												\
+		type b = def;												\
+		type c = def;												\
+		STACK_POP(processor, (stackValue_t *) &b);					\
+		STACK_POP(processor, (stackValue_t *) &a);					\
+		if(checkZero && b == 0)										\
+			return EXEC_MATH_ERROR;									\
+		c = a op b;													\
+		STACK_PUSH(processor,  *((stackValue_t*) &c));				\
+		return EXEC_OK;												\
 	})
 
-// TODO: These two (^ and v) are almost identical, can they be made to share code?
-#define DEF_COMMAND_FMATH(name, number, op)				\
-	DEF_COMMAND(name, number, false, {					\
-		float a = NAN;									\
-		float b = NAN;									\
-		float c = NAN;									\
-		STACK_POP(processor, (stackValue_t*) &b);		\
-		STACK_POP(processor, (stackValue_t*) &a);		\
-		c = a op b;										\
-		STACK_PUSH(processor, *((stackValue_t*) &c));	\
-		return EXEC_OK;									\
-	})
-
-#define DEF_JUMP(name, number, op)						\
-	DEF_COMMAND(name, number, true, {					\
-		arg_t *address = NULL;							\
-		GET_ARGUMENT(processor, instruction,			\
-				DIR_IN, &address);						\
-		stackValue_t arg = 0;							\
-		STACK_POP(processor, &arg);						\
-		if(arg op)										\
-			processor->pc = *address;					\
-		return EXEC_OK;									\
+#define DEF_JUMP(name, number, op)									\
+	DEF_COMMAND(name, number, true, {								\
+		arg_t *address = NULL;										\
+		GET_ARGUMENT(processor, instruction, DIR_IN, &address);		\
+		stackValue_t arg = 0;										\
+		STACK_POP(processor, &arg);									\
+		if(arg op)													\
+			processor->pc = *address;								\
+		return EXEC_OK;												\
 	})
 
 DEF_COMMAND("nop", 0x01, false, {
@@ -79,11 +55,11 @@ DEF_COMMAND("pop", 0x04, true, {
 	return EXEC_OK;
 })
 
-DEF_COMMAND_MATH("add", 0x05, +, false)
-DEF_COMMAND_MATH("sub", 0x06, -, false)
-DEF_COMMAND_MATH("mul", 0x07, *, false)
-DEF_COMMAND_MATH("div", 0x08, /, true)
-DEF_COMMAND_MATH("mod", 0x09, %, true)
+DEF_COMMAND_MATH("add", 0x05, +, false, arg_t, 0)
+DEF_COMMAND_MATH("sub", 0x06, -, false, arg_t, 0)
+DEF_COMMAND_MATH("mul", 0x07, *, false, arg_t, 0)
+DEF_COMMAND_MATH("div", 0x08, /, true,  arg_t, 0)
+DEF_COMMAND_MATH("mod", 0x09, %, true,  arg_t, 0)
 
 DEF_COMMAND("in", 0x0A, false, {
 	stackValue_t a = 0;
@@ -99,10 +75,10 @@ DEF_COMMAND("out", 0x0B, false, {
 	return EXEC_OK;
 })
 
-DEF_COMMAND_FMATH("fadd", 0x0C, +);
-DEF_COMMAND_FMATH("fsub", 0x0D, -);
-DEF_COMMAND_FMATH("fmul", 0x0E, *);
-DEF_COMMAND_FMATH("fdiv", 0x0F, /);
+DEF_COMMAND_MATH("fadd", 0x0C, +, false, float, NAN);
+DEF_COMMAND_MATH("fsub", 0x0D, -, false, float, NAN);
+DEF_COMMAND_MATH("fmul", 0x0E, *, false, float, NAN);
+DEF_COMMAND_MATH("fdiv", 0x0F, /, false, float, NAN);
 
 DEF_COMMAND("sqrt", 0x10, false, {
 	float a = NAN;
@@ -142,7 +118,14 @@ DEF_COMMAND("fd", 0x14, false, {
 	return EXEC_OK;
 })
 
-DEF_JUMP("jmp", 0x15, || true)
+DEF_COMMAND("jmp", 0x15, true, {
+	arg_t *address = NULL;
+	GET_ARGUMENT(processor, instruction,
+			DIR_IN, &address);
+	processor->pc = *address;
+	return EXEC_OK;
+})
+
 DEF_JUMP("jge", 0x16, >= 0)
 DEF_JUMP("jg",  0x17, >  0)
 DEF_JUMP("jle", 0x18, <= 0)
@@ -174,3 +157,5 @@ DEF_COMMAND("upd", 0x1E, false, {
 		graphicsUpdate();
 	return EXEC_OK;
 })
+
+#endif

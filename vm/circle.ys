@@ -1,307 +1,307 @@
-; аргументы командной строки: -V 1000,1000,0 -m 1000000
+		; аргументы командной строки: -V 1000,1000,0 -m 1000000
 
-push 0
-pop rdx
+		push 0
+		pop rdx
 
 :loopx
+		push rdx
+		push 1
+		add
+		pop rdx
 
-push rdx
-push 1
-add
-pop rdx
+		; rdx = x
 
-; rdx = x
+		; вычисление синуса
+		push rdx
+		df
+		push 40.0
+		fdiv
+		pop rax
+		call :cos
+		push rax
+		push 200.0
+		fmul
+		push 500.0
+		fadd
+		fd
+		pop rbx
 
-; вычисление синуса
-push rdx
-df
-push 40.0
-fdiv
-pop rax
-call :cos
-push rax
-push 200.0
-fmul
-push 500.0
-fadd
-fd
-pop rbx
+		; пихаем
 
-; пихаем
+		push rdx
+		pop rax
 
-push rdx
-pop rax
+		push 0xFFFF0000
+		pop rcx
 
-push 0xFFFF0000
-pop rcx
+		call :pixel
 
-call :pixel
+		push rdx
+		push 1000
+		sub
 
-push rdx
-push 1000
-sub
-jl :loopx
+		upd
+		jl :loopx
 
-upd
+		; рисуем окружность
 
-; рисуем окружность
-
-push 0.0
-pop rdx
+		push 0.0
+		pop rdx
 
 :loopc
 
-push rdx
-push 0.001
-fadd
-pop rdx
+		push rdx
+		push 0.005
+		fadd
+		pop rdx
 
-push rdx
-pop rax
-call :sin
-push rax
-push 400.0
-fmul
-push 500.0
-fadd
-fd
-pop rbx
+		push rdx
+		pop rax
+		call :sin
+		push rax
+		push 400.0
+		fmul
+		push 500.0
+		fadd
+		fd
+		pop rbx
 
-push rdx
-pop rax
-call :cos
-push rax
-push 400.0
-fmul
-push 500.0
-fadd
-fd
-pop rax
+		push rdx
+		pop rax
+		call :cos
+		push rax
+		push 400.0
+		fmul
+		push 500.0
+		fadd
+		fd
+		pop rax
 
-push 0xFF00FF00
-pop rcx
-call :pixel
+		push 0xFF00FF00
+		pop rcx
+		call :pixel
 
-push rdx
-push 19.0
-fmul
-pop rax
-call :sin
-push rax
-push 400.0
-fmul
-push 500.0
-fadd
-fd
-pop rbx
+		push rdx
+		push 4.0
+		fmul
+		pop rax
+		call :sin
+		push rax
+		push 400.0
+		fmul
+		push 500.0
+		fadd
+		fd
+		pop rbx
 
-push rdx
-push 5.0
-fmul
-pop rax
-call :sin
-push rax
-push 400.0
-fmul
-push 500.0
-fadd
-fd
-pop rax
+		push rdx
+		push 5.0
+		fmul
+		pop rax
+		call :sin
+		push rax
+		push 400.0
+		fmul
+		push 500.0
+		fadd
+		fd
+		pop rax
 
-push 0xFFFFFF00
-pop rcx
-call :pixel
+		push 0xFFFFFF00
+		pop rcx
+		call :pixel
 
-push rdx
-push 6.28
-fsub
-jl :loopc
+		push rdx
+		push 6.28
+		fsub
 
-upd
+		upd
+
+		jl :loopc
 
 :a
-upd
-jmp :a
+		upd
+		jmp :a
 
-hlt
+		hlt
 
 :pixel
-; проверка на адекватность
-push rax
-jl :loh
-push rax
-push 1000
-sub
-jge :loh
+		; проверка на адекватность
+		push rax
+		jl :loh
+		push rax
+		push 1000
+		sub
+		jge :loh
 
-push rbx
-jl :loh
-push rbx
-push 1000
-sub
-jge :loh
+		push rbx
+		jl :loh
+		push rbx
+		push 1000
+		sub
+		jge :loh
 
-push rax
-push rbx
-push 1000
-mul
-add
-pop rbx
-push rcx
-pop [rbx]
+		push rax
+		push rbx
+		push 1000
+		mul
+		add
+		pop rbx
+		push rcx
+		pop [rbx]
 :loh
-ret
+		ret
 
 :cos
-push 1.57
-push rax
-fsub
-pop rax
-call :sin
-ret
+		push 1.57
+		push rax
+		fsub
+		pop rax
+		call :sin
+		ret
 
 :sin
-push rax
-jge :sinmorezero
+		push rax
+		jge :sinmorezero
 
-; y = -sin -x
-push 0.0
-push rax
-fsub
-pop rax
-call :sin
-push 0.0
-push rax
-fsub
-pop rax
-ret
+		; y = -sin -x
+		push 0.0
+		push rax
+		fsub
+		pop rax
+		call :sin
+		push 0.0
+		push rax
+		fsub
+		pop rax
+		ret
 
 :sinmorezero
 
-push rax
-push 6.28
-fsub
-jl :sinlesstwopi
+		push rax
+		push 6.28
+		fsub
+		jl :sinlesstwopi
 
-; y = sin (x - 2pi)
-push rax
-push 6.28
-fsub
-pop rax
-call :sin
-ret
+		; y = sin (x - 2pi)
+		push rax
+		push 6.28
+		fsub
+		pop rax
+		call :sin
+		ret
 
 :sinlesstwopi
 
-push rax
-push 3.14
-fsub
-jl :sinlessonepi
+		push rax
+		push 3.14
+		fsub
+		jl :sinlessonepi
 
-; y = -sin (x - pi)
-push rax
-push 3.14
-fsub
-pop rax
-call :sin
-push 0.0
-push rax
-fsub
-pop rax
-ret
+		; y = -sin (x - pi)
+		push rax
+		push 3.14
+		fsub
+		pop rax
+		call :sin
+		push 0.0
+		push rax
+		fsub
+		pop rax
+		ret
 
 :sinlessonepi
 
-push rax
-push 1.57
-fsub
-jl :sinlesshalfpi
+		push rax
+		push 1.57
+		fsub
+		jl :sinlesshalfpi
 
-push rax
-push 1.57
-fsub
-pop rax
-call :_cos
-ret
+		push rax
+		push 1.57
+		fsub
+		pop rax
+		call :_cos
+		ret
 
 :sinlesshalfpi
 
-call :_sin
-ret
+		call :_sin
+		ret
 
 :_cos
-push 1.0
-push rax
-push rax
-fmul
-push 2.0
-fdiv
-fsub
-push rax
-push rax
-push rax
-push rax
-fmul
-fmul
-fmul
-push 24.0
-fdiv
-fadd
-push rax
-push rax
-push rax
-push rax
-push rax
-push rax
-fmul
-fmul
-fmul
-fmul
-fmul
-push 720.0
-fdiv
-fsub
-pop rax
-ret
+		push 1.0
+		push rax
+		push rax
+		fmul
+		push 2.0
+		fdiv
+		fsub
+		push rax
+		push rax
+		push rax
+		push rax
+		fmul
+		fmul
+		fmul
+		push 24.0
+		fdiv
+		fadd
+		push rax
+		push rax
+		push rax
+		push rax
+		push rax
+		push rax
+		fmul
+		fmul
+		fmul
+		fmul
+		fmul
+		push 720.0
+		fdiv
+		fsub
+		pop rax
+		ret
 
 :_sin
-push rax
-push rax
-push rax
-push rax
-fmul
-fmul
-push 6.0
-fdiv
-fsub
-push rax
-push rax
-push rax
-push rax
-push rax
-fmul
-fmul
-fmul
-fmul
-push 120.0
-fdiv
-fadd
-push rax
-push rax
-push rax
-push rax
-push rax
-push rax
-push rax
-fmul
-fmul
-fmul
-fmul
-fmul
-fmul
-push 5040.0
-fdiv
-fsub
-pop rax
-ret
+		push rax
+		push rax
+		push rax
+		push rax
+		fmul
+		fmul
+		push 6.0
+		fdiv
+		fsub
+		push rax
+		push rax
+		push rax
+		push rax
+		push rax
+		fmul
+		fmul
+		fmul
+		fmul
+		push 120.0
+		fdiv
+		fadd
+		push rax
+		push rax
+		push rax
+		push rax
+		push rax
+		push rax
+		push rax
+		fmul
+		fmul
+		fmul
+		fmul
+		fmul
+		fmul
+		push 5040.0
+		fdiv
+		fsub
+		pop rax
+		ret
 
