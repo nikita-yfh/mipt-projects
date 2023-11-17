@@ -116,8 +116,9 @@ static int listFreeNode(struct List *list, listIndex_t index) {
 	if(listCheckUsableNode(list, index))
 		return -1;
 
-	list->prev[index] = LIST_INVALID_INDEX;
-	list->next[index] = list->freeNode;
+	list->prev  [index] = LIST_INVALID_INDEX;
+	list->next  [index] = list->freeNode;
+	list->values[index] = LIST_DEFAULT_VALUE;
 
 	list->freeNode = index;
 
@@ -229,7 +230,7 @@ int listDump(const struct List *list, int level) {
 		if(list->prev[index] == LIST_INVALID_INDEX)
 			color = "color=\"#FF0000\" fillcolor=\"#FFAAAA\"";
 
-		fprintf(dot, "Node%lu[%s shape=record label=\"{Node%lu|%d|prev = %ld|next = %ld}\"];\n",
+		fprintf(dot, "Node%lu[%s shape=record label=\"{Node%lu|"LIST_FORMAT"|prev = %ld|next = %ld}\"];\n",
 			  	index, color, index, list->values[index], (long) list->prev[index], (long) list->next[index]);
 
 		if(list->next[index] < list->capacity)

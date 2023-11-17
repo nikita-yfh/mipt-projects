@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project("stack")
+project("list")
 
 set(CMAKE_C_FLAGS_DEBUG
 "-D _DEBUG -ggdb3 -g -O0 -Wall -Wextra \
@@ -23,6 +23,8 @@ set(CMAKE_C_FLAGS_DEBUG
 set(SOURCES
 	"list.c"
 	"list.h"
+	"clist.c"
+	"clist.h"
 	"config.h"
 )
 
