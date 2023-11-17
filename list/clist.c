@@ -93,8 +93,6 @@ void clistDump(const struct CListNode *node, int level) {
 	fprintf(dot, "splines=ortho;\n");
 	fprintf(dot, "node [shape=box style=filled];\n");
 
-	printLog(LOG_DEBUG, "prev = %p next = %p", node->prev, node->next);
-
 	int prevCount = 0, nextCount = 0;
 
 	for(const struct CListNode *index = node->next; index; index = index->next) {
