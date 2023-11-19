@@ -53,6 +53,9 @@ void clistDeleteNode(struct CListNode *node) {
 }
 
 void clistFree(struct CListNode *node) {
+	if(!node)
+		return;
+
 	struct CListNode *pnode = node->prev;
 	while(pnode) {
 		struct CListNode *prev = pnode->prev;
@@ -89,27 +92,32 @@ void clistDump(const struct CListNode *node, int level) {
 
 	FILE *dot = fopen(tmpFileName, "w");
 
-	fprintf(dot, "digraph G {\n");
-	fprintf(dot, "splines=ortho;\n");
-	fprintf(dot, "node [shape=box style=filled];\n");
+	fprintf(dot, "digraph G {\n"
+	             "splines=ortho;\n"
+	             "node [shape=box style=filled];\n");
 
 	int prevCount = 0, nextCount = 0;
 
+#define PRINT_NODE(prefix, color, fillcolor, index, current, next, prev, value)					\
+		fprintf(dot, "Node"prefix"%d[color=\""color"\"fillcolor=\""fillcolor"\" shape=record "	\
+				"label=\"{Node"prefix"%d|%p|"LIST_FORMAT"|prev=%p|next=%p}\"];\n",				\
+				index, index, current, value, prev, next);
+
 	for(const struct CListNode *index = node->next; index; index = index->next) {
 		nextCount++;
-		fprintf(dot, "NodeN%d[color=\"#00FF00\" fillcolor=\"#AAFFAA\" shape=record "
-			   "label=\"{NodeN%d|%p|"LIST_FORMAT"|prev=%p|next=%p}\"];\n",
-				nextCount, nextCount, index, index->value, index->prev, index->next);
+		PRINT_NODE("N", "#00FF00", "#AAFFAA", nextCount,
+				index, index->prev, index->next, index->value);
 	}
 
 	for(const struct CListNode *index = node->prev; index; index = index->prev) {
 		prevCount++;
-		fprintf(dot, "NodeP%d[color=\"#FF0000\" fillcolor=\"#FFAAAA\" shape=record "
-				"label=\"{NodeP%d|%p|"LIST_FORMAT"|prev=%p|next=%p}\"];\n",
-				prevCount, prevCount, index, index->value, index->prev, index->next);
+		PRINT_NODE("P", "#FF0000", "#FFAAAA", prevCount,
+				index, index->prev, index->next, index->value);
 	}
-	fprintf(dot, "Node0[shape=record label=\"{Node0|%p|"LIST_FORMAT"|prev=%p|next=%p}\"];\n",
-				node, node->value, node->prev, node->next);
+
+	PRINT_NODE("", "#808080", "#BBBBBB", 0, node, node->prev, node->next, node->value);
+
+#undef PRINT_NODE
 
 	if(nextCount)
 		fprintf(dot, "Node0->NodeN1;\n");

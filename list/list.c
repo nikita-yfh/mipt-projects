@@ -230,8 +230,10 @@ int listDump(const struct List *list, int level) {
 		if(list->prev[index] == LIST_INVALID_INDEX)
 			color = "color=\"#FF0000\" fillcolor=\"#FFAAAA\"";
 
-		fprintf(dot, "Node%lu[%s shape=record label=\"{Node%lu|"LIST_FORMAT"|prev = %ld|next = %ld}\"];\n",
-			  	index, color, index, list->values[index], (long) list->prev[index], (long) list->next[index]);
+		fprintf(dot, "Node%lu[%s shape=record "
+				"label=\"{Node%lu|"LIST_FORMAT"|prev = %ld|next = %ld}\"];\n",
+			  	index, color, index, list->values[index],
+				(long) list->prev[index], (long) list->next[index]);
 
 		if(list->next[index] < list->capacity)
 			fprintf(dot, "Node%lu->Node%lu;\n", index, list->next[index]);
