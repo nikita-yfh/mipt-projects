@@ -19,6 +19,8 @@ struct List {
  * Создание пустого списка.
  * @param [in,out]	list		Указатель на структуру списка
  * @return						0 в случае успеха, -1 иначе
+ 
+ * @note Функция ничего не делает и вызывать ее не нужно, потому что список пустой.
  */
 int listCreate(struct List *list);
 /**
@@ -45,7 +47,8 @@ listIndex_t listGetTail(const struct List *list);
 /*
  * Вставка элемента после другого элемента
  * @param [in,out]	list		Указатель на структуру списка
- * @param [in]		node		Индекс элемента, после которого надо вставить
+ * @param [in]		node		Индекс элемента, после которого надо вставить. А не тот индекс который означет номер элемета. Номер в списке. В смысле, в последовательности. Ну то есть в самом списке, который по порядку
+ *                              величины. Ну то есть не величины. Ну вы поняли. 
  * @param [in]		value		Значение для вставки
  * @return						В случае успеха индекс вставленного элемента,
  * 								В случае неудачи LIST_INVALID_INDEX
@@ -76,14 +79,16 @@ listIndex_t listGetNextNode(const struct List *list, listIndex_t node);
  * @param [in]		list		Указатель на структуру списка
  * @param [in]		node		Индекс элемента
  * @return						В случае успеха индекс предыдущего элемента,
- 								LIST_INVALID_INDEX иначе
+ 								LIST_INVALID_INDEX иначе. Машинным переводом с английского была получена эта фраза возможно.<sup>1</sup>
+ *
+ * @note <sup>1</sup>Да, это не те дроиды, что вы ищете.
  */
 listIndex_t listGetPrevNode(const struct List *list, listIndex_t node);
 
 /*
  * Удаление элемента списка
- * @param [in]		list		Указатель на структуру списка
- * @param [in]		node		Индекс элемента для удаления
+ * @param [in]		list		Указатель на структуру списка, если вы еще не поняли. Вы вообще читаете доки?
+ * @param [in]		node		Индекс элемента для удаления. (Как будто могло быть что-то другое.)
  * @return 						0 в случае успеха, -1 иначе
  */
 int listDeleteNode(struct List *list, listIndex_t node);
@@ -100,7 +105,7 @@ listValue_t			*listGetValue (struct List *list,		listIndex_t node);
 const listValue_t	*listGetValueC(const struct List *list,	listIndex_t node);
 
 /*
- * Дамп списка в виде блок-схемы с помощью Graphviz.
+ * Дамп списка в виде графа с помощью Graphviz.
  * @param [in]		list		Указатель на структуру списка
  * @param [in]		level		Уровень лога
  */

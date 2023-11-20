@@ -73,14 +73,14 @@ void clistFree(struct CListNode *node) {
 	free(node);
 }
 
-struct CListNode *clistGetNext(struct CListNode *node) { return node->next; }
-struct CListNode *clistGetPrev(struct CListNode *node) { return node->prev; }
+      struct CListNode *clistGetNext   (      struct CListNode *node) { return node->next;   }
+const struct CListNode *clistGetNextC  (const struct CListNode *node) { return node->next;   }
 
-const struct CListNode *clistGetNextC(const struct CListNode *node) { return node->next; }
-const struct CListNode *clistGetPrevC(const struct CListNode *node) { return node->prev; }
+      struct CListNode *clistGetPrev   (      struct CListNode *node) { return node->prev;   }
+const struct CListNode *clistGetPrevC  (const struct CListNode *node) { return node->prev;   }
 
-      listValue_t *clistGetValue (      struct CListNode *node) { return &node->value; };
-const listValue_t *clistGetValueC(const struct CListNode *node) { return &node->value; };
+      listValue_t      *clistGetValue  (      struct CListNode *node) { return &node->value; };
+const listValue_t      *clistGetValueC (const struct CListNode *node) { return &node->value; };
 
 void clistDump(const struct CListNode *node, int level) {
 	if(!node)
