@@ -13,8 +13,16 @@ int main() {
 	btreeInsertNode(&tree, n, 67);
 	btreeInsertNode(&tree, n, 39);
 	btreeInsertNode(&tree, l, 67);
-	btreeInsertNode(&tree, l, 39);
+	struct BinaryTreeNode *g = btreeInsertNode(&tree, l, 39);
+	btreeInsertNode(&tree, g, 39);
+	for(int i = 0; i < 20; i++) {
+		g = btreeInsertNode(&tree, g, 39);
+		btreeInsertNode(&tree, g, 29);
+	}
 
+	btreeDump(&tree, LOG_DEBUG);
+
+	btreeDeleteNode(&tree, n);
 	btreeDump(&tree, LOG_DEBUG);
 
 	btreeDelete(&tree);

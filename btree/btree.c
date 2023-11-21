@@ -1,5 +1,6 @@
 #include "btree.h"
 #include "log.h"
+#include "hsv2rgb.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -53,33 +54,51 @@ struct BinaryTreeNode *btreeDeleteNode(struct BinaryTree *tree,
 	if(!node)
 		return NULL;
 
+	printLog(LOG_VERBOSE, "Delete node %p with value "BTREE_FORMAT, node, node->value);
+
 	if(node->left)
 		btreeDeleteNode(tree, node->left);
 	if(node->right)
 		btreeDeleteNode(tree, node->right);
 
 	struct BinaryTreeNode *parent = node->parent;
+
+	if(parent) {
+		if(parent->left == node)
+			parent->left = NULL;
+		else if(parent->right == node)
+			parent->right = NULL;
+	}
+
 	free(node);
 
 	return parent;
 }
 
-static void btreeDumpNode(FILE *dot, struct BinaryTreeNode *node) {
+static void btreeDumpNode(FILE *dot, unsigned int level, struct BinaryTreeNode *node) {
 	assert(dot);
 
 	if(!node)
 		return;
 
-	fprintf(dot, "Node%p[label=\""BTREE_FORMAT"\"]\n;", node, node->value);
+	char fillColor[8];
+	char edgeColor[8];
+
+	double hue = level * 20.0;
+	struct HSV fill = {hue, 0.3, 1.0};
+	struct HSV edge = {hue, 1.0, 1.0};
+
+	fprintf(dot, "Node%p[label=\""BTREE_FORMAT"\" fillcolor=\"%s\" color=\"%s\"]\n;",
+		node, node->value, HSVToRGB(fillColor, fill), HSVToRGB(edgeColor, edge));
 	if(node->parent)
 		fprintf(dot, "Node%p->Node%p;\n", node->parent, node);
 	else
 		fprintf(dot, "Tree->Node%p;\n", node);
 
 	if(node->left)
-		btreeDumpNode(dot, node->left);
+		btreeDumpNode(dot, level + 1, node->left);
 	if(node->right)
-		btreeDumpNode(dot, node->right);
+		btreeDumpNode(dot, level + 1, node->right);
 }
 
 void btreeDump(struct BinaryTree *tree, int level) {
@@ -93,7 +112,7 @@ void btreeDump(struct BinaryTree *tree, int level) {
 	fprintf(dot, "digraph G {\n");
 	fprintf(dot, "node[shape=box style=filled];\n");
 	fprintf(dot, "Tree[shape=record label=\"{Binary tree|size=%zu}\"]\n", tree->size);
-	btreeDumpNode(dot, tree->root);
+	btreeDumpNode(dot, 0, tree->root);
 	fprintf(dot, "}\n");
 
 	fclose(dot);

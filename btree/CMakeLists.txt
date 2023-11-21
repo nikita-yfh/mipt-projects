@@ -33,5 +33,5 @@ add_library(btree STATIC ${SOURCES})
 target_link_libraries(btree logger)
 
 add_executable(btreeTest test.c)
-target_link_libraries(btreeTest btree)
+target_link_libraries(btreeTest btree m)
 

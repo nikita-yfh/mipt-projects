@@ -22,5 +22,5 @@ set(CMAKE_C_FLAGS_DEBUG
 
 add_definitions(-DLOG_IMAGES)
 
-add_library(${PROJECT_NAME} STATIC log.c)
+add_library(${PROJECT_NAME} STATIC log.c hsv2rgb.c)
 
