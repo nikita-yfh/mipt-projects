@@ -26,6 +26,6 @@ struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree,
 struct BinaryTreeNode *btreeDeleteNode(struct BinaryTree *tree,
 		struct BinaryTreeNode *node);
 
-void btreeDump(struct BinaryTree *tree, btreeValue_t value);
+void btreeDump(struct BinaryTree *tree, int level);
 
 #endif // BTREE_H

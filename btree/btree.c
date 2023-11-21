@@ -20,7 +20,9 @@ int btreeDelete(struct BinaryTree *tree) {
 		return -1;
 	btreeDeleteNode(tree, tree->root);
 	tree->root = NULL;
-	return (tree->size == 0) ? 0 : -1;
+
+	assert(tree->size == 0);
+	return 0;
 }
 
 struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree,
@@ -45,6 +47,8 @@ struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree,
 
 	child->value = value;
 	child->parent = node;
+
+	tree->size++;
 	return child;
 }
 
@@ -69,6 +73,9 @@ struct BinaryTreeNode *btreeDeleteNode(struct BinaryTree *tree,
 		else if(parent->right == node)
 			parent->right = NULL;
 	}
+
+	assert(tree->size != 0);
+	tree->size--;
 
 	free(node);
 
