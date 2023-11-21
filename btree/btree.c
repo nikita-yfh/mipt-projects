@@ -84,7 +84,7 @@ static void btreeDumpNode(FILE *dot, unsigned int level, struct BinaryTreeNode *
 	char fillColor[8];
 	char edgeColor[8];
 
-	double hue = level * 20.0;
+	double hue = level * 40.0;
 	struct HSV fill = {hue, 0.3, 1.0};
 	struct HSV edge = {hue, 1.0, 1.0};
 
