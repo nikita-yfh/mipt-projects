@@ -3,14 +3,8 @@
 #include "tokener.h"
 
 int main() {
-	const char *str = "int main +(5+4)var()";
-	struct Tokens tokens = tokensCreate(str);
-
-	tokensDelete(&tokens);
-
 	struct BinaryTree tree = {};
 	btreeCreate(&tree);
-
 
 	printLog(LOG_DEBUG, "test");
 
@@ -22,19 +16,25 @@ int main() {
 	btreeInsertNode(&tree, l, "f");
 	struct BinaryTreeNode *g = btreeInsertNode(&tree, l, "g");
 	btreeInsertNode(&tree, g, "h");
-	for(int i = 0; i < 20; i++) {
-		g = btreeInsertNode(&tree, g, "tt");
-		btreeInsertNode(&tree, g, "h");
-	}
 
 	btreeDump(&tree, LOG_DEBUG);
 
 	btreeDeleteNode(&tree, n);
 	btreeDump(&tree, LOG_DEBUG);
 
-
 	FILE *file = fopen("out.txt", "w");
 	btreeWriteFile(&tree, file);
+	fclose(file);
+
+	file = fopen("out.txt", "r");
+
+	struct Tokener tokener;
+	initTokens(&tokener);
+
+	while(!readNextToken(&tokener, file)) {
+		printLog(LOG_DEBUG, "Token [%s]: %d", tokener.buffer, tokener.mode);
+	}
+
 	fclose(file);
 
 	btreeDelete(&tree);

@@ -2,6 +2,7 @@
 #define TOKENER_H
 
 #include <stdlib.h>
+#include <stdio.h>
 
 enum {
 	MODE_ERROR = -1,
@@ -13,20 +14,16 @@ enum {
 	MODE_ESCAPE,
 };
 
-struct Token {
-	int type;
-	const char *text;
+struct Tokener {
+	char buffer[4096];
+	int mode;
+	char lastChar;
 };
 
-struct Tokens {
-	char *buffer;
+void initTokens(struct Tokener *tokener);
+int readNextToken(struct Tokener *tokener, FILE *file);
 
-	size_t count;
-	struct Token *tokens;
-};
-
-struct Tokens tokensCreate(const char *line);
-void tokensDelete(struct Tokens *tokens);
+void writeQuotedString(const char *line, FILE *file);
 
 #endif // TOKENER
 
