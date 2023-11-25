@@ -1,9 +1,16 @@
 #include "btree.h"
 #include "log.h"
+#include "tokener.h"
 
 int main() {
+	const char *str = "int main +(5+4)var()";
+	struct Tokens tokens = tokensCreate(str);
+
+	tokensDelete(&tokens);
+
 	struct BinaryTree tree = {};
 	btreeCreate(&tree);
+
 
 	printLog(LOG_DEBUG, "test");
 
@@ -24,6 +31,11 @@ int main() {
 
 	btreeDeleteNode(&tree, n);
 	btreeDump(&tree, LOG_DEBUG);
+
+
+	FILE *file = fopen("out.txt", "w");
+	btreeWriteFile(&tree, file);
+	fclose(file);
 
 	btreeDelete(&tree);
 	return 0;

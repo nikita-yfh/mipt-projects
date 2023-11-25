@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 struct BinaryTreeNode {
 	btreeValue_t value;
@@ -26,6 +27,10 @@ struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree,
 struct BinaryTreeNode *btreeDeleteNode(struct BinaryTree *tree,
 		struct BinaryTreeNode *node);
 
-void btreeDump(struct BinaryTree *tree, int level);
+void btreeDump(const struct BinaryTree *tree, int level);
+
+int btreeWriteFile(const struct BinaryTree *tree, FILE *file);
+int  btreeReadFile(      struct BinaryTree *tree, FILE *file);
 
 #endif // BTREE_H
+

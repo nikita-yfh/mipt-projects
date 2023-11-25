@@ -32,6 +32,6 @@ include_directories("log")
 add_library(btree STATIC ${SOURCES})
 target_link_libraries(btree logger)
 
-add_executable(btreeTest test.c)
+add_executable(btreeTest test.c tokener.c)
 target_link_libraries(btreeTest btree m)
 

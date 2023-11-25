@@ -4,14 +4,12 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <stdio.h>
 #include <unistd.h>
 
 int btreeCreate(struct BinaryTree *tree) {
 	assert(tree);
 
-	tree->root = NULL;
-	tree->size = 0;
+	tree->root = NULL; tree->size = 0;
 	return 0;
 }
 
@@ -82,7 +80,7 @@ struct BinaryTreeNode *btreeDeleteNode(struct BinaryTree *tree,
 	return parent;
 }
 
-static void btreeDumpNode(FILE *dot, unsigned int level, struct BinaryTreeNode *node) {
+static void btreeDumpNode(FILE *dot, unsigned int level, const struct BinaryTreeNode *node) {
 	assert(dot);
 
 	if(!node)
@@ -108,7 +106,7 @@ static void btreeDumpNode(FILE *dot, unsigned int level, struct BinaryTreeNode *
 		btreeDumpNode(dot, level + 1, node->right);
 }
 
-void btreeDump(struct BinaryTree *tree, int level) {
+void btreeDump(const struct BinaryTree *tree, int level) {
 	assert(tree);
 
 	char tmpFileName[128] = "";
@@ -127,3 +125,33 @@ void btreeDump(struct BinaryTree *tree, int level) {
 	insertGraphLog(level, tmpFileName, "Binary tree %p dump:", tree);
 }
 
+static int btreeWriteNode(const struct BinaryTreeNode *node, FILE *file) {
+	fputc('(', file);
+	fprintf(file, "\""BTREE_FORMAT"\"", node->value);
+
+	fputc(' ', file);
+
+	if(node->left)
+		btreeWriteNode(node->left, file);
+	else
+		fputs("nil", file);
+
+	fputc(' ', file);
+
+	if(node->right)
+		btreeWriteNode(node->right, file);
+	else
+		fputs("nil", file);
+
+	fputc(')', file);
+	return 0;
+}
+
+static struct BinaryTreeNode *btreeReadNode(FILE *file) {
+	return NULL;
+}
+
+int btreeWriteFile(const struct BinaryTree *tree, FILE *file) {
+	btreeWriteNode(tree->root, file);
+	return 0;
+}
