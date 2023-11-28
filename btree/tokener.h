@@ -14,14 +14,24 @@ enum {
 	MODE_ESCAPE,
 };
 
-struct Tokener {
-	char buffer[4096];
-	int mode;
-	char lastChar;
+struct Token {
+	int type;
+	const char *text;
 };
 
-void initTokens(struct Tokener *tokener);
-int readNextToken(struct Tokener *tokener, FILE *file);
+struct Tokens {
+	char *buffer;
+
+	size_t count;
+	struct Token *tokens;
+
+	size_t currentToken;
+};
+
+struct Token *getNextToken(struct Tokens *tokens);
+
+struct Tokens tokensCreate(const char *line);
+void tokensDelete(struct Tokens *tokens);
 
 void writeQuotedString(const char *line, FILE *file);
 

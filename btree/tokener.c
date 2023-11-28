@@ -57,9 +57,6 @@ struct ProcessCharReturn {
 
 static struct ProcessCharReturn processChar(char currentChar, int mode) {
 
-	if(!currentChar)
-		return (struct ProcessCharReturn) {MODE_SPACE, 0, 0};
-
 	int charIsDigit      = isdigit(currentChar);
 	int charIsNumber     = charIsDigit || currentChar == '.' || currentChar == '-';
 	int charIsAlpha      = isalpha(currentChar) || currentChar == '_';
@@ -109,44 +106,63 @@ static struct ProcessCharReturn processChar(char currentChar, int mode) {
 	return     (struct ProcessCharReturn) {MODE_ERROR,    0, 0};
 }
 
-void initTokens(struct Tokener *tokener) {
-	assert(tokener);
-	tokener->mode = MODE_SPACE;
+static size_t tokensCount(const char *line) {
+	size_t tokenCount = 0; 
+	int mode = MODE_SPACE;
+
+	do {
+		struct ProcessCharReturn result = processChar(*line, mode);
+		mode = result.newMode;
+		if(result.tokenEnd)
+			tokenCount++;
+	} while(*(line++));
+
+	return tokenCount;
 }
 
-int readNextToken(struct Tokener *tokener, FILE *file) {
-	assert(tokener);
-	assert(file);
+struct Tokens tokensCreate(const char *line) {
+	size_t maxLen = strlen(line) * 2 + 1;
 
-	char *buffer = tokener->buffer;
+	struct Tokens tokens = {};
+	tokens.buffer = (char*) calloc(1, maxLen);
+	tokens.count = tokensCount(line); 
 
-	if(tokener->lastChar)
-		(*buffer++) = tokener->lastChar;
+	tokens.tokens = (struct Token*) calloc(tokens.count + 1, sizeof(struct Token));
 
-	int currentChar = 0;
-	while((currentChar = fgetc(file)) != EOF
-			&& (size_t) (buffer - tokener->buffer) < sizeof(tokener->buffer)) {
-		struct ProcessCharReturn result = processChar((char) currentChar, tokener->mode);
-		printLog(LOG_INFO, "Result: char=%c mode=%d end=%d", result.fuckingChar, result.newMode, result.tokenEnd);
-		tokener->lastChar = result.fuckingChar;
-		tokener->mode = result.newMode;
+	struct Token *currentToken = tokens.tokens;
+	char *buffer = tokens.buffer;
+	int mode = MODE_SPACE;
 
-		if(result.tokenEnd && buffer != tokener->buffer) {
-			*buffer = '\0';
-			return 0;
+	do {
+		struct ProcessCharReturn result = processChar(*line, mode);
+		mode = result.newMode;
+
+		if(result.tokenEnd) {
+			*(buffer++) = '\0';
+			currentToken->text = buffer;
+			currentToken->type = mode;
+			currentToken++;
 		}
 
 		if(result.fuckingChar)
 			*(buffer++) = result.fuckingChar;
-	}
 
-	if(!tokener->lastChar)
-		return -1;
+	} while(*(line++));
 
-	*buffer = '\0';
-	tokener->lastChar = 0;
+	return tokens;
+}
 
-	return 0;
+void tokensDelete(struct Tokens *tokens) {
+	if(!tokens)
+		return;
+	free(tokens->tokens);
+	free(tokens->buffer);
+}
+
+struct Token *getNextToken(struct Tokens *tokens) {
+	if(tokens->currentToken >= tokens->count)
+		return NULL;
+	return &tokens->tokens[tokens->currentToken++];
 }
 
 void writeQuotedString(const char *line, FILE *file) {

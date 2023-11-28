@@ -28,13 +28,6 @@ int main() {
 
 	file = fopen("out.txt", "r");
 
-	struct Tokener tokener;
-	initTokens(&tokener);
-
-	while(!readNextToken(&tokener, file)) {
-		printLog(LOG_DEBUG, "Token [%s]: %d", tokener.buffer, tokener.mode);
-	}
-
 	fclose(file);
 
 	btreeDelete(&tree);

@@ -23,7 +23,6 @@ set(CMAKE_C_FLAGS_DEBUG
 set(SOURCES
 	"btree.c"
 	"btree.h"
-	"config.h"
 )
 
 add_subdirectory("log")

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <unistd.h>
+#include <string.h>
 
 int btreeCreate(struct BinaryTree *tree) {
 	assert(tree);
@@ -24,7 +25,7 @@ int btreeDelete(struct BinaryTree *tree) {
 }
 
 struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree,
-		struct BinaryTreeNode *node, btreeValue_t value) {
+		struct BinaryTreeNode *node, const char *value) {
 	assert(tree);
 
 	if(!node ^ !tree->root)
@@ -34,7 +35,7 @@ struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree,
 		return NULL;
 
 	struct BinaryTreeNode *child = (struct BinaryTreeNode*)
-	               calloc(1, sizeof(struct BinaryTreeNode));
+			   calloc(1, sizeof(struct BinaryTreeNode) + strlen(value) + 1);
 	
 	if(!tree->root)
 		tree->root = child;
@@ -43,7 +44,7 @@ struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree,
 	else if(!node->right)
 		node->right = child;
 
-	child->value = value;
+	strcpy(child->value, value);
 	child->parent = node;
 
 	tree->size++;
@@ -56,7 +57,7 @@ struct BinaryTreeNode *btreeDeleteNode(struct BinaryTree *tree,
 	if(!node)
 		return NULL;
 
-	printLog(LOG_VERBOSE, "Delete node %p with value "BTREE_FORMAT, node, node->value);
+	printLog(LOG_VERBOSE, "Delete node %p with value %s", node, node->value);
 
 	if(node->left)
 		btreeDeleteNode(tree, node->left);
@@ -93,7 +94,7 @@ static void btreeDumpNode(FILE *dot, unsigned int level, const struct BinaryTree
 	struct HSV fill = {hue, 0.3, 1.0};
 	struct HSV edge = {hue, 1.0, 1.0};
 
-	fprintf(dot, "Node%p[label=\""BTREE_FORMAT"\" fillcolor=\"%s\" color=\"%s\"]\n;",
+	fprintf(dot, "Node%p[label=\"%s\" fillcolor=\"%s\" color=\"%s\"]\n;",
 		node, node->value, HSVToRGB(fillColor, fill), HSVToRGB(edgeColor, edge));
 	if(node->parent)
 		fprintf(dot, "Node%p->Node%p;\n", node->parent, node);
@@ -127,7 +128,7 @@ void btreeDump(const struct BinaryTree *tree, int level) {
 
 static int btreeWriteNode(const struct BinaryTreeNode *node, FILE *file) {
 	fputc('(', file);
-	fprintf(file, "\""BTREE_FORMAT"\"", node->value);
+	fprintf(file, "\"%s\"", node->value);
 
 	fputc(' ', file);
 
@@ -147,7 +148,10 @@ static int btreeWriteNode(const struct BinaryTreeNode *node, FILE *file) {
 	return 0;
 }
 
-static struct BinaryTreeNode *btreeReadNode(FILE *file) {
+static struct BinaryTreeNode *btreeReadNode(const char *line) {
+
+	
+
 	return NULL;
 }
 
