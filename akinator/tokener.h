@@ -24,11 +24,9 @@ struct Tokens {
 
 	size_t count;
 	struct Token *tokens;
-
-	size_t currentToken;
 };
 
-struct Token *getNextToken(struct Tokens *tokens);
+#define tokenIsValid(token) ((token)->text != NULL)
 
 struct Tokens tokensCreate(const char *line);
 void tokensDelete(struct Tokens *tokens);

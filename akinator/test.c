@@ -28,6 +28,11 @@ int main() {
 
 	file = fopen("out.txt", "r");
 
+	btreeReadFile(&tree, file);
+
+	printLog(LOG_DEBUG, "After read:");
+	btreeDump(&tree, LOG_DEBUG);
+
 	fclose(file);
 
 	btreeDelete(&tree);

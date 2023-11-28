@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project("btree")
+project("akinator")
 
 set(CMAKE_C_FLAGS_DEBUG
 "-D _DEBUG -ggdb3 -g -O0 -Wall -Wextra \
@@ -23,14 +23,16 @@ set(CMAKE_C_FLAGS_DEBUG
 set(SOURCES
 	"btree.c"
 	"btree.h"
+	"utils.h"
+	"utils.c"
+	"tokener.h"
+	"tokener.c"
+	"test.c"
 )
 
 add_subdirectory("log")
 include_directories("log")
 
-add_library(btree STATIC ${SOURCES})
-target_link_libraries(btree logger)
-
-add_executable(btreeTest test.c tokener.c)
-target_link_libraries(btreeTest btree m)
+add_executable(akinator ${SOURCES})
+target_link_libraries(akinator m logger)
 

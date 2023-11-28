@@ -1,6 +1,8 @@
 #include "btree.h"
 #include "log.h"
 #include "hsv2rgb.h"
+#include "tokener.h"
+#include "utils.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -148,11 +150,76 @@ static int btreeWriteNode(const struct BinaryTreeNode *node, FILE *file) {
 	return 0;
 }
 
-static struct BinaryTreeNode *btreeReadNode(const char *line) {
+static struct Token *btreeReadNode(struct BinaryTree *tree, struct BinaryTreeNode *parent, struct Token *token) {
 
+#define CHECK_TOKEN(token)						\
+	if(!tokenIsValid(token)) {					\
+		printLog(LOG_ERROR, "EOF");				\
+		return NULL;							\
+	}
+
+	CHECK_TOKEN(token);
+
+	if(token->type == MODE_NAME && strcmp(token->text, "nil") == 0) {
+		printLog(LOG_INFO, "Readed nil");
+		return token + 1;
+	}
+
+	if(token->type != MODE_OPERATOR && strcmp(token->text, "(") != 0) {
+		printLog(LOG_ERROR, "Invalid token %p \"%s\", need \"(\"", token, token->text);
+		return NULL;
+	}
+	token++;
+	CHECK_TOKEN(token);
+
+	if(token->type != MODE_STRING) {
+		printLog(LOG_ERROR, "Token type isn't string");
+		return NULL;
+	}
 	
+	struct BinaryTreeNode *node = btreeInsertNode(tree, parent, token->text);
+	token++;
 
-	return NULL;
+	printLog(LOG_INFO, "Readed value \"%s\"", node->value);
+
+	for(int childIndex = 0; childIndex < 2; childIndex++)
+		token = btreeReadNode(tree, node, token);
+
+	if(token->type != MODE_OPERATOR && strcmp(token->text, ")") != 0) {
+		printLog(LOG_ERROR, "Invalid token \"%s\", need \")\"", token->text);
+		return NULL;
+	}
+	token++;
+
+	printLog(LOG_INFO, "Readed node %p with value \"%s\" with childs %p, %p",
+			node, node->value, node->left, node->right);
+
+	return token;
+
+#undef CHECK_TOKEN
+}
+
+int btreeReadFile(struct BinaryTree *tree, FILE *file) {
+	assert(tree);
+	btreeDelete(tree);
+
+	char *content = readFile(file);
+
+	if(!content)
+		return -1;
+
+	struct Tokens tokens = tokensCreate(content);
+
+	printLog(LOG_DEBUG, "Current tokens:");
+	for(struct Token *token = tokens.tokens; tokenIsValid(token); token++)
+		printLog(LOG_DEBUG, "Token [%s] %d", token->text, token->type);
+
+	btreeReadNode(tree, NULL, tokens.tokens);
+
+	tokensDelete(&tokens);
+	free(content);
+
+	return 0;
 }
 
 int btreeWriteFile(const struct BinaryTree *tree, FILE *file) {

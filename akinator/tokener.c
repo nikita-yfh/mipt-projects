@@ -69,7 +69,7 @@ static struct ProcessCharReturn processChar(char currentChar, int mode) {
 	switch(mode) {
 	case MODE_STRING:
 		if(charIsQuote)
-			return (struct ProcessCharReturn) {MODE_SPACE, 1, 0};
+			return (struct ProcessCharReturn) {MODE_SPACE, 0, 0};
 		if(charIsEscape)
 			return (struct ProcessCharReturn) {MODE_ESCAPE, 0, 0};
 		return (struct ProcessCharReturn) {MODE_STRING, 0, currentChar};
@@ -157,12 +157,6 @@ void tokensDelete(struct Tokens *tokens) {
 		return;
 	free(tokens->tokens);
 	free(tokens->buffer);
-}
-
-struct Token *getNextToken(struct Tokens *tokens) {
-	if(tokens->currentToken >= tokens->count)
-		return NULL;
-	return &tokens->tokens[tokens->currentToken++];
 }
 
 void writeQuotedString(const char *line, FILE *file) {
