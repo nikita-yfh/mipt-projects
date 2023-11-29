@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 char *readFile(FILE *file);
-size_t getFileSize(FILE *file);
+unsigned long int getFileSize(FILE *file);
 
 #endif // UTIlS_H
 

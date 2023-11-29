@@ -2,18 +2,18 @@
 
 #include <stdlib.h>
 
-size_t getFileSize(FILE *file) {
-	size_t prevPos = ftell(file);
+unsigned long int getFileSize(FILE *file) {
+	long int prevPos = ftell(file);
 
 	fseek(file, 0, SEEK_END);
-	size_t fileSize = ftell(file);
+	long int fileSize = ftell(file);
 	fseek(file, prevPos, SEEK_SET);
 
-	return fileSize;
+	return (unsigned long int) fileSize;
 }
 
 char *readFile(FILE *file) {
-	size_t size = getFileSize(file);
+	unsigned long int size = getFileSize(file);
 	char *buf = (char*) calloc(1, size + 1);
 	
 	if(fread(buf, 1, size, file) != size) {

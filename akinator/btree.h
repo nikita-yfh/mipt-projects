@@ -26,6 +26,8 @@ struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree,
 struct BinaryTreeNode *btreeDeleteNode(struct BinaryTree *tree,
 		struct BinaryTreeNode *node);
 
+struct BinaryTreeNode *btreeFindLeaf(struct BinaryTreeNode *node, const char *name);
+
 void btreeDump(const struct BinaryTree *tree, int level);
 
 int btreeWriteFile(const struct BinaryTree *tree, FILE *file);

@@ -109,6 +109,17 @@ static void btreeDumpNode(FILE *dot, unsigned int level, const struct BinaryTree
 		btreeDumpNode(dot, level + 1, node->right);
 }
 
+struct BinaryTreeNode *btreeFindLeaf(struct BinaryTreeNode *node, const char *name) {
+	struct BinaryTreeNode *leftFinded = NULL, *rightFinded = NULL;
+	if(node->left && (leftFinded = btreeFindLeaf(node->left, name)))
+		return leftFinded;
+	if(node->right && (rightFinded = btreeFindLeaf(node->right, name)))
+		return rightFinded;
+	if(strcmp(node->value, name) == 0)
+		return node;
+	return NULL;
+}
+
 void btreeDump(const struct BinaryTree *tree, int level) {
 	assert(tree);
 
@@ -153,7 +164,7 @@ static int btreeWriteNode(const struct BinaryTreeNode *node, FILE *file) {
 static struct Token *btreeReadNode(struct BinaryTree *tree, struct BinaryTreeNode *parent, struct Token *token) {
 
 #define CHECK_TOKEN(token)						\
-	if(!tokenIsValid(token)) {					\
+	if(!tokenIsValid(token)) {		\
 		printLog(LOG_ERROR, "EOF");				\
 		return NULL;							\
 	}
@@ -182,9 +193,13 @@ static struct Token *btreeReadNode(struct BinaryTree *tree, struct BinaryTreeNod
 
 	printLog(LOG_INFO, "Readed value \"%s\"", node->value);
 
-	for(int childIndex = 0; childIndex < 2; childIndex++)
+	for(int childIndex = 0; childIndex < 2; childIndex++) {
 		token = btreeReadNode(tree, node, token);
+		if(!token)
+			return NULL;
+	}
 
+	CHECK_TOKEN(token);
 	if(token->type != MODE_OPERATOR && strcmp(token->text, ")") != 0) {
 		printLog(LOG_ERROR, "Invalid token \"%s\", need \")\"", token->text);
 		return NULL;
@@ -214,7 +229,8 @@ int btreeReadFile(struct BinaryTree *tree, FILE *file) {
 	for(struct Token *token = tokens.tokens; tokenIsValid(token); token++)
 		printLog(LOG_DEBUG, "Token [%s] %d", token->text, token->type);
 
-	btreeReadNode(tree, NULL, tokens.tokens);
+	if(!btreeReadNode(tree, NULL, tokens.tokens))
+		return -1;
 
 	tokensDelete(&tokens);
 	free(content);

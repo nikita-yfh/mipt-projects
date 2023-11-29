@@ -27,7 +27,7 @@ set(SOURCES
 	"utils.c"
 	"tokener.h"
 	"tokener.c"
-	"test.c"
+	"interface.c"
 )
 
 add_subdirectory("log")

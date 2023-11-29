@@ -19,9 +19,6 @@ int main() {
 
 	btreeDump(&tree, LOG_DEBUG);
 
-	btreeDeleteNode(&tree, n);
-	btreeDump(&tree, LOG_DEBUG);
-
 	FILE *file = fopen("out.txt", "w");
 	btreeWriteFile(&tree, file);
 	fclose(file);
