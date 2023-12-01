@@ -175,6 +175,53 @@ static void askString(const char *prompt, char *str, int num) {
 	*strchr(str, '\n') = '\0';
 }
 
+static void saveNewObject(struct BinaryTree *tree, struct BinaryTreeNode *node) {
+	char oldObjectStr[1024];
+	strncpy(oldObjectStr, node->value, sizeof(oldObjectStr));
+
+	char newObjectStr[1024];
+	askString("А что же это было?", newObjectStr, sizeof(newObjectStr));
+
+	char questionStr[3000];
+	snprintf(questionStr, sizeof(questionStr), "Чем отличается \"%s\" от \"%s\"?",
+			newObjectStr, oldObjectStr);
+
+	char diffStr[1024];
+	askString(questionStr, diffStr, sizeof(diffStr));
+
+	struct BinaryTreeNode *lastNode = btreeDeleteNode(tree, node);
+	btreeDump(tree, LOG_DEBUG);
+	struct BinaryTreeNode *diffNode = btreeInsertNode(tree, lastNode, diffStr);
+	btreeDump(tree, LOG_DEBUG);
+	btreeInsertNode(tree, diffNode, oldObjectStr);
+	btreeDump(tree, LOG_DEBUG);
+	btreeInsertNode(tree, diffNode, newObjectStr);
+	btreeDump(tree, LOG_DEBUG);
+}
+
+static void askObject(struct BinaryTree *tree) {
+	btreeDump(tree, LOG_DEBUG);
+
+	struct BinaryTreeNode *node = tree->root, *lastNode = tree->root;
+	int dir = NODE_LEFT;
+	while(node) {
+		char question[1024] = "Это ";
+		snprintf(question, sizeof(question), "Это %s?", node->value);
+		dir = askYesNo(question);
+
+		lastNode = node;
+		node = btreeGetChild(node, dir);
+	}
+	if(dir == NODE_RIGHT) {
+		printf("Отгадал получается!\n");
+		return;
+	}
+	saveNewObject(tree, lastNode);
+	printf("Запомнил!\n");
+
+	btreeDump(tree, LOG_DEBUG);
+}
+
 enum {
 	MENU_ASK,
 	MENU_COMPARE,
@@ -210,6 +257,9 @@ static void showMenu(struct BinaryTree *tree) {
 			askString("Введи имя объекта:", object, sizeof(object));
 			showInfo(tree, object);
 		} break;
+		case MENU_ASK:
+			askObject(tree);
+			break;
 		}
 	}
 }
@@ -217,8 +267,6 @@ static void showMenu(struct BinaryTree *tree) {
 int main() {
 	struct BinaryTree tree = {};
 	readTree(&tree, "tree.txt");
-
-	btreeDump(&tree, LOG_DEBUG);
 
 	showMenu(&tree);
 

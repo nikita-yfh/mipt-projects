@@ -73,7 +73,8 @@ struct BinaryTreeNode *btreeDeleteNode(struct BinaryTree *tree,
 			parent->left = NULL;
 		else if(parent->right == node)
 			parent->right = NULL;
-	}
+	} else
+		tree->root = NULL;
 
 	assert(tree->size != 0);
 	tree->size--;
