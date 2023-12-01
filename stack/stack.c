@@ -207,10 +207,11 @@ int stackPop(struct Stack* stack, stackValue_t *value) {
 	}
 
 	--stack->size;
-	if(value)
+	if(value) {
 		*value = *stackIndex(stack, stack->size);
-
-	printLog(LOG_INFO, "Stack pop "STACK_FORMAT, *value);
+		printLog(LOG_INFO, "Stack pop "STACK_FORMAT, *value);
+	} else
+		printLog(LOG_INFO, "Stack pop");
 
 	ret = stackResize(stack);
 	if(ret)
@@ -261,6 +262,7 @@ int stackCreate(struct Stack* stack) {
 		return STACK_INVALID_POINTER;
 
 	stack->capacity = STACK_DEFAULT_CAPACITY;
+	stack->values   = NULL;
 
 	stack->error = STACK_OK;
 

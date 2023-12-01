@@ -4,6 +4,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "stack.h"
+
+enum {
+	NODE_LEFT,
+	NODE_RIGHT
+};
+
 struct BinaryTreeNode {
 	struct BinaryTreeNode *parent;
 	struct BinaryTreeNode *left;
@@ -17,7 +24,6 @@ struct BinaryTree {
 	size_t size;
 };
 
-
 int btreeCreate(struct BinaryTree *tree);
 int btreeDelete(struct BinaryTree *tree);
 
@@ -26,7 +32,12 @@ struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree,
 struct BinaryTreeNode *btreeDeleteNode(struct BinaryTree *tree,
 		struct BinaryTreeNode *node);
 
-struct BinaryTreeNode *btreeFindLeaf(struct BinaryTreeNode *node, const char *name);
+struct BinaryTreeNode *btreeFindLeaf     (struct BinaryTreeNode *node,
+		const char *name);
+
+void btreeFillStack(struct BinaryTreeNode *node, struct Stack *stack);
+
+struct BinaryTreeNode *btreeGetChild(struct BinaryTreeNode *node, int lr);
 
 void btreeDump(const struct BinaryTree *tree, int level);
 

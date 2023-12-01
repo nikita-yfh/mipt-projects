@@ -120,6 +120,22 @@ struct BinaryTreeNode *btreeFindLeaf(struct BinaryTreeNode *node, const char *na
 	return NULL;
 }
 
+void btreeFillStack(struct BinaryTreeNode *node, struct Stack *stack) {
+	stackCreate(stack);
+	while(node && node->parent) {
+		stackPush(stack, (node->parent->left == node) ? NODE_LEFT : NODE_RIGHT);
+		node = node->parent;
+	}
+}
+
+struct BinaryTreeNode *btreeGetChild(struct BinaryTreeNode *node, int lr) {
+	if(lr == NODE_LEFT  && node->left)
+		return node->left;
+	if(lr == NODE_RIGHT && node->right)
+		return node->right;
+	return NULL;
+}
+
 void btreeDump(const struct BinaryTree *tree, int level) {
 	assert(tree);
 
@@ -164,7 +180,7 @@ static int btreeWriteNode(const struct BinaryTreeNode *node, FILE *file) {
 static struct Token *btreeReadNode(struct BinaryTree *tree, struct BinaryTreeNode *parent, struct Token *token) {
 
 #define CHECK_TOKEN(token)						\
-	if(!tokenIsValid(token)) {		\
+	if(!tokenIsValid(token)) {					\
 		printLog(LOG_ERROR, "EOF");				\
 		return NULL;							\
 	}

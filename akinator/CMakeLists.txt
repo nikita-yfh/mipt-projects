@@ -31,8 +31,10 @@ set(SOURCES
 )
 
 add_subdirectory("log")
+add_subdirectory("stack")
 include_directories("log")
+include_directories("stack")
 
 add_executable(akinator ${SOURCES})
-target_link_libraries(akinator m logger)
+target_link_libraries(akinator m logger stack)
 

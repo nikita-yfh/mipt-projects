@@ -20,7 +20,6 @@ set(CMAKE_C_FLAGS_DEBUG
 -flto-odr-type-merging -fno-omit-frame-pointer \
 -Wstack-usage=8192 -pie -fPIE -Werror=vla")
 
-add_subdirectory("log")
 include_directories("log")
 
 add_library(${PROJECT_NAME} STATIC stack.c murmurhash.c)
