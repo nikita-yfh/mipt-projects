@@ -2,10 +2,13 @@
 #include "log.h"
 #include "colors.h"
 #include "stack.h"
+#include "speaker.h"
 
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
 
 static int readTree(struct BinaryTree *tree, const char *fileName) {
 	FILE *file = fopen(fileName, "r");
@@ -39,7 +42,7 @@ static int writeTree(struct BinaryTree *tree, const char *fileName) {
 }
 
 static void objectNotFound(const char *name) {
-	printf("Объект с названием \"%s\" не найден\n", name);
+	printspeakf("Объект с названием \"%s\" не найден\n", name);
 }
 
 static void showInfo(struct BinaryTree *tree, const char *name) {
@@ -48,10 +51,10 @@ static void showInfo(struct BinaryTree *tree, const char *name) {
 		objectNotFound(name);
 		return;
 	}
-	printf("Свойства \"%s\":\n", name);
+	printspeakf("Свойства \"%s\":\n", name);
 	int index = 1;
 	while(finded != tree->root) {
-		printf("%d) %s%s\n", index++, (finded->parent->left == finded) ? "не " : "", finded->parent->value);
+		printspeakf("%d) %s%s\n", index++, (finded->parent->left == finded) ? "не " : "", finded->parent->value);
 		finded = finded->parent;
 	}
 }
@@ -70,32 +73,46 @@ static void compareObjects(struct BinaryTree *tree, const char *objectA, const c
 	btreeFillStack(nodeB, &stackB);
 
 	if(nodeA && nodeB) {
-		printf(COLOR_MAGENTA"Сравнение \"%s\" и \"%s\":\n"COLOR_NONE, objectA, objectB);
+		fputs(COLOR_MAGENTA, stdout);
+		printspeakf("Сравнение \"%s\" и \"%s\":\n", objectA, objectB);
+		fputs(COLOR_NONE, stdout);
 
 		int dirA = 0, dirB = 0;
 		struct BinaryTreeNode *node = tree->root;
 
-		printf("Сходства: "COLOR_GREEN);
+		printspeakf("Сходства: ");
+		fputs(COLOR_GREEN, stdout);
+
 		while(!stackPop(&stackA, &dirA) && !stackPop(&stackB, &dirB) && dirA == dirB) {
-			printf("%s%s, ", (dirA == NODE_LEFT) ? "не " : "", node->value);
+			printspeakf("%s%s, ", (dirA == NODE_LEFT) ? "не " : "", node->value);
 			node = btreeGetChild(node, dirA);
 		}
-		fputs(COLOR_NONE"все!\n", stdout);
+
+		fputs(COLOR_NONE, stdout);
+		printspeakf("все!\n");
 
 		nodeA = nodeB = node;
-		printf("Особенности \"%s\": "COLOR_RED, objectA);
+		printspeakf("Особенности \"%s\": ", objectA);
+		fputs(COLOR_RED, stdout);
+
 		do {
-			printf("%s%s, ", (dirA == NODE_LEFT) ? "не " : "", nodeA->value);
+			printspeakf("%s%s, ", (dirA == NODE_LEFT) ? "не " : "", nodeA->value);
 			nodeA = btreeGetChild(nodeA, dirA);
 		} while(!stackPop(&stackA, &dirA));
-		fputs(COLOR_NONE"все!\n", stdout);
 
-		printf("Особенности \"%s\": "COLOR_RED, objectB);
+		fputs(COLOR_NONE, stdout);
+		printspeakf("все!\n");
+
+		printspeakf("Особенности \"%s\": ", objectB);
+		fputs(COLOR_RED, stdout);
+
 		do {
-			printf("%s%s, ", (dirB == NODE_LEFT) ? "не " : "", nodeB->value);
+			printspeakf("%s%s, ", (dirB == NODE_LEFT) ? "не " : "", nodeB->value);
 			nodeB = btreeGetChild(nodeB, dirB);
 		} while(!stackPop(&stackB, &dirB));
-		fputs(COLOR_NONE"все!\n", stdout);
+
+		fputs(COLOR_NONE, stdout);
+		printspeakf("все!\n");
 
 		fputc('\n', stdout);
 	}
@@ -122,6 +139,9 @@ static int askYesNo(const char *prompt) {
 	fputs(prompt,		stdout);
 	fputs(" (y/n): ",	stdout);
 	fputs(COLOR_NONE,	stdout);
+	fflush(stdout);
+
+	speakf(prompt);
 
 	char answer[30];
 
@@ -167,6 +187,9 @@ static void askString(const char *prompt, char *str, int num) {
 	fputs(prompt,		stdout);
 	fputs(" ",			stdout);
 	fputs(COLOR_NONE,	stdout);
+	fflush(stdout);
+
+	speakf(prompt);
 
 	fputs(COLOR_GREEN,	stdout);
 	fgets(str, num,		stdin);
@@ -213,11 +236,11 @@ static void askObject(struct BinaryTree *tree) {
 		node = btreeGetChild(node, dir);
 	}
 	if(dir == NODE_RIGHT) {
-		printf("Отгадал получается!\n");
+		printspeakf("Отгадал получается!\n");
 		return;
 	}
 	saveNewObject(tree, lastNode);
-	printf("Запомнил!\n");
+	printspeakf("Запомнил!\n");
 
 	btreeDump(tree, LOG_DEBUG);
 }
@@ -226,22 +249,49 @@ enum {
 	MENU_ASK,
 	MENU_COMPARE,
 	MENU_DESCRIPTION,
+	MENU_RTRTRT,
 	MENU_EXIT,
 
 	MENU_COUNT
 };
 
+static void printRT() {
+	srand((unsigned int) time(NULL));
+	const char *strings[] = {
+		"эРТэ лучший факультет физтеха",
+		"от коробки до энка хуй сосет фээртэка",
+		"зачем фивту подруга, когда есть жопа друга",
+		"для любого эпсилона больше нуля фупм хуйня",
+		"один паяльник, один мудак. два паяльника, два мудака."
+			"три паяльника, три мудака. четыре паяльника, фээртэка",
+		"слышен крик на всю долгопу, как фивты ебутся в жопу"
+	};
+	int number = (int) rand() % (int) (sizeof(strings) / sizeof(*strings));
+	speakf(strings[number]);
+}
+
 static void showMenu(struct BinaryTree *tree) {
+	fputs(COLOR_YELLOW, stdout);
+	printspeakf(
+			"Привет, я Акинатор-бета. Я могу отгадать тот объект, что записан в моем\n"
+			"бинарном дереве, про существование других объектов пока не знаю. Поэтому\n"
+			"если я что то не угадаю и тебя это устраивать не будет, то ты пойдешь нахуй\n"
+			"и должен будешь объяснить, что же ты загадал.\n");
+	fputs(COLOR_NONE, stdout);
+
 	int choice = 0;
 	while(choice - 1 != MENU_EXIT) {
-		fputs(
+		printf(
 			COLOR_MAGENTA
 			"Выбери действие:\n"
 			COLOR_NONE
 			"1) Отгадать объект\n"
 			"2) Сравнить объекты\n"
 			"3) Вывести определение объекта\n"
-			"4) Выход\n", stdout);
+			"4) РТ РТ РТ РТ РТ\n"
+			"5) Выход\n");
+
+		speakf("Выбери действие");
 
 		choice = askNaturalNumber("Введи номер пункта", MENU_COUNT);
 
@@ -259,6 +309,9 @@ static void showMenu(struct BinaryTree *tree) {
 		} break;
 		case MENU_ASK:
 			askObject(tree);
+			break;
+		case MENU_RTRTRT:
+			printRT();
 			break;
 		}
 	}

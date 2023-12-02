@@ -28,6 +28,8 @@ set(SOURCES
 	"tokener.h"
 	"tokener.c"
 	"interface.c"
+	"speaker.h"
+	"speaker.c"
 )
 
 add_subdirectory("log")
