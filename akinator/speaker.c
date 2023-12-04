@@ -27,6 +27,7 @@ int vprintspeakf(const char *fmt, va_list args) {
 	vprintf(fmt, args);
 	fflush(stdout);
 	vspeakf(fmt, args2);
+	return 0;
 }
 
 int printspeakf(const char *fmt, ...) {

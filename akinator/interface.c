@@ -228,7 +228,7 @@ static void askObject(struct BinaryTree *tree) {
 	struct BinaryTreeNode *node = tree->root, *lastNode = tree->root;
 	int dir = NODE_LEFT;
 	while(node) {
-		char question[1024] = "Это ";
+		char question[1024];
 		snprintf(question, sizeof(question), "Это %s?", node->value);
 		dir = askYesNo(question);
 
@@ -264,7 +264,8 @@ static void printRT() {
 		"для любого эпсилона больше нуля фупм хуйня",
 		"один паяльник, один мудак. два паяльника, два мудака."
 			"три паяльника, три мудака. четыре паяльника, фээртэка",
-		"слышен крик на всю долгопу, как фивты ебутся в жопу"
+		"слышен крик на всю долгопу, как фивты ебутся в жопу",
+		"эртэ эртэ эртэ эртэ эртэ эртэ эртэ эртэ эртэ эртэ эртэ эртэ" 
 	};
 	int number = (int) rand() % (int) (sizeof(strings) / sizeof(*strings));
 	speakf(strings[number]);
@@ -272,11 +273,11 @@ static void printRT() {
 
 static void showMenu(struct BinaryTree *tree) {
 	fputs(COLOR_YELLOW, stdout);
-	printspeakf(
+	printf(
 			"Привет, я Акинатор-бета. Я могу отгадать тот объект, что записан в моем\n"
 			"бинарном дереве, про существование других объектов пока не знаю. Поэтому\n"
 			"если я что то не угадаю и тебя это устраивать не будет, то ты пойдешь нахуй\n"
-			"и должен будешь объяснить, что же ты загадал.\n");
+			"и там должен будешь объяснить, что же ты загадал.\n");
 	fputs(COLOR_NONE, stdout);
 
 	int choice = 0;
