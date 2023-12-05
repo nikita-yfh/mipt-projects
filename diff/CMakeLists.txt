@@ -23,6 +23,9 @@ set(CMAKE_C_FLAGS_DEBUG
 set(SOURCES
 	"btree.c"
 	"btree.h"
+	"lexer.h"
+	"lexer.c"
+	"syntaxError.h"
 )
 
 add_subdirectory("log")
