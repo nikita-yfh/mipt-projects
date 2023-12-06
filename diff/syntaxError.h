@@ -11,4 +11,14 @@ struct SyntaxError {
 	int type;
 };
 
+enum ErrorType {
+	#define DEF_ERROR(type, text) type,
+	#include "errors.h"
+	#undef  DEF_ERROR
+
+	ERROR_COUNT
+};
+
+const char *getErrorDescription(struct SyntaxError *error);
+
 #endif // SYNTAXERR_H

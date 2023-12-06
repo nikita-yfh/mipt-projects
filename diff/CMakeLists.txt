@@ -26,6 +26,7 @@ set(SOURCES
 	"lexer.h"
 	"lexer.c"
 	"syntaxError.h"
+	"syntaxError.c"
 )
 
 add_subdirectory("log")

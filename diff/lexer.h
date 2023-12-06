@@ -13,6 +13,7 @@ enum {
 	TOKEN_OPERATOR,
 	TOKEN_KEYWORD,
 	TOKEN_NAME,
+	TOKEN_STRING,
 	TOKEN_NUMBER
 };
 
@@ -25,12 +26,12 @@ struct Token {
 	union {
 		char op;
 		int keyword;
-		const char *name;
+		const char *text;
 		double number;
 	};
 };
 
-struct Token *tokensCreate(char *line);
+struct Token *tokensCreate(char *line, struct SyntaxError *error);
 
 #endif // TOKENER
 
