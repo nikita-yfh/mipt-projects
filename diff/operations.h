@@ -6,12 +6,16 @@ enum OperationType {
 	OPERATION_BINARY
 };
 
+typedef int operation_t;
+
 typedef double operationFunc_t ();
 
 struct Operation {
-	const char *str;
+	const char *name;
 	enum OperationType type;
 	operationFunc_t *func;
 };
+
+const char *getOperationName(operation_t operation);
 
 #endif // OPERATION_H

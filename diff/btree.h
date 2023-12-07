@@ -4,9 +4,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "operations.h"
+
 enum {
 	NODE_LEFT,
 	NODE_RIGHT
+};
+
+enum NodeType {
+	NODE_NUMBER,
+	NODE_VARIABLE,
+	NODE_OPERATION,
 };
 
 struct BinaryTreeNode {
@@ -14,7 +22,13 @@ struct BinaryTreeNode {
 	struct BinaryTreeNode *left;
 	struct BinaryTreeNode *right;
 
-	char value[0];
+	enum NodeType type;
+
+	union {
+		double value;
+		char variable;
+		operation_t operation; 
+	};
 };
 
 struct BinaryTree {
@@ -25,10 +39,8 @@ struct BinaryTree {
 int btreeCreate(struct BinaryTree *tree);
 int btreeDelete(struct BinaryTree *tree);
 
-struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree,
-		struct BinaryTreeNode *node, const char *value);
-struct BinaryTreeNode *btreeDeleteNode(struct BinaryTree *tree,
-		struct BinaryTreeNode *node);
+struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree, struct BinaryTreeNode *node);
+struct BinaryTreeNode *btreeDeleteNode(struct BinaryTree *tree, struct BinaryTreeNode *node);
 
 struct BinaryTreeNode *btreeFindLeaf     (struct BinaryTreeNode *node,
 		const char *name);

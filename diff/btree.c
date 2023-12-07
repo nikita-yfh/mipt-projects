@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdio.h>
 
 int btreeCreate(struct BinaryTree *tree) {
 	assert(tree);
@@ -26,7 +27,7 @@ int btreeDelete(struct BinaryTree *tree) {
 }
 
 struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree,
-		struct BinaryTreeNode *node, const char *value) {
+		struct BinaryTreeNode *node) {
 	assert(tree);
 
 	if(!node ^ !tree->root)
@@ -36,7 +37,7 @@ struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree,
 		return NULL;
 
 	struct BinaryTreeNode *child = (struct BinaryTreeNode*)
-			   calloc(1, sizeof(struct BinaryTreeNode) + strlen(value) + 1);
+			   calloc(1, sizeof(struct BinaryTreeNode));
 	
 	if(!tree->root)
 		tree->root = child;
@@ -45,7 +46,6 @@ struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree,
 	else if(!node->right)
 		node->right = child;
 
-	strcpy(child->value, value);
 	child->parent = node;
 
 	tree->size++;
@@ -96,8 +96,21 @@ static void btreeDumpNode(FILE *dot, unsigned int level, const struct BinaryTree
 	struct HSV fill = {hue, 0.3, 1.0};
 	struct HSV edge = {hue, 1.0, 1.0};
 
+	char value[100] = "";
+
+	if(node->type == NODE_NUMBER)
+		snprintf(value, sizeof(value), "%g", node->value);
+	else if(node->type == NODE_VARIABLE) {
+		value[0] = node->variable;
+		value[1] = '\0';
+	} else if(node->type == NODE_OPERATION) {
+		const char *name = getOperationName(node->operation);
+		if(name)
+			strcpy(value, name);
+	}
+
 	fprintf(dot, "Node%p[label=\"%s\" fillcolor=\"%s\" color=\"%s\"]\n;",
-		node, node->value, HSVToRGB(fillColor, fill), HSVToRGB(edgeColor, edge));
+		node, value, HSVToRGB(fillColor, fill), HSVToRGB(edgeColor, edge));
 	if(node->parent)
 		fprintf(dot, "Node%p->Node%p;\n", node->parent, node);
 	else
@@ -107,17 +120,6 @@ static void btreeDumpNode(FILE *dot, unsigned int level, const struct BinaryTree
 		btreeDumpNode(dot, level + 1, node->left);
 	if(node->right)
 		btreeDumpNode(dot, level + 1, node->right);
-}
-
-struct BinaryTreeNode *btreeFindLeaf(struct BinaryTreeNode *node, const char *name) {
-	struct BinaryTreeNode *leftFinded = NULL, *rightFinded = NULL;
-	if(node->left && (leftFinded = btreeFindLeaf(node->left, name)))
-		return leftFinded;
-	if(node->right && (rightFinded = btreeFindLeaf(node->right, name)))
-		return rightFinded;
-	if(strcmp(node->value, name) == 0)
-		return node;
-	return NULL;
 }
 
 struct BinaryTreeNode *btreeGetChild(struct BinaryTreeNode *node, int lr) {

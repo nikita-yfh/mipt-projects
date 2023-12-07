@@ -1,6 +1,7 @@
 #include "operations.h"
 
 #include <math.h>
+#include <stddef.h>
 
 static double funcAdd   (double a, double b) { return a + b; }
 static double funcSub   (double a, double b) { return a - b; }
@@ -29,4 +30,10 @@ static struct Operation operations[] = {
 	{"arcctg",       OPERATION_UNARY,  funcArcctg},
 };
 
+static const int OPERATION_COUNT = sizeof(operations) / sizeof(*operations);
 
+const char *getOperationName(operation_t operation) {
+	if(operation < 0 || operation >= OPERATION_COUNT)
+		return NULL;
+	return operations[operation].name;
+}
