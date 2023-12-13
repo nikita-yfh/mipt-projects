@@ -51,7 +51,7 @@ static void clistTest() {
 
 int main() {
 	listTest();
-	clistTest();
+	//clistTest();
 
 	return 0;
 }

@@ -17,15 +17,15 @@ enum {
 	TOKEN_NUMBER
 };
 
+typedef unsigned int operation_t;
+
 struct Token {
 	int type;
 
-	int line;
-	int column;
+	struct FilePosition position;
 
 	union {
-		char op;
-		int keyword;
+		operation_t operation;
 		const char *text;
 		double number;
 	};

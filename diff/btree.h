@@ -4,15 +4,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "operations.h"
-
-enum {
-	NODE_LEFT,
-	NODE_RIGHT
-};
+#include "lexer.h"
 
 enum NodeType {
-	NODE_NUMBER,
+	NODE_CONST,
 	NODE_VARIABLE,
 	NODE_OPERATION,
 };
@@ -26,28 +21,17 @@ struct BinaryTreeNode {
 
 	union {
 		double value;
-		char variable;
+		unsigned int variable;
 		operation_t operation; 
 	};
 };
 
-struct BinaryTree {
-	struct BinaryTreeNode *root;
-	size_t size;
-};
+struct BinaryTreeNode *btreeNewConst(double value);
+struct BinaryTreeNode *btreeNewOperation(operation_t operation);
 
-int btreeCreate(struct BinaryTree *tree);
-int btreeDelete(struct BinaryTree *tree);
+void btreeDelete(struct BinaryTreeNode *node);
 
-struct BinaryTreeNode *btreeInsertNode(struct BinaryTree *tree, struct BinaryTreeNode *node);
-struct BinaryTreeNode *btreeDeleteNode(struct BinaryTree *tree, struct BinaryTreeNode *node);
-
-struct BinaryTreeNode *btreeFindLeaf     (struct BinaryTreeNode *node,
-		const char *name);
-
-struct BinaryTreeNode *btreeGetChild(struct BinaryTreeNode *node, int lr);
-
-void btreeDump(const struct BinaryTree *tree, int level);
+void btreeDump(const struct BinaryTreeNode *tree, int level);
 
 #endif // BTREE_H
 

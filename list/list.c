@@ -251,7 +251,7 @@ int listDump(const struct List *list, int level) {
 	fclose(dot);
 
 	insertGraphLog(level, tmpFileName, "List [%p] dump:", list);
-	remove(tmpFileName);
+	//remove(tmpFileName);
 
 	return 0;
 }

@@ -7,40 +7,6 @@
 #include <string.h>
 #include <errno.h>
 
-/* struct EscapeCharacter { */
-/* 	char escape; */
-/* 	char normal; */
-/* }; */
-
-/* static const struct EscapeCharacter escapeCharacters[] = { */
-/* 	{'a',  '\a'}, */
-/* 	{'b',  '\b'}, */
-/* 	{'e',  '\e'}, */
-/* 	{'f',  '\f'}, */
-/* 	{'n',  '\n'}, */
-/* 	{'r',  '\r'}, */
-/* 	{'t',  '\t'}, */
-/* 	{'v',  '\v'}, */
-/* 	{'0',  '\0'}, */
-/* 	{'\\', '\\'}, */
-/* 	{'\'', '\''}, */
-/* 	{'\"', '\"'} */
-/* }; */
-
-/* static char getNormalCharacter(char c) { */
-/* 	for(size_t index = 0; index < sizeof(escapeCharacters) / sizeof(*escapeCharacters); index++) */
-/* 		if(c == escapeCharacters[index].escape) */
-/* 			return escapeCharacters[index].normal; */
-/* 	return '\0'; */
-/* } */
-
-/* static char getEscapedCharacter(char c) { */
-/* 	for(size_t index = 0; index < sizeof(escapeCharacters) / sizeof(*escapeCharacters); index++) */
-/* 		if(c == escapeCharacters[index].normal) */
-/* 			return escapeCharacters[index].escape; */
-/* 	return '\0'; */
-/* } */
-
 static int isOperator(char c) {
 	const char *operators = "!@#$%^&*()+=-=\\|[{]};:?/,";
 	for(const char *operator = operators; *operator; operator++)
@@ -57,6 +23,33 @@ static int isName(char c) {
 	return isalpha(c) || c == '_';
 }
 
+static int tokenCheckKeywords(struct Token *token, const char *text, size_t textLength) {
+
+	const char *operators[] = {
+		#define DEF_OPERATION(id, str, type, priority, func) str,
+		#include "operations.h.gen"
+		#undef DEF_OPERATION
+	};
+
+	for(unsigned i = 0; i < (sizeof operators / sizeof *operators); i++) {
+		if(strlen(operators[i]) != textLength)
+			continue;
+		if(strncmp(text, operators[i], textLength) != 0)
+			continue;
+		token->type = TOKEN_OPERATOR;
+		token->operation = i;
+		return 1;
+	}
+
+	return 0;
+}
+
+static char *clearLine(char *begin, const char *end) {
+	while(begin < end)
+		*(begin++) = '\0';
+	return begin;
+}
+
 struct Token *tokensCreate(char *line, struct SyntaxError *error) {
 	struct Token *tokens = (struct Token*) calloc(strlen(line), sizeof(struct Token));
 
@@ -66,16 +59,24 @@ struct Token *tokensCreate(char *line, struct SyntaxError *error) {
 
 	while(*line) {
 		if(isOperator(*line)) {
-			token->type = TOKEN_OPERATOR;
-			token->op = *line;
-			*(line++) = '\0';
-			filePosition.column++;
+			char *tokenBegin = line;
+
+			while(isOperator(*line++))
+				filePosition.column++;
+
+			if(!tokenCheckKeywords(token, tokenBegin, (size_t) (line - token->text)))
+				return NULL;
+			token->position = filePosition;
 			token++;
+
+			clearLine(tokenBegin, line);
+
 		} else if(isNumber(*line)) {
 			char *tokenBegin = line;
 			errno = 0;
 			token->type = TOKEN_NUMBER;
 			token->number = strtod(line, &line);
+			token->position = filePosition;
 			token++;
 
 			if(errno || tokenBegin == line) {
@@ -85,8 +86,7 @@ struct Token *tokensCreate(char *line, struct SyntaxError *error) {
 				return NULL;
 			}
 			filePosition.column += (int) (line - tokenBegin);
-			while(tokenBegin < line)
-				*(tokenBegin++) = '\0';
+			clearLine(tokenBegin, line);
 		} else if(*line == '"') {
 			*(line++) = '\0';
 			do {
@@ -101,6 +101,7 @@ struct Token *tokensCreate(char *line, struct SyntaxError *error) {
 			} while(*(++line) != '"');
 
 			token->type = TOKEN_STRING;
+			token->position = filePosition;
 			token->text = line;
 			token++;
 
@@ -113,14 +114,18 @@ struct Token *tokensCreate(char *line, struct SyntaxError *error) {
 			filePosition.column++;
 			*(line++) = '\0';
 		} else if(isName(*line)) {
-			token->type = TOKEN_NAME;
-			token->text = line;
-			token++;
+			/* token->type = TOKEN_NAME; */
+			/* token->position = filePosition; */
+			/* token->text = line; */
+			/* token++; */
 
-			while(isName(*line)) {
-				line++;
-				filePosition.column++;
-			}
+			/* while(isName(*line)) { */
+			/* 	line++; */
+			/* 	filePosition.column++; */
+			/* } */
+
+			/* if(!tokenCheckKeywords(token, (size_t) (line - token->text), error)) */
+			/* 	return NULL; */
 		}
 	}
 	token->type = TOKEN_EOF;
