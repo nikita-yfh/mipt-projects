@@ -32,7 +32,7 @@ struct BinaryTreeNode *btreeNewConst(double value) {
 	return node;
 }
 
-struct BinaryTreeNode *btreeNewOperation(operator_t operator) {
+struct BinaryTreeNode *btreeNewOperator(operator_t operator) {
 	struct BinaryTreeNode *node = btreeNew();
 	node->type = NODE_OPERATION;
 	node->operator = operator;

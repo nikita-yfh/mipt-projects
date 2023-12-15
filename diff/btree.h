@@ -27,7 +27,7 @@ struct BinaryTreeNode {
 };
 
 struct BinaryTreeNode *btreeNewConst(double value);
-struct BinaryTreeNode *btreeNewOperation(operator_t operator);
+struct BinaryTreeNode *btreeNewOperator(operator_t operator);
 
 void btreeDelete(struct BinaryTreeNode *node);
 
