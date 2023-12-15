@@ -24,20 +24,12 @@ static int isName(char c) {
 }
 
 static int tokenCheckKeywords(struct Token *token, const char *text, size_t textLength) {
+	
+	operator_t operator = operatorFindL(text, textLength);
 
-	const char *operators[] = {
-		#define DEF_OPERATION(id, str, type, priority, func) str,
-		#include "operations.h.gen"
-		#undef DEF_OPERATION
-	};
-
-	for(unsigned i = 0; i < (sizeof operators / sizeof *operators); i++) {
-		if(strlen(operators[i]) != textLength)
-			continue;
-		if(strncmp(text, operators[i], textLength) != 0)
-			continue;
+	if(operator) {
 		token->type = TOKEN_OPERATOR;
-		token->operation = i;
+		token->operator = operator;
 		return 1;
 	}
 
@@ -59,17 +51,16 @@ struct Token *tokensCreate(char *line, struct SyntaxError *error) {
 
 	while(*line) {
 		if(isOperator(*line)) {
-			char *tokenBegin = line;
-
-			while(isOperator(*line++))
-				filePosition.column++;
-
-			if(!tokenCheckKeywords(token, tokenBegin, (size_t) (line - token->text)))
+			if(!tokenCheckKeywords(token, line, 1)) {
+				error->type = ERROR_INVALID_OPERATOR;
+				error->position = filePosition;
 				return NULL;
+			}
+			filePosition.column++;
+			*(line++) = '\0';
+
 			token->position = filePosition;
 			token++;
-
-			clearLine(tokenBegin, line);
 
 		} else if(isNumber(*line)) {
 			char *tokenBegin = line;
@@ -114,21 +105,42 @@ struct Token *tokensCreate(char *line, struct SyntaxError *error) {
 			filePosition.column++;
 			*(line++) = '\0';
 		} else if(isName(*line)) {
-			/* token->type = TOKEN_NAME; */
-			/* token->position = filePosition; */
-			/* token->text = line; */
-			/* token++; */
+			char *tokenBegin = line;
+			token->position = filePosition;
 
-			/* while(isName(*line)) { */
-			/* 	line++; */
-			/* 	filePosition.column++; */
-			/* } */
+			while(isName(*line)) {
+				line++;
+				filePosition.column++;
+			}
 
-			/* if(!tokenCheckKeywords(token, (size_t) (line - token->text), error)) */
-			/* 	return NULL; */
+			if(tokenCheckKeywords(token, tokenBegin, (size_t) (line - tokenBegin))) {
+				token++;
+				clearLine(tokenBegin, line);
+			} else {
+				token->type = TOKEN_NAME;
+				token->text = line;
+				token++;
+			}
 		}
 	}
 	token->type = TOKEN_EOF;
 	return tokens;
+}
+
+int main() {
+	struct SyntaxError error = {};
+	char text[] = "(1 + 2) mod 30";
+	struct Token *tokens = tokensCreate(text, &error);
+
+	if(tokens) {
+		while(tokens->type != TOKEN_EOF) {
+			printf("%d %g\n", tokens->type, tokens->number);
+			tokens++;
+		}
+	} else {
+		printf("%s\n", getErrorDescription(&error));
+	}
+
+	return 0;
 }
 

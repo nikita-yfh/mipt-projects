@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "syntaxError.h"
+#include "operations.h"
 
 enum {
 	TOKEN_EOF = -1,
@@ -17,15 +18,13 @@ enum {
 	TOKEN_NUMBER
 };
 
-typedef unsigned int operation_t;
-
 struct Token {
 	int type;
 
 	struct FilePosition position;
 
 	union {
-		operation_t operation;
+		operator_t operator;
 		const char *text;
 		double number;
 	};

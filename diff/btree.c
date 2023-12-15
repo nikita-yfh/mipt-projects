@@ -2,6 +2,7 @@
 #include "log.h"
 #include "hsv2rgb.h"
 #include "utils.h"
+#include "operations.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -31,10 +32,10 @@ struct BinaryTreeNode *btreeNewConst(double value) {
 	return node;
 }
 
-struct BinaryTreeNode *btreeNewOperation(operation_t operation) {
+struct BinaryTreeNode *btreeNewOperation(operator_t operator) {
 	struct BinaryTreeNode *node = btreeNew();
 	node->type = NODE_OPERATION;
-	node->operation = operation;
+	node->operator = operator;
 	return node;
 }
 
@@ -56,14 +57,9 @@ static void btreeDumpNode(FILE *dot, unsigned int level, const struct BinaryTree
 	if(node->type == NODE_CONST)
 		snprintf(value, sizeof(value), "%g", node->value);
 	else if(node->type == NODE_OPERATION) {
-		const char *operators[] = {
-			#define DEF_OPERATION(id, str, type, priority, func) str,
-			#include "operations.h.gen"
-			#undef DEF_OPERATION
-		};
-
-		if(node->operation < sizeof(operators) / sizeof(*operators))
-			strcpy(value, operators[node->operation]);
+		const struct Operator *operator = operatorGet(node->operator);
+		if(operator)
+			strcpy(value, operator->name);
 	}
 
 	fprintf(dot, "Node%p[label=\"%s\" fillcolor=\"%s\" color=\"%s\"]\n;",

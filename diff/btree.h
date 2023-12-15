@@ -22,12 +22,12 @@ struct BinaryTreeNode {
 	union {
 		double value;
 		unsigned int variable;
-		operation_t operation; 
+		operator_t operator; 
 	};
 };
 
 struct BinaryTreeNode *btreeNewConst(double value);
-struct BinaryTreeNode *btreeNewOperation(operation_t operation);
+struct BinaryTreeNode *btreeNewOperation(operator_t operator);
 
 void btreeDelete(struct BinaryTreeNode *node);
 

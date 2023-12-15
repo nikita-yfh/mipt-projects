@@ -25,6 +25,10 @@ set(SOURCES
 	"btree.h"
 	"lexer.h"
 	"lexer.c"
+	"parser.h"
+	"parser.c"
+	"operations.h"
+	"operations.c"
 	"syntaxError.h"
 	"syntaxError.c"
 )
