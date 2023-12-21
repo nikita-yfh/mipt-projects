@@ -25,15 +25,15 @@ static double funcMinus (double a) { return -a; }
 static double funcPlus  (double a) { return  a; }
 
 const struct Operator operators[] = {
-	{"|",   OPERATOR_BINARY,    1, funcOr,    NULL      },
-	{"&",   OPERATOR_BINARY,    2, funcAnd,   NULL      },
-	{"+",   OPERATOR_UBINARY,   3, funcAdd,   funcPlus  },
-	{"-",   OPERATOR_UBINARY,   3, funcSub,   funcMinus },
-	{"*",   OPERATOR_BINARY,    4, funcMul,   NULL      },
-	{"/",   OPERATOR_BINARY,    4, funcDiv,   NULL      },
-	{"mod", OPERATOR_BINARY,    4, fmod,      NULL      },
-	{"^",   OPERATOR_BINARY,    5, pow,       NULL      },
-	{"log", OPERATOR_BINARY,    5, funcLog,   NULL      },
+	{"|",   OPERATOR_BINARY,    0, funcOr,    NULL      },
+	{"&",   OPERATOR_BINARY,    1, funcAnd,   NULL      },
+	{"+",   OPERATOR_UBINARY,   2, funcAdd,   funcPlus  },
+	{"-",   OPERATOR_UBINARY,   2, funcSub,   funcMinus },
+	{"*",   OPERATOR_BINARY,    3, funcMul,   NULL      },
+	{"/",   OPERATOR_BINARY,    3, funcDiv,   NULL      },
+	{"mod", OPERATOR_BINARY,    3, fmod,      NULL      },
+	{"^",   OPERATOR_BINARY,    4, pow,       NULL      },
+	{"log", OPERATOR_BINARY,    4, funcLog,   NULL      },
 	{"~",   OPERATOR_UNARY,    -1, NULL,      funcNot   },
 	{"(",   OPERATOR_LBRACKET, -1, NULL,      NULL      },
 	{")",   OPERATOR_RBRACKET, -1, NULL,      NULL      },
@@ -64,3 +64,4 @@ const struct Operator *operatorGet(operator_t number) {
 
 	return &operators[number];
 }
+

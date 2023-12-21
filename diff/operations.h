@@ -5,13 +5,13 @@
 #include <stddef.h>
 
 enum OperatorType {
-	OPERATOR_NONE,
-	OPERATOR_UNARY,
-	OPERATOR_BINARY,
-	OPERATOR_UBINARY,
-	
-	OPERATOR_LBRACKET,
-	OPERATOR_RBRACKET,
+	OPERATOR_NONE      = 0,
+	OPERATOR_LBRACKET  = 1,
+	OPERATOR_RBRACKET  = 2,
+
+	OPERATOR_UNARY     = 4,
+	OPERATOR_BINARY    = 8,
+	OPERATOR_UBINARY   = OPERATOR_UNARY | OPERATOR_BINARY,
 };
 
 typedef double binaryFunc_t(double, double);
@@ -28,6 +28,8 @@ struct Operator {
 
 typedef unsigned int operator_t;
 #define OPERATOR_INVALID UINT_MAX
+
+#define OPERATOR_MAX_PRIORITY 4
 
 operator_t operatorFindL(const char *text, size_t textlength);
 operator_t operatorFind (const char *text);

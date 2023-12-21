@@ -1,4 +1,6 @@
 #include "lexer.h"
+#include "parser.h"
+#include "log.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -129,16 +131,12 @@ struct Token *tokensCreate(char *line, struct SyntaxError *error) {
 
 int main() {
 	struct SyntaxError error = {};
-	char text[] = "(1 + 2) mod 30";
-	struct Token *tokens = tokensCreate(text, &error);
+	struct BinaryTreeNode *node = parseString("(1 + 3) * 2 + 5 + 7", &error);
 
-	if(tokens) {
-		while(tokens->type != TOKEN_EOF) {
-			printf("%d %g\n", tokens->type, tokens->number);
-			tokens++;
-		}
+	if(node) {
+		btreeDump(node, LOG_DEBUG);
 	} else {
-		printf("%s\n", getErrorDescription(&error));
+		printf("%s %d %d\n", getErrorDescription(&error), error.position.line, error.position.column);
 	}
 
 	return 0;

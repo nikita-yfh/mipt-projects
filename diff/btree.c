@@ -89,5 +89,6 @@ void btreeDump(const struct BinaryTreeNode *tree, int level) {
 	fclose(dot);
 
 	insertGraphLog(level, tmpFileName, "Binary tree %p dump:", tree);
+	remove(tmpFileName);
 }
 
