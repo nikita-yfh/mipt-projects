@@ -29,7 +29,7 @@ static int tokenCheckKeywords(struct Token *token, const char *text, size_t text
 	
 	operator_t operator = operatorFindL(text, textLength);
 
-	if(operator) {
+	if(operator != OPERATOR_INVALID) {
 		token->type = TOKEN_OPERATOR;
 		token->operator = operator;
 		return 1;
@@ -131,7 +131,7 @@ struct Token *tokensCreate(char *line, struct SyntaxError *error) {
 
 int main() {
 	struct SyntaxError error = {};
-	struct BinaryTreeNode *node = parseString("(1 + 3) * 2 + 5 * log 7", &error);
+	struct BinaryTreeNode *node = parseString("(1 + 3) * 2 + 5 * lo 7", &error);
 
 	if(node) {
 		btreeDump(node, LOG_DEBUG);
