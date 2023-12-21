@@ -131,7 +131,7 @@ struct Token *tokensCreate(char *line, struct SyntaxError *error) {
 
 int main() {
 	struct SyntaxError error = {};
-	struct BinaryTreeNode *node = parseString("(1 + 3) * 2 + 5 * lo 7", &error);
+	struct BinaryTreeNode *node = parseString("sin 2 + ln(sin(3) + cos(2 * 3 + 4))", &error);
 
 	if(node) {
 		btreeDump(node, LOG_DEBUG);
