@@ -23,6 +23,7 @@ static double funcLog   (double a, double b) { return log(b) / log(a); }
 static double funcNot   (double a) { return toDouble(!toBool(a)); }
 static double funcMinus (double a) { return -a; }
 static double funcPlus  (double a) { return  a; }
+static double funcCtan  (double a) { return tan(M_PI / 2.0f - a); }
 
 const struct Operator operators[] = {
 	{"|",   OPERATOR_BINARY,    0, funcOr,    NULL      },
@@ -34,6 +35,13 @@ const struct Operator operators[] = {
 	{"mod", OPERATOR_BINARY,    3, fmod,      NULL      },
 	{"^",   OPERATOR_BINARY,    4, pow,       NULL      },
 	{"log", OPERATOR_BINARY,    4, funcLog,   NULL      },
+	{"~",   OPERATOR_UNARY,    -1, NULL,      funcNot   },
+	{"ln",  OPERATOR_UNARY,    -1, NULL,      log       },
+	{"lg",  OPERATOR_UNARY,    -1, NULL,      log10     },
+	{"sin", OPERATOR_UNARY,    -1, NULL,      sin       },
+	{"cos", OPERATOR_UNARY,    -1, NULL,      cos       },
+	{"tg",  OPERATOR_UNARY,    -1, NULL,      tan       },
+	{"ctg", OPERATOR_UNARY,    -1, NULL,      funcCtan  },
 	{"~",   OPERATOR_UNARY,    -1, NULL,      funcNot   },
 	{"(",   OPERATOR_LBRACKET, -1, NULL,      NULL      },
 	{")",   OPERATOR_RBRACKET, -1, NULL,      NULL      },

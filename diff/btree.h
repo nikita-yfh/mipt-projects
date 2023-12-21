@@ -21,13 +21,14 @@ struct BinaryTreeNode {
 
 	union {
 		double value;
-		unsigned int variable;
+		char variable;
 		operator_t operator; 
 	};
 };
 
 struct BinaryTreeNode *btreeNewConst(double value);
 struct BinaryTreeNode *btreeNewOperator(operator_t operator);
+struct BinaryTreeNode *btreeNewVariable(char variable);
 
 void btreeDelete(struct BinaryTreeNode *node);
 

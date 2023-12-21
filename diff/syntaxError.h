@@ -7,6 +7,7 @@ struct FilePosition {
 };
 
 struct SyntaxError {
+	const char *text;
 	struct FilePosition position;
 	int type;
 };
@@ -19,6 +20,7 @@ enum ErrorType {
 	ERROR_COUNT
 };
 
-const char *getErrorDescription(struct SyntaxError *error);
+const char *getErrorDescription(const struct SyntaxError *error);
+void printError(const struct SyntaxError *error);
 
 #endif // SYNTAXERR_H

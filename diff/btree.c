@@ -39,6 +39,13 @@ struct BinaryTreeNode *btreeNewOperator(operator_t operator) {
 	return node;
 }
 
+struct BinaryTreeNode *btreeNewVariable(char variable) {
+	struct BinaryTreeNode *node = btreeNew();
+	node->type = NODE_OPERATION;
+	node->variable = variable;
+	return node;
+}
+
 static void btreeDumpNode(FILE *dot, unsigned int level, const struct BinaryTreeNode *node) {
 	assert(dot);
 

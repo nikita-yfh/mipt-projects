@@ -7,12 +7,15 @@
 static struct BinaryTreeNode *getUnary(const struct Token **token, struct SyntaxError *error);
 static struct BinaryTreeNode *getExpr(const struct Token **token, struct SyntaxError *error);
 
-static struct BinaryTreeNode *getNumber(const struct Token **token, struct SyntaxError*) {
+static struct BinaryTreeNode *getNumber(const struct Token **token, struct SyntaxError* error) {
 	assert(token);
 	assert(*token);
 
-	if((*token)->type != TOKEN_NUMBER)
+	if((*token)->type != TOKEN_NUMBER) {
+		error->position = (*token)->position;
+		error->type = ERROR_NOT_A_NUMBER;
 		return NULL;
+	}
 	return btreeNewConst(((*token)++)->number);
 }
 
@@ -21,29 +24,25 @@ static struct BinaryTreeNode *getHard(const struct Token **token, struct SyntaxE
 		const struct Operator *operator = operatorGet((*token)->operator);
 		assert(operator);
 
-		if(operator->type != OPERATOR_LBRACKET) {
+		if(operator->type == OPERATOR_LBRACKET) {
+			(*token)++;
+			struct BinaryTreeNode *node = getExpr(token, error);
+
+			if(!node)
+				return NULL;
+
+			if((*token)->type == TOKEN_OPERATOR) {
+				operator = operatorGet((*token)->operator);
+				if(operator->type == OPERATOR_RBRACKET) {
+					(*token)++;
+					return node;
+				}
+			}
+
 			error->position = (*token)->position;
 			error->type = ERROR_MISSING_BRACKET;
 			return NULL;
 		}
-
-		(*token)++;
-		struct BinaryTreeNode *node = getExpr(token, error);
-
-		if(!node)
-			return NULL;
-
-		if((*token)->type == TOKEN_OPERATOR) {
-			operator = operatorGet((*token)->operator);
-			if(operator->type == OPERATOR_RBRACKET) {
-				(*token)++;
-				return node;
-			}
-		}
-
-		error->position = (*token)->position;
-		error->type = ERROR_MISSING_BRACKET;
-		return NULL;
 	}
 	return getNumber(token, error);
 }
@@ -56,7 +55,6 @@ static struct BinaryTreeNode *getUnary(const struct Token **token, struct Syntax
 		const struct Operator *operator = operatorGet((*token)->operator);
 		assert(operator);
 
-		printLog(LOG_VERBOSE, "str=%s type=%d", operator->name, operator->type);
 		if(operator->type & OPERATOR_UNARY) {
 			struct BinaryTreeNode *node = btreeNewOperator((*token)->operator);
 			(*token)++;
@@ -81,9 +79,6 @@ static struct BinaryTreeNode *getBinary(const struct Token **token, int deep, st
 	struct BinaryTreeNode *a = getBinary(token, deep + 1, error);
 	if(!a)
 		return NULL;
-
-	if((*token)->type == TOKEN_OPERATOR)
-		printLog(LOG_DEBUG, "deep current %d token %d", deep, operatorGet((*token)->operator)->binaryPriority);
 
 	while((*token)->type == TOKEN_OPERATOR && 
 			operatorGet((*token)->operator)->binaryPriority == deep) {
@@ -111,18 +106,11 @@ static struct BinaryTreeNode *getExpr(const struct Token **token, struct SyntaxE
 }
 
 struct BinaryTreeNode *parseString(const char *str, struct SyntaxError *error) {
-	printLog(LOG_DEBUG, "Begin parsing string '%s'", str);
+	error->text = str;
 
 	char *buffer = strdup(str);
 
 	struct Token *tokens = tokensCreate(buffer, error);
-
-	for(const struct Token *token = tokens; token->type != TOKEN_EOF; token++) {
-		if(token->type == TOKEN_OPERATOR)
-			printLog(LOG_DEBUG, "type = %d, operator=%d", token->type, token->operator);
-		else
-			printLog(LOG_DEBUG, "type = %d", token->type);
-	}
 
 	const struct Token *token = tokens;
 
@@ -133,8 +121,11 @@ struct BinaryTreeNode *parseString(const char *str, struct SyntaxError *error) {
 	if(!node)
 		return NULL;
 
-	if(!token || token->type != TOKEN_EOF)
+	if(!token || token->type != TOKEN_EOF) {
+		error->position = token->position;
+		error->type = ERROR_EOF;
 		return NULL;
+	}
 
 	free(tokens);
 
