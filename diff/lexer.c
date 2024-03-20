@@ -120,7 +120,7 @@ struct Token *tokensCreate(char *line, struct SyntaxError *error) {
 				clearLine(tokenBegin, line);
 			} else {
 				token->type = TOKEN_NAME;
-				token->text = line;
+				token->text = tokenBegin;
 				token++;
 			}
 		}
@@ -131,7 +131,7 @@ struct Token *tokensCreate(char *line, struct SyntaxError *error) {
 
 int main() {
 	struct SyntaxError error = {};
-	struct BinaryTreeNode *node = parseString("sin 2 + ln(sin(3) + cos(2 * 3 + 4))", &error);
+	struct BinaryTreeNode *node = parseString("sin x + ln(sin(3) + cos(2 * 3 + 4))", &error);
 
 	if(node) {
 		btreeDump(node, LOG_DEBUG);

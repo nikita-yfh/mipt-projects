@@ -7,19 +7,36 @@
 static struct BinaryTreeNode *getUnary(const struct Token **token, struct SyntaxError *error);
 static struct BinaryTreeNode *getExpr(const struct Token **token, struct SyntaxError *error);
 
-static struct BinaryTreeNode *getNumber(const struct Token **token, struct SyntaxError* error) {
+static struct BinaryTreeNode *getNumber(const struct Token **token, struct SyntaxError*) {
 	assert(token);
 	assert(*token);
 
-	if((*token)->type != TOKEN_NUMBER) {
-		error->position = (*token)->position;
-		error->type = ERROR_NOT_A_NUMBER;
+	if((*token)->type != TOKEN_NUMBER)
 		return NULL;
-	}
+
 	return btreeNewConst(((*token)++)->number);
 }
 
+static struct BinaryTreeNode *getVariable(const struct Token **token, struct SyntaxError *error) {
+	assert(token);
+	assert(*token);
+
+	if((*token)->type != TOKEN_NAME)
+		return NULL;
+
+	if(strlen((*token)->text) > 1) {
+		error->type = ERROR_VAR_LONG;
+		error->position = (*token)->position;
+		return NULL;
+	}
+
+	return btreeNewVariable(*((*token)++)->text);
+}
+
 static struct BinaryTreeNode *getHard(const struct Token **token, struct SyntaxError *error) {
+	assert(token);
+	assert(*token);
+
 	if((*token)->type == TOKEN_OPERATOR) {
 		const struct Operator *operator = operatorGet((*token)->operator);
 		assert(operator);
@@ -44,7 +61,15 @@ static struct BinaryTreeNode *getHard(const struct Token **token, struct SyntaxE
 			return NULL;
 		}
 	}
-	return getNumber(token, error);
+
+	switch((*token)->type) {
+		case TOKEN_NUMBER: return getNumber(token, error);
+		case TOKEN_NAME:   return getVariable(token, error);
+	}
+
+	error->type = ERROR_INVALID_TOKEN;
+	error->position = (*token)->position;
+	return NULL;
 }
 
 static struct BinaryTreeNode *getUnary(const struct Token **token, struct SyntaxError *error) {

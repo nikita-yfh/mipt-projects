@@ -41,7 +41,7 @@ struct BinaryTreeNode *btreeNewOperator(operator_t operator) {
 
 struct BinaryTreeNode *btreeNewVariable(char variable) {
 	struct BinaryTreeNode *node = btreeNew();
-	node->type = NODE_OPERATION;
+	node->type = NODE_VARIABLE;
 	node->variable = variable;
 	return node;
 }
@@ -67,6 +67,9 @@ static void btreeDumpNode(FILE *dot, unsigned int level, const struct BinaryTree
 		const struct Operator *operator = operatorGet(node->operator);
 		if(operator)
 			strcpy(value, operator->name);
+	} else if(node->type == NODE_VARIABLE) {
+		value[0] = node->variable;
+		value[1] = '\0';
 	}
 
 	fprintf(dot, "Node%p[label=\"%s\" fillcolor=\"%s\" color=\"%s\"]\n;",
