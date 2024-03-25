@@ -24,6 +24,8 @@ set(SOURCES
     main.c
     camera.c
     camera.h
+    mandelbrot.h
+    mandelbrot.c
 )
 
 
