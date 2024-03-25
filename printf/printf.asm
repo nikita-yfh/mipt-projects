@@ -138,16 +138,16 @@ printByte:
     mov rsi, 1
     mov cl,  1
     call printNumber2N
-    jmp myprintf.ignore
+    jmp myprintf.endPrintArg
 
 printChar:
     mov al, [rdx]
     call putc
-    jmp myprintf.ignore
+    jmp myprintf.endPrintArg
 
 printNumber:
     call printNumber10
-    jmp myprintf.ignore
+    jmp myprintf.endPrintArg
 
 printOctal:
     mov al, '0'
@@ -157,7 +157,7 @@ printOctal:
     mov rsi, 7
     mov cl,  3
     call printNumber2N
-    jmp myprintf.ignore
+    jmp myprintf.endPrintArg
 
 printString:
     mov rcx, [rdx]
@@ -166,10 +166,10 @@ printString:
     je .strskip
     mov al, [rcx]
     call putc
-    inc rdx
+    inc rcx
     jmp .strloop
 .strskip:
-    jmp myprintf.ignore
+    jmp myprintf.endPrintArg
 
 printHex:
     mov al, '0'
@@ -179,22 +179,22 @@ printHex:
     mov rsi, 0xf
     mov cl,  4
     call printNumber2N
-    jmp myprintf.ignore
+    jmp myprintf.endPrintArg
 
 printPercent:
     mov al, '%'
     call putc
-    jmp myprintf.ignore
+    jmp myprintf.endPrintArg
 
 jtable:
     dq printByte     ; b
     dq printChar     ; c
     dq printNumber   ; d
-    times 10 dq myprintf.ignore
+    times 10 dq myprintf.endPrintArg
     dq printOctal    ; o
-    times 3  dq myprintf.ignore
+    times 3  dq myprintf.endPrintArg
     dq printString   ; s
-    times 4  dq myprintf.ignore
+    times 4  dq myprintf.endPrintArg
     dq printHex      ; x
 
 myprintf:
@@ -234,15 +234,15 @@ myprintf:
     ja .ignore
 
     jmp [rax * 8 + jtable]
-    inc rdx            ; counter of args
 
 .skipformat:
 
     mov al, [rbx]
     call putc
 
+.endPrintArg:
+    add rdx, 4             ; next arg
 .ignore:
-
     inc rbx
     jmp .loop
 .end:
@@ -251,6 +251,7 @@ myprintf:
 
     mov rax, rdx        ; return
     sub rax, rbp
+    shr rax, 3          ; rax = (rdx - rbp) / 8
 
     pop rsi
     pop rdx
