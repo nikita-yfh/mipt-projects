@@ -57,11 +57,47 @@ putc:
     ret
     
 ;-----------------------------------------------------------------------
+; Prints number with decimal base
+; Entry:    rdx = pointer to number
+; Destroys: rax
+;-----------------------------------------------------------------------
+printNumber10:
+    push rbp
+    push rdx
+    sub rsp, DIGITS_BUFFER_SIZE     ; allocate buffer for digits
+    mov rbp, rsp
+    mov rax, [rdx]                  ; number
+    mov rcx, 10                     ; base
+
+.loop:
+    xor rdx, rdx
+    div rcx
+
+    add rdx, '0'
+    mov [rbp], rdx
+    inc rbp
+    
+    cmp rax, 0
+    jne .loop
+
+.printloop:
+    dec rbp
+    mov al, [rbp]
+    call putc
+    cmp rbp, rsp
+    jne .printloop
+
+    add rsp, DIGITS_BUFFER_SIZE     ; free memory
+    pop rdx
+    pop rbp
+    ret
+
+;-----------------------------------------------------------------------
 ; Prints number with 2^n base
-; Entry:    
-;           cl  = base shift increment
+; Entry:    cl  = base shift increment
 ;           rsi = base mask
 ;           rdx = pointer to number
+; Destroys: rax
 ;-----------------------------------------------------------------------
 printNumber2N:
     push rbp
@@ -110,6 +146,7 @@ printChar:
     jmp myprintf.ignore
 
 printNumber:
+    call printNumber10
     jmp myprintf.ignore
 
 printOctal:
