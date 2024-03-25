@@ -113,6 +113,13 @@ printNumber:
     jmp myprintf.ignore
 
 printOctal:
+    mov al, '0'
+    call putc
+    mov al, 'o'
+    call putc
+    mov rsi, 7
+    mov cl,  3
+    call printNumber2N
     jmp myprintf.ignore
 
 printString:
@@ -132,9 +139,8 @@ printHex:
     call putc
     mov al, 'x'
     call putc
-    mov rsi, 4<<60              ; 0b10...000
+    mov rsi, 0xf
     mov cl,  4
-    mov ch,  60
     call printNumber2N
     jmp myprintf.ignore
 
