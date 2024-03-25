@@ -11,9 +11,13 @@ DIGITS_BUFFER_SIZE equ 64
 ;          r9  = buffer begin
 ;          rbp = buffer end
 ;          
-; Destroys: rax, rdx, rsi, rdi, r8
+; Destroys: rdi, r8
 ;-----------------------------------------------------------------------
 flush:
+    push rax
+    push rdx
+    push rsi
+
     cmp r8, 0
     je .end                ; if length == 0
     mov rax, 1
@@ -24,6 +28,11 @@ flush:
     mov r8, 0
     mov rdi, r9            ; rdi = buffer_begin
 .end:
+
+    pop rsi
+    pop rdx
+    pop rax
+
     ret
 
 
@@ -33,7 +42,7 @@ flush:
 ;          rbp = buffer end
 ;          rdi = text end
 ;          al  = character
-; Destroys: rax, rdx, rsi, rdi, r8
+; Destroys: rdi, r8
 ;-----------------------------------------------------------------------
 
 digits: db "0123456789abcdef"
