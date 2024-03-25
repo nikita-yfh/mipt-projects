@@ -184,7 +184,7 @@ printHex:
 printPercent:
     mov al, '%'
     call putc
-    jmp myprintf.endPrintArg
+    jmp myprintf.ignore
 
 jtable:
     dq printByte     ; b
@@ -219,7 +219,11 @@ myprintf:
     je .end
 
     cmp byte [rbx], '%'
-    jne .skipformat
+    je .skipprint
+    mov al, [rbx]
+    call putc
+    jmp .ignore
+.skipprint:
 
     inc rbx
     cmp byte[rbx], 0
@@ -235,13 +239,10 @@ myprintf:
 
     jmp [rax * 8 + jtable]
 
-.skipformat:
-
-    mov al, [rbx]
-    call putc
 
 .endPrintArg:
-    add rdx, 4             ; next arg
+    add rdx, 8             ; next arg
+
 .ignore:
     inc rbx
     jmp .loop
