@@ -1,7 +1,7 @@
 int myprintf(const char *str, ...);
 
 int main() {
-    myprintf("hello");
+    myprintf("test'%b'test", 256);
 
     return 0;
 }

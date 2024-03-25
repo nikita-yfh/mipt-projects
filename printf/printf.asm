@@ -3,49 +3,147 @@ global myprintf
 section .text
 
 BUFFER_SIZE equ 1024
+DIGITS_BUFFER_SIZE equ 64
 
 ;-----------------------------------------------------------------------
 ; Prints buffer to stdout
-; Entry: rdi - buffer to flush, rsi - length
-; Destroys: rax, rdx, rdi, rsi
+; Entry:   r8  = buffer length
+;          r9  = buffer begin
+;          rbp = buffer end
+;          
+; Destroys: rax, rdx, rsi, rdi, r8
 ;-----------------------------------------------------------------------
-puts:
-    cmp  rsi, 0
-    je .end
-    mov  rax, 1
-    mov  rdx, rsi ; rdx = length
-    mov  rsi, rdi ; rsi -> buffer
-    mov  rdi, 1 ; std out
-    syscall ; print buffer
+flush:
+    cmp r8, 0
+    je .end                ; if length == 0
+    mov rax, 1
+    mov rdx, r8            ; rdx = length
+    mov rsi, r9            ; rsi = buffer_begin
+    mov rdi, 1             ; std out
+    syscall                ; print buffer
+    mov r8, 0
+    mov rdi, r9            ; rdi = buffer_begin
 .end:
     ret
 
-print:
-.byte:
-    jmp myprintf.ignore
-.char:
-    jmp myprintf.ignore
-.number:
-    jmp myprintf.ignore
-.octal:
-    jmp myprintf.ignore
-.string:
-    jmp myprintf.ignore
-.hex:
-    jmp myprintf.ignore
-.percent:
+
+;-----------------------------------------------------------------------
+; Puts character to buffer. If buffer is full, buffer will be flushed.
+; Entry:   r8  = buffer length
+;          rbp = buffer end
+;          rdi = text end
+;          al  = character
+; Destroys: rax, rdx, rsi, rdi, r8
+;-----------------------------------------------------------------------
+
+digits: db "0123456789abcdef"
+
+putc:
+    stosb
+    inc r8                 ; buffer_length++
+    cmp r8, BUFFER_SIZE
+    jle .skipflush
+    call flush
+.skipflush:
+    ret
+    
+;-----------------------------------------------------------------------
+; Prints number with 2^n base
+; Entry:    
+;           cl  = base shift increment
+;           rsi = base mask
+;           rdx = pointer to number
+;-----------------------------------------------------------------------
+printNumber2N:
+    push rbp
+    push r10
+    sub rsp, DIGITS_BUFFER_SIZE     ; allocate buffer for digits
+    mov rbp, rsp
+    mov r10, [rdx]          ; number
+
+.loop:
+    mov rax, r10
+    and rax, rsi
+    mov rax, [digits+rax]
+    mov [rbp], rax
+    inc rbp
+    
+    shr r10, cl
+    
+    cmp r10, 0
+    jne .loop
+
+.printloop:
+    dec rbp
+    mov al, [rbp]
+    call putc
+    cmp rbp, rsp
+    jne .printloop
+
+    add rsp, DIGITS_BUFFER_SIZE     ; free memory
+    pop r10
+    pop rbp
+    ret
+
+printByte:
+    mov al, '0'
+    call putc
+    mov al, 'b'
+    call putc
+    mov rsi, 1
+    mov cl,  1
+    call printNumber2N
     jmp myprintf.ignore
 
-.jtable:
-    dq print.byte     ; b
-    dq print.char     ; c
-    dq print.number   ; d
+printChar:
+    mov al, [rdx]
+    call putc
+    jmp myprintf.ignore
+
+printNumber:
+    jmp myprintf.ignore
+
+printOctal:
+    jmp myprintf.ignore
+
+printString:
+    mov rcx, [rdx]
+.strloop:
+    cmp byte [rcx], 0
+    je .strskip
+    mov al, [rcx]
+    call putc
+    inc rdx
+    jmp .strloop
+.strskip:
+    jmp myprintf.ignore
+
+printHex:
+    mov al, '0'
+    call putc
+    mov al, 'x'
+    call putc
+    mov rsi, 4<<60              ; 0b10...000
+    mov cl,  4
+    mov ch,  60
+    call printNumber2N
+    jmp myprintf.ignore
+
+printPercent:
+    mov al, '%'
+    call putc
+    jmp myprintf.ignore
+
+jtable:
+    dq printByte     ; b
+    dq printChar     ; c
+    dq printNumber   ; d
     times 10 dq myprintf.ignore
-    dq print.octal    ; o
+    dq printOctal    ; o
     times 3  dq myprintf.ignore
-    dq print.string   ; s
+    dq printString   ; s
     times 4  dq myprintf.ignore
-    dq print.hex      ; x
+    dq printHex      ; x
 
 myprintf:
     push r9
@@ -53,51 +151,54 @@ myprintf:
     push rcx
     push rdx
     push rsi
-    xor rcx, rcx             ; counter of arguments
-    mov rdx, rdi             ; format string
+
+    mov rdx, rsp             ; current argument
+    mov rbx, rdi             ; format string
 
     mov rbp, rsp             ; save stack head
     sub rsp, BUFFER_SIZE     ; allocate buffer
     mov rdi, rsp
+    mov r8, 0                ; buffer size
+    mov r9, rsp              ; buffer begin
     cld
+
 .loop:
-    cmp byte [rdx], 0
+    cmp byte [rbx], 0
     je .end
-    cmp byte [rdx], '%'
+
+    cmp byte [rbx], '%'
     jne .skipformat
 
-    mov rdi, rsp
-    mov rsi, rdx
-    call puts
-    
-    inc rdi
-    cmp byte[rdx], 0
+    inc rbx
+    cmp byte[rbx], 0
     je .end
-    cmp byte[rdx], '%'
-    je print.percent
+    cmp byte[rbx], '%'
+    je printPercent
     
     xor rax, rax
-    mov al, byte[rdx]
+    mov al, byte[rbx]
     sub al, 'b'
     cmp al, 'x'-'a'
-    jb .ignore
+    ja .ignore
 
-    mov rax, print.jtable[rax]
-    jmp rax
-    inc rcx            ; counter of args
+    jmp [rax * 8 + jtable]
+    inc rdx            ; counter of args
 
-    .skipformat:
+.skipformat:
 
-    mov rdi, rsp
-    mov rsi, rdx
-    movsb
+    mov al, [rbx]
+    call putc
 
-    .ignore:
+.ignore:
 
-    inc rdx
+    inc rbx
     jmp .loop
 .end:
-    mov rax, rcx        ; return
+    call flush             ; if buffer is not empty
+    add rsp, BUFFER_SIZE
+
+    mov rax, rdx        ; return
+    sub rax, rbp
 
     pop rsi
     pop rdx
