@@ -198,6 +198,8 @@ jtable:
     dq printHex      ; x
 
 myprintf:
+    pop r10;                ; return address
+
     push r9
     push r8
     push rcx
@@ -259,6 +261,8 @@ myprintf:
     pop rcx
     pop r8
     pop r9
+
+    pop r10
 
     ret
 
