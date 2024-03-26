@@ -41,7 +41,7 @@ int main() {
             }
         }
 
-        mandelbrot(surface, &camera);
+        mandelbrotAVX(surface, &camera);
         SDL_UpdateWindowSurface(window);
     }
 
