@@ -20,6 +20,8 @@ set(CMAKE_C_FLAGS_DEBUG
 -flto-odr-type-merging -fno-omit-frame-pointer \
 -Wstack-usage=8192 -pie -fPIE -Werror=vla")
 
+set(CMAKE_C_FLAGS "-mavx512f")
+
 set(SOURCES
     main.c
     camera.c
@@ -33,5 +35,5 @@ find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
 add_executable(mandelbrot ${SOURCES})
-target_link_libraries(mandelbrot ${SDL2_LIBRARIES})
+target_link_libraries(mandelbrot m ${SDL2_LIBRARIES})
 

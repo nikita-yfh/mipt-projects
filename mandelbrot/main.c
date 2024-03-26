@@ -7,7 +7,7 @@ const char *WINDOW_TITLE = "Mandelbrot!";
 
 const int WINDOW_WIDTH  = 800;
 const int WINDOW_HEIGHT = 600;
-const int INIT_SCALE    = 300;
+const float INIT_SCALE  = 300.0f;
 
 int main() {
     SDL_Init(SDL_INIT_EVERYTHING);
