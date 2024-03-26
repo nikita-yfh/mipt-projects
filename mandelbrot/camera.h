@@ -4,10 +4,10 @@
 struct Camera {
     int windowWidth;
     int windowHeight;
-    float scale;                // how many pixels in 1 coordinate
-    float centerPositionX;
-    float centerPositionY;
+    double scale;                // how many pixels in 1 coordinate
+    double centerPositionX;
+    double centerPositionY;
 };
 
 void mouseWheelHandler  (const SDL_Event *e, struct Camera *camera);
-void windowResizeHandler(const SDL_Event *e, struct Camera *camera);
+SDL_Surface *windowResizeHandler(const SDL_Event *e, SDL_Window *window, struct Camera *camera);

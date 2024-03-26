@@ -7,7 +7,7 @@ const char *WINDOW_TITLE = "Mandelbrot!";
 
 const int WINDOW_WIDTH  = 800;
 const int WINDOW_HEIGHT = 600;
-const float INIT_SCALE  = 300.0f;
+const double INIT_SCALE  = 300.0f;
 
 int main() {
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -31,10 +31,8 @@ int main() {
                     running = false;
                     break;
                 case SDL_WINDOWEVENT:
-                    if(event.window.event == SDL_WINDOWEVENT_RESIZED) {
-                        surface = SDL_GetWindowSurface(window);
-                        windowResizeHandler(&event, &camera);
-                    }
+                    if(event.window.event == SDL_WINDOWEVENT_RESIZED)
+                        surface = windowResizeHandler(&event, window, &camera);
                     break;
                 case SDL_MOUSEWHEEL:
                     mouseWheelHandler(&event, &camera);
@@ -55,7 +53,7 @@ int main() {
         }
 
         if(AVX)
-            mandelbrotAVXDouble(surface, &camera, fractal);
+            mandelbrotAVX(surface, &camera, fractal);
         else
             mandelbrot(surface, &camera, fractal);
 

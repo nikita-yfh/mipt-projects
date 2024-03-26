@@ -14,7 +14,9 @@ void mouseWheelHandler  (const SDL_Event *e, struct Camera *camera) {
     camera->scale *= zoom;
 }
 
-void windowResizeHandler(const SDL_Event *e, struct Camera *camera) {
+SDL_Surface *windowResizeHandler(const SDL_Event *e, SDL_Window *window, struct Camera *camera) {
     camera->windowWidth  = e->window.data1;
-    camera->windowHeight = e->window.data2;
+    camera->windowHeight = e->window.data2 << 3 >> 3;
+    SDL_SetWindowSize(window, camera->windowWidth, camera->windowHeight);
+    return SDL_GetWindowSurface(window);
 }

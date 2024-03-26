@@ -9,6 +9,5 @@ enum Fractal {
     FRACTAL_BURNING_SHIP
 };
 
-void mandelbrot         (SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal);
-void mandelbrotAVX      (SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal);
-void mandelbrotAVXDouble(SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal);
+void mandelbrot   (SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal);
+void mandelbrotAVX(SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal);
