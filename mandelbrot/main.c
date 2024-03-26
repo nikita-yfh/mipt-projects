@@ -20,6 +20,8 @@ int main() {
     SDL_Surface* surface = SDL_GetWindowSurface(window);
 
     bool running = true;
+    bool AVX = false;
+    enum Fractal fractal = FRACTAL_MENDELBROT;
     struct Camera camera = {WINDOW_WIDTH, WINDOW_HEIGHT, INIT_SCALE, 0.0f, 0.0f};
 
     while (running) {
@@ -36,12 +38,27 @@ int main() {
                     break;
                 case SDL_MOUSEWHEEL:
                     mouseWheelHandler(&event, &camera);
+                    break;
+                case SDL_KEYDOWN:
+                    switch(event.key.keysym.sym) {
+                        case SDLK_r:
+                            AVX = !AVX;
+                            break;
+                        case SDLK_f:
+                            fractal = !fractal;
+                            break;
+                    }
+                    break;
                 default:
                     break;
             }
         }
 
-        mandelbrotAVX(surface, &camera);
+        if(AVX)
+            mandelbrotAVXDouble(surface, &camera, fractal);
+        else
+            mandelbrot(surface, &camera, fractal);
+
         SDL_UpdateWindowSurface(window);
     }
 
