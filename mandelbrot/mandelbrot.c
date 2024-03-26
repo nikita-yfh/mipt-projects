@@ -26,20 +26,17 @@ void mandelbrot(SDL_Surface *surface, const struct Camera *camera) {
 
             int N = 0;
 
-            while (N < N_MAX)
-            {
+            for(int i = 0; i <= N_MAX; i++) {
                 float x2 = x * x;
                 float y2 = y * y;
 
-                if (x2 + y2 > R2_MAX)
-                    break;
-
                 float xy = x * y;
+
+                N = (x2 + y2 > R2_MAX) ? 255 : 0;
 
                 x = x2 - y2 + x0;
                 y = 2 * xy + y0;
 
-                N++;
             }
 
             uint32_t color = (0xff << ALPHA) + (N << RED) + (N << GREEN) + (N << BLUE);
@@ -74,9 +71,11 @@ void mandelbrotAVX(SDL_Surface *surface, const struct Camera *camera) {
         pixels += camera->windowWidth;
         for (int xwin = - windowCenterY; xwin < camera->windowWidth - windowCenterY; xwin+=16) {
 
-            __m512 x= _mm512_set1_ps(xwin / camera->scale - camera->centerPositionX);
-            __m512 y= _mm512_set1_ps(ywin / camera->scale - camera->centerPositionY);
-            x= _mm512_add_ps(x, shiftX);
+            __m512 x0 = _mm512_set1_ps(xwin / camera->scale - camera->centerPositionX);
+            __m512 y0 = _mm512_set1_ps(ywin / camera->scale - camera->centerPositionY);
+            x0 = _mm512_add_ps(x0, shiftX);
+
+            __m512 x = x0, y = y0;
 
             __mmask16 mask;
 
@@ -87,8 +86,8 @@ void mandelbrotAVX(SDL_Surface *surface, const struct Camera *camera) {
                 __m512 r2 = _mm512_add_ps(x2, y2);
                 mask = _mm512_cmp_ps_mask(r2, maxR2, _CMP_LE_OQ);
 
-                x = _mm512_add_ps(x, _mm512_sub_ps(x2, y2));
-                y = _mm512_add_ps(y, _mm512_add_ps(xy, xy));
+                x = _mm512_add_ps(x0, _mm512_sub_ps(x2, y2));
+                y = _mm512_add_ps(y0, _mm512_add_ps(xy, xy));
             }
 
             __m512i colors = _mm512_maskz_set1_epi32(mask, 0xFFFFFFFF);
