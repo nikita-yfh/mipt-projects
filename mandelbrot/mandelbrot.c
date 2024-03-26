@@ -6,7 +6,7 @@ static const char  GREEN =  8;
 static const char  RED   =  0;
 
 static const int   N_MAX  = 255;
-static const float R2_MAX = 10.0f;
+static const float R2_MAX = 1000.0f;
 
 void mandelbrot(SDL_Surface *surface, const struct Camera *camera) {
     int windowCenterX = camera->windowWidth  / 2;
@@ -26,17 +26,18 @@ void mandelbrot(SDL_Surface *surface, const struct Camera *camera) {
 
             int N = 0;
 
-            for(int i = 0; i <= N_MAX; i++) {
+            for(int i = 0; i < N_MAX; i++) {
                 float x2 = x * x;
                 float y2 = y * y;
+                if(x2 + y2 > R2_MAX)
+                    break;
 
                 float xy = x * y;
-
-                N = (x2 + y2 > R2_MAX) ? 255 : 0;
 
                 x = x2 - y2 + x0;
                 y = 2 * xy + y0;
 
+                N++;
             }
 
             uint32_t color = (0xff << ALPHA) + (N << RED) + (N << GREEN) + (N << BLUE);
@@ -66,31 +67,39 @@ void mandelbrotAVX(SDL_Surface *surface, const struct Camera *camera) {
     __m512 maxR2 = _mm512_set1_ps(R2_MAX);
 
 
-    for (int ywin = -windowCenterX; ywin < camera->windowHeight - windowCenterX; ywin++) {
+    for (int ywin = -windowCenterY; ywin < camera->windowHeight - windowCenterY; ywin++) {
         uint32_t *pixelRow = pixels;
         pixels += camera->windowWidth;
-        for (int xwin = - windowCenterY; xwin < camera->windowWidth - windowCenterY; xwin+=16) {
 
+        __m512 y0 = _mm512_set1_ps(ywin / camera->scale - camera->centerPositionY);
+
+        for (int xwin = - windowCenterX; xwin < camera->windowWidth - windowCenterX; xwin+=16) {
             __m512 x0 = _mm512_set1_ps(xwin / camera->scale - camera->centerPositionX);
-            __m512 y0 = _mm512_set1_ps(ywin / camera->scale - camera->centerPositionY);
             x0 = _mm512_add_ps(x0, shiftX);
 
             __m512 x = x0, y = y0;
 
-            __mmask16 mask;
+            __m512i colors = _mm512_set1_epi32(0xFFFFFFFF);
+            __mmask16 availablePixels = 0xFFFF;
 
-            for(int i = 0; i <= N_MAX; i++) {
+            uint32_t currentColor = 0xFF000000;
+            uint32_t colorInc     = 0x00010101;
+
+            for(int i = 0; i < N_MAX; i++) {
                 __m512 x2 = _mm512_mul_ps(x, x);
                 __m512 y2 = _mm512_mul_ps(y, y);
                 __m512 xy = _mm512_mul_ps(x, y);
                 __m512 r2 = _mm512_add_ps(x2, y2);
-                mask = _mm512_cmp_ps_mask(r2, maxR2, _CMP_LE_OQ);
+                __mmask16 lessR2 = _mm512_cmp_ps_mask(r2, maxR2, _CMP_LE_OQ);
+                __mmask16 change = lessR2 ^ availablePixels;
+                availablePixels &= lessR2;
+                colors = _mm512_mask_set1_epi32(colors, change, currentColor);
 
                 x = _mm512_add_ps(x0, _mm512_sub_ps(x2, y2));
                 y = _mm512_add_ps(y0, _mm512_add_ps(xy, xy));
-            }
 
-            __m512i colors = _mm512_maskz_set1_epi32(mask, 0xFFFFFFFF);
+                currentColor += colorInc;
+            }
 
             _mm512_storeu_epi32(pixelRow, colors);
             pixelRow += 16;
