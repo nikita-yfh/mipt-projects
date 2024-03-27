@@ -11,10 +11,18 @@ const int WINDOW_WIDTH  = 800;
 const int WINDOW_HEIGHT = 600;
 const double INIT_SCALE  = 300.0f;
 
+const int ANIMATION_MILLIS = 50;
+
 static uint64_t getMicros() {
     struct timeval tv;
     gettimeofday(&tv,NULL);
     return tv.tv_sec* (uint64_t) 1000000+tv.tv_usec;
+}
+
+static uint64_t getProcTicks() {
+    unsigned long lo, hi;
+    asm( "rdtsc" : "=a" (lo), "=d" (hi) ); 
+    return( lo | (hi << 32) );
 }
 
 int main() {
@@ -30,6 +38,8 @@ int main() {
     struct Camera camera = {WINDOW_WIDTH, WINDOW_HEIGHT, INIT_SCALE, 0.0f, 0.0f};
 
     bool AVX = false;
+    bool fpsVisible = true;
+    bool animation = false;
     enum Fractal fractal = FRACTAL_MENDELBROT;
     enum PaletteType palette = PALETTE_GREY;
     generatePalettes();
@@ -53,11 +63,20 @@ int main() {
                         case SDLK_r:
                             AVX = !AVX;
                             break;
-                        case SDLK_f:
+                        case SDLK_t:
                             fractal = (fractal + 1) % FRACTAL_COUNT;
                             break;
                         case SDLK_p:
                             palette = (palette + 1) % PALETTE_COUNT;
+                            break;
+                        case SDLK_a:
+                            animation = !animation;
+                            break;
+                        case SDLK_f:
+                            fpsVisible = !fpsVisible;
+                            break;
+                        case SDLK_g:
+                            generatePalettes();
                             break;
                     }
                     break;
@@ -66,15 +85,27 @@ int main() {
             }
         }
 
-        uint32_t startTime = getMicros();
         if(AVX)
             mandelbrotAVX(surface, &camera, fractal, getPalette(palette));
         else
             mandelbrot(surface, &camera, fractal, getPalette(palette));
 
-        uint32_t stopTime = getMicros();
-        uint32_t fps = 1000000 / (stopTime - startTime);
-        showFps(surface, &camera, fps);
+        if(fpsVisible) {
+            static uint32_t startTime = 0;
+            uint32_t stopTime = getMicros();
+            uint32_t fps = 1000000 / (stopTime - startTime);
+            startTime = getMicros();
+            showFps(surface, &camera, fps);
+        }
+
+        if(animation) {
+            static uint32_t lastAnimationTime = 0;
+            uint32_t currentTime = SDL_GetTicks();
+            if(currentTime - lastAnimationTime >= ANIMATION_MILLIS) {
+                lastAnimationTime = currentTime;
+                paletteAnimationShift();
+            }
+        }
 
         SDL_UpdateWindowSurface(window);
     }

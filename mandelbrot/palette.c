@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include <math.h>
+#include <stdlib.h>
 
 #define BLACK 0xFF000000
 #define WHITE 0xFFFFFFFF
@@ -34,11 +35,11 @@ static void generatePaletteBW() {
 static void generatePaletteSin() {
     uint32_t *palette = palettes[PALETTE_SIN];
 
-    for(int i = 0; i < MAX_N; i++) {
+    for(int i = 0; i <= MAX_N; i++) {
         double angle = 2.0 * M_PI * i / MAX_N;
-        uint8_t r = (uint8_t) ((sin(angle)                    + 1.0) / 2.0 * 255.0f);
-        uint8_t g = (uint8_t) ((sin(angle + 2.0 * M_PI / 3.0) + 1.0) / 2.0 * 255.0f);
-        uint8_t b = (uint8_t) ((sin(angle + 4.0 * M_PI / 3.0) + 1.0) / 2.0 * 255.0f);
+        uint8_t r = (uint8_t) ((sin((angle)                    * 4.0f) + 1.0) / 2.0 * 255.0f);
+        uint8_t g = (uint8_t) ((sin((angle + 2.0 * M_PI / 3.0) * 4.0f) + 1.0) / 2.0 * 255.0f);
+        uint8_t b = (uint8_t) ((sin((angle + 4.0 * M_PI / 3.0) * 4.0f) + 1.0) / 2.0 * 255.0f);
 
         palette[i] = (uint32_t) (0xFF << ALPHA) | (r << RED) | (g << GREEN) | (b << BLUE);
     }
@@ -53,11 +54,28 @@ static void generatePaletteGrey4() {
     }
 }
 
+static void generatePaletteRand() {
+    uint32_t *palette = palettes[PALETTE_RAND];
+    for(int i = 0; i <= MAX_N; i++) {
+        palette[i] = rand();
+    }
+}
+
 void generatePalettes() {
     generatePaletteGrey();
     generatePaletteBW();
     generatePaletteSin();
     generatePaletteGrey4();
+    generatePaletteRand();
+}
+
+void paletteAnimationShift() {
+    for(int p = 0; p < PALETTE_COUNT; p++) {
+        uint32_t lastColor = palettes[p][MAX_N];
+        for(int i = MAX_N; i > 0; i--)
+            palettes[p][i] = palettes[p][i - 1];
+        palettes[p][0] = lastColor;
+    }
 }
 
 const uint32_t *getPalette(enum PaletteType palette) {

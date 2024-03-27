@@ -7,6 +7,7 @@ enum PaletteType {
     PALETTE_BW,
     PALETTE_SIN,
     PALETTE_GREY4,
+    PALETTE_RAND,
 
     PALETTE_COUNT
 };
@@ -14,13 +15,14 @@ enum PaletteType {
 
 #define MAX_N 255
 
-/**
- * \brief generate all palettes
- **/
+/// Generate all palettes
 void generatePalettes();
 
+/// Shift all palletes
+void paletteAnimationShift();
+
 /**
- * \brief get a specific palette
+ * \brief Get a specific palette
  * \param type Palette type
  * \return Palette
  **/
