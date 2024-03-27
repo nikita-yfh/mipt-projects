@@ -28,8 +28,8 @@ set(SOURCES
     camera.h
     mandelbrot.h
     mandelbrot.c
-    pallete.h
-    pallete.c
+    palette.h
+    palette.c
 )
 
 

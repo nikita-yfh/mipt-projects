@@ -22,8 +22,8 @@ int main() {
 
     bool AVX = false;
     enum Fractal fractal = FRACTAL_MENDELBROT;
-    enum PalleteType pallete = PALLETE_GREY;
-    generatePalletes();
+    enum PaletteType palette = PALETTE_GREY;
+    generatePalettes();
 
     bool running = true;
     while (running) {
@@ -48,7 +48,7 @@ int main() {
                             fractal = (fractal + 1) % FRACTAL_COUNT;
                             break;
                         case SDLK_p:
-                            pallete = (pallete + 1) % PALLETE_COUNT;
+                            palette = (palette + 1) % PALETTE_COUNT;
                             break;
                     }
                     break;
@@ -58,9 +58,9 @@ int main() {
         }
 
         if(AVX)
-            mandelbrotAVX(surface, &camera, fractal, getPallete(pallete));
+            mandelbrotAVX(surface, &camera, fractal, getPalette(palette));
         else
-            mandelbrot(surface, &camera, fractal, getPallete(pallete));
+            mandelbrot(surface, &camera, fractal, getPalette(palette));
 
         SDL_UpdateWindowSurface(window);
     }
