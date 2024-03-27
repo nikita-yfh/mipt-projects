@@ -11,6 +11,12 @@ const int WINDOW_WIDTH  = 800;
 const int WINDOW_HEIGHT = 600;
 const double INIT_SCALE  = 300.0f;
 
+static uint64_t getMicros() {
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+    return tv.tv_sec* (uint64_t) 1000000+tv.tv_usec;
+}
+
 int main() {
     SDL_Init(SDL_INIT_EVERYTHING);
     initFps();
@@ -60,13 +66,14 @@ int main() {
             }
         }
 
-        uint32_t startTime = SDL_GetTicks();
+        uint32_t startTime = getMicros();
         if(AVX)
             mandelbrotAVX(surface, &camera, fractal, getPalette(palette));
         else
             mandelbrot(surface, &camera, fractal, getPalette(palette));
 
-        uint32_t fps = 1000 / (SDL_GetTicks() - startTime);
+        uint32_t stopTime = getMicros();
+        uint32_t fps = 1000000 / (stopTime - startTime);
         showFps(surface, &camera, fps);
 
         SDL_UpdateWindowSurface(window);
