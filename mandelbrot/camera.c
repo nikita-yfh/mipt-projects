@@ -1,7 +1,7 @@
 #include "camera.h"
 
 void mouseWheelHandler  (const SDL_Event *e, struct Camera *camera) {
-    float zoom = (e->wheel.y > 0) ? 1.1f : 1.0f/1.1f;
+    float zoom = (e->wheel.y > 0) ? ZOOM : 1.0f/ZOOM;
 
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);

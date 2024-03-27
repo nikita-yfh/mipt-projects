@@ -1,14 +1,8 @@
 #include "mandelbrot.h"
 
-static const char  ALPHA = 24;
-static const char  BLUE  = 16;
-static const char  GREEN =  8;
-static const char  RED   =  0;
-
-static const int   N_MAX  = 255;
 static const float R2_MAX = 1000.0f;
 
-void mandelbrot(SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal) {
+void mandelbrot(SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal, const uint32_t *pallete) {
     int windowCenterX = camera->windowWidth  / 2;
     int windowCenterY = camera->windowHeight / 2;
 
@@ -22,15 +16,13 @@ void mandelbrot(SDL_Surface *surface, const struct Camera *camera, enum Fractal 
             double x0 = xwin / camera->scale - camera->centerPositionX;
             double y0 = ywin / camera->scale - camera->centerPositionY;
 
-            float x = x0, y = y0;
+            double x = x0, y = y0;
 
-            int N = 0;
+            int iteration = 0;
 
-            for(int i = 0; i < N_MAX; i++) {
+            while(iteration < MAX_N) {
                 double x2 = x * x;
                 double y2 = y * y;
-                if(x2 + y2 > R2_MAX)
-                    break;
 
                 double xy = x * y;
                 if(fractal == FRACTAL_BURNING_SHIP)
@@ -39,12 +31,12 @@ void mandelbrot(SDL_Surface *surface, const struct Camera *camera, enum Fractal 
                 x = x2 - y2 + x0;
                 y = 2 * xy + y0;
 
-                N++;
+                if(x2 + y2 > R2_MAX)
+                    break;
+                iteration++;
             }
 
-            uint32_t color = (0xff << ALPHA) + (N << RED) + (N << GREEN) + (N << BLUE);
-
-            *(pixels++) = color;
+            *(pixels++) = pallete[iteration];
         }
     }
 
@@ -52,7 +44,7 @@ void mandelbrot(SDL_Surface *surface, const struct Camera *camera, enum Fractal 
 }
 
 
-void mandelbrotAVX(SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal) {
+void mandelbrotAVX(SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal, const uint32_t *pallete) {
     int windowCenterX = camera->windowWidth  / 2;
     int windowCenterY = camera->windowHeight / 2;
 
@@ -80,13 +72,10 @@ void mandelbrotAVX(SDL_Surface *surface, const struct Camera *camera, enum Fract
 
             __m512d x = x0, y = y0;
 
-            __m256i colors = _mm256_set1_epi32(0x00000000);
+            __m256i colors = _mm256_set1_epi32(pallete[MAX_N]);
             __mmask8 availablePixels = 0xFF;
 
-            uint32_t currentColor = 0xFFFFFFFF;
-            uint32_t colorInc     = 0x00010101;
-
-            for(int i = 0; i < N_MAX; i++) {
+            for(int i = 0; i < MAX_N; i++) {
                 __m512d x2 = _mm512_mul_pd(x, x);
                 __m512d y2 = _mm512_mul_pd(y, y);
                 __m512d xy = _mm512_mul_pd(x, y);
@@ -97,15 +86,13 @@ void mandelbrotAVX(SDL_Surface *surface, const struct Camera *camera, enum Fract
                 __mmask8 lessR2 = _mm512_cmp_pd_mask(r2, maxR2, _CMP_LE_OQ);
                 __mmask8 change = lessR2 ^ availablePixels;
                 availablePixels &= lessR2;
-                colors = _mm256_mask_set1_epi32(colors, change, currentColor);
+                colors = _mm256_mask_set1_epi32(colors, change, pallete[i]);
 
                 if(!availablePixels)
                     break;
 
                 x = _mm512_add_pd(x0, _mm512_sub_pd(x2, y2));
                 y = _mm512_add_pd(y0, _mm512_add_pd(xy, xy));
-
-                currentColor -= colorInc;
             }
 
             _mm256_storeu_epi32(pixelRow, colors);
