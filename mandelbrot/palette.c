@@ -35,11 +35,13 @@ static void generatePaletteBW() {
 static void generatePaletteSin() {
     uint32_t *palette = palettes[PALETTE_SIN];
 
+    const double ratio = 16.0f;
+
     for(int i = 0; i <= MAX_N; i++) {
         double angle = 2.0 * M_PI * i / MAX_N;
-        uint8_t r = (uint8_t) ((sin((angle)                    * 4.0f) + 1.0) / 2.0 * 255.0f);
-        uint8_t g = (uint8_t) ((sin((angle + 2.0 * M_PI / 3.0) * 4.0f) + 1.0) / 2.0 * 255.0f);
-        uint8_t b = (uint8_t) ((sin((angle + 4.0 * M_PI / 3.0) * 4.0f) + 1.0) / 2.0 * 255.0f);
+        uint8_t r = (uint8_t) ((sin((angle)                    * ratio) + 1.0) / 2.0 * 255.0f);
+        uint8_t g = (uint8_t) ((sin((angle + 2.0 * M_PI / 3.0) * ratio) + 1.0) / 2.0 * 255.0f);
+        uint8_t b = (uint8_t) ((sin((angle + 4.0 * M_PI / 3.0) * ratio) + 1.0) / 2.0 * 255.0f);
 
         palette[i] = (uint32_t) (0xFF << ALPHA) | (r << RED) | (g << GREEN) | (b << BLUE);
     }
