@@ -6,6 +6,7 @@ enum PaletteType {
     PALETTE_GREY,
     PALETTE_BW,
     PALETTE_SIN,
+    PALETTE_GREY4,
 
     PALETTE_COUNT
 };

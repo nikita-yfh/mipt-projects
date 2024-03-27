@@ -27,7 +27,7 @@ static void generatePaletteGrey() {
 static void generatePaletteBW() {
     uint32_t *palette = palettes[PALETTE_BW];
 
-    memset(palette, WHITE, sizeof(uint32_t) * MAX_N);
+    memset(palette, (int) WHITE, sizeof(uint32_t) * MAX_N);
     palette[MAX_N] = BLACK;
 }
 
@@ -35,20 +35,29 @@ static void generatePaletteSin() {
     uint32_t *palette = palettes[PALETTE_SIN];
 
     for(int i = 0; i < MAX_N; i++) {
-        float angle = 2 * M_PI * i / MAX_N;
-        uint8_t r = (uint8_t) ((sin(angle)                      + 1.0f) / 2.0f * 255.0f);
-        uint8_t g = (uint8_t) ((sin(angle + 2.0f * M_PI / 3.0f) + 1.0f) / 2.0f * 255.0f);
-        uint8_t b = (uint8_t) ((sin(angle + 4.0f * M_PI / 3.0f) + 1.0f) / 2.0f * 255.0f);
+        double angle = 2.0 * M_PI * i / MAX_N;
+        uint8_t r = (uint8_t) ((sin(angle)                    + 1.0) / 2.0 * 255.0f);
+        uint8_t g = (uint8_t) ((sin(angle + 2.0 * M_PI / 3.0) + 1.0) / 2.0 * 255.0f);
+        uint8_t b = (uint8_t) ((sin(angle + 4.0 * M_PI / 3.0) + 1.0) / 2.0 * 255.0f);
 
-        palette[i] = (0xFF << ALPHA) | (r << RED) | (g << GREEN) | (b << BLUE);
+        palette[i] = (uint32_t) (0xFF << ALPHA) | (r << RED) | (g << GREEN) | (b << BLUE);
+    }
+}
+
+static void generatePaletteGrey4() {
+    uint32_t *palette = palettes[PALETTE_GREY4];
+
+    for(int i = 0; i <= MAX_N; i++) {
+        uint8_t color = (uint8_t) (sqrt(sqrt((float) i / MAX_N)) * 255.0f);
+        palette[i] = (uint32_t) (0xFF << ALPHA) | (color << RED) | (color << GREEN) | (color << BLUE);
     }
 }
 
 void generatePalettes() {
-
     generatePaletteGrey();
     generatePaletteBW();
     generatePaletteSin();
+    generatePaletteGrey4();
 }
 
 const uint32_t *getPalette(enum PaletteType palette) {

@@ -30,6 +30,8 @@ set(SOURCES
     mandelbrot.c
     palette.h
     palette.c
+    fps.h
+    fps.c
 )
 
 

@@ -48,8 +48,6 @@ void mandelbrotAVX(SDL_Surface *surface, const struct Camera *camera, enum Fract
     int windowCenterX = camera->windowWidth  / 2;
     int windowCenterY = camera->windowHeight / 2;
 
-    int sizeInPixels = camera->scale;
-
     SDL_LockSurface(surface);
 
     uint32_t *pixels = (uint32_t*)surface->pixels;
@@ -72,7 +70,7 @@ void mandelbrotAVX(SDL_Surface *surface, const struct Camera *camera, enum Fract
 
             __m512d x = x0, y = y0;
 
-            __m256i colors = _mm256_set1_epi32(palette[MAX_N]);
+            __m256i colors = _mm256_set1_epi32((int) palette[MAX_N]);
             __mmask8 availablePixels = 0xFF;
 
             for(int i = 0; i < MAX_N; i++) {
@@ -86,7 +84,7 @@ void mandelbrotAVX(SDL_Surface *surface, const struct Camera *camera, enum Fract
                 __mmask8 lessR2 = _mm512_cmp_pd_mask(r2, maxR2, _CMP_LE_OQ);
                 __mmask8 change = lessR2 ^ availablePixels;
                 availablePixels &= lessR2;
-                colors = _mm256_mask_set1_epi32(colors, change, palette[i]);
+                colors = _mm256_mask_set1_epi32(colors, change, (int) palette[i]);
 
                 if(!availablePixels)
                     break;

@@ -1,7 +1,9 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
+
 #include "camera.h"
 #include "mandelbrot.h"
+#include "fps.h"
 
 const char *WINDOW_TITLE = "Mandelbrot!";
 
@@ -11,6 +13,7 @@ const double INIT_SCALE  = 300.0f;
 
 int main() {
     SDL_Init(SDL_INIT_EVERYTHING);
+    initFps();
 
     SDL_Window* window = SDL_CreateWindow(WINDOW_TITLE,
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT,
@@ -57,14 +60,19 @@ int main() {
             }
         }
 
+        uint32_t startTime = SDL_GetTicks();
         if(AVX)
             mandelbrotAVX(surface, &camera, fractal, getPalette(palette));
         else
             mandelbrot(surface, &camera, fractal, getPalette(palette));
 
+        uint32_t fps = 1000 / (SDL_GetTicks() - startTime);
+        showFps(surface, &camera, fps);
+
         SDL_UpdateWindowSurface(window);
     }
 
+    quitFps();
     SDL_DestroyWindow(window);
     SDL_Quit();
 
