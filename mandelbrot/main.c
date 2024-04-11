@@ -1,28 +1,51 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
+#include <sys/time.h>
 
 #include "camera.h"
 #include "mandelbrot.h"
 #include "fps.h"
 
-const char *WINDOW_TITLE = "Mandelbrot!";
+static const char *WINDOW_TITLE = "Mandelbrot!";
 
-const int WINDOW_WIDTH  = 800;
-const int WINDOW_HEIGHT = 600;
-const double INIT_SCALE  = 300.0f;
+static const int WINDOW_WIDTH  = 800;
+static const int WINDOW_HEIGHT = 600;
+static const double INIT_SCALE = 300.0f;
 
-const int ANIMATION_MILLIS = 50;
+static const int ANIMATION_MILLIS = 50;
 
-static uint64_t getMicros() {
+static const int BENCH_ITERATIONS = 100; 
+
+static uint64_t getMicros() { // for fps 
     struct timeval tv;
     gettimeofday(&tv,NULL);
     return tv.tv_sec* (uint64_t) 1000000+tv.tv_usec;
 }
 
-static uint64_t getProcTicks() {
+static uint64_t getProcTicks() { // for benchmark
     unsigned long lo, hi;
     asm( "rdtsc" : "=a" (lo), "=d" (hi) ); 
     return( lo | (hi << 32) );
+}
+
+static void runBenchmark(SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal, const uint32_t *palette) {
+    uint64_t startTicks = getProcTicks();
+    for(int i = 0; i < BENCH_ITERATIONS; i++)
+        mandelbrot(surface, camera, fractal, palette);
+    uint64_t endTicks = getProcTicks();
+    uint64_t simpleTime = endTicks - startTicks;
+
+    printf("Benchmark for %d iterations without optimization: %llu ticks\n", BENCH_ITERATIONS, simpleTime);
+
+    startTicks = getProcTicks();
+    for(int i = 0; i < BENCH_ITERATIONS; i++)
+        mandelbrotAVX(surface, camera, fractal, palette);
+    endTicks = getProcTicks();
+    uint64_t avxTime = endTicks - startTicks;
+
+    printf("Benchmark for %d iterations with AVX-512:         %llu ticks\n", BENCH_ITERATIONS, avxTime);
+
+    printf("AVX-512 is faster in %.02f times\n", (float) simpleTime / (float) avxTime);
 }
 
 int main() {
@@ -78,6 +101,9 @@ int main() {
                         case SDLK_g:
                             generatePalettes();
                             break;
+                        case SDLK_b:
+                            runBenchmark(surface, &camera, fractal, getPalette(palette));
+                            break;
                     }
                     break;
                 default:
@@ -92,8 +118,8 @@ int main() {
 
         if(fpsVisible) {
             static uint32_t startTime = 0;
-            uint32_t stopTime = getMicros();
-            uint32_t fps = 1000000 / (stopTime - startTime);
+            uint32_t endTime = getMicros();
+            uint32_t fps = 1000000 / (endTime - startTime);
             startTime = getMicros();
             showFps(surface, &camera, fps);
         }

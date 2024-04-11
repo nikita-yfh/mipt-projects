@@ -9,7 +9,6 @@ DIGITS_BUFFER_SIZE equ 64
 ; Prints buffer to stdout
 ; Entry:   r8  = buffer length
 ;          r9  = buffer begin
-;          rbp = buffer end
 ;          
 ; Destroys: rdi, r8
 ;-----------------------------------------------------------------------
@@ -39,7 +38,6 @@ flush:
 ;-----------------------------------------------------------------------
 ; Puts character to buffer. If buffer is full, buffer will be flushed.
 ; Entry:   r8  = buffer length
-;          rbp = buffer end
 ;          rdi = text end
 ;          al  = character
 ; Destroys: rdi, r8
@@ -224,7 +222,9 @@ myprintf:
     je .skipprint
     mov al, [rbx]
     call putc
-    jmp .ignore
+.ignore
+    inc rbx
+    jmp .loop
 .skipprint:
 
     inc rbx
@@ -245,9 +245,6 @@ myprintf:
 .endPrintArg:
     add rdx, 8             ; next arg
 
-.ignore:
-    inc rbx
-    jmp .loop
 .end:
     call flush             ; if buffer is not empty
     add rsp, BUFFER_SIZE
