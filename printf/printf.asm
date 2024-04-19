@@ -222,9 +222,7 @@ myprintf:
     je .skipprint
     mov al, [rbx]
     call putc
-.ignore
-    inc rbx
-    jmp .loop
+    jmp .ignore
 .skipprint:
 
     inc rbx
@@ -245,6 +243,9 @@ myprintf:
 .endPrintArg:
     add rdx, 8             ; next arg
 
+.ignore:
+    inc rbx
+    jmp .loop
 .end:
     call flush             ; if buffer is not empty
     add rsp, BUFFER_SIZE
