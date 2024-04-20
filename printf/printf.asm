@@ -243,11 +243,9 @@ myprintf:
     cmp byte [rbx], '%'
     je .skipprint
     mov al, [rbx]
-    call putc
-.ignore                         ; TODO: colon or no colon?
-    inc rbx
-    jmp .loop
-.skipprint:                     ; TODO: proper spacing? Also, naming, you're really inconsistent
+    call putc                    ; TODO: proper spacing? Also, naming, you're really inconsistent
+    jmp .ignore
+.skipprint:
 
     inc rbx
     cmp byte[rbx], 0            ; TODO: please add a space before byte "byte [rbx]"
@@ -266,6 +264,9 @@ myprintf:
 .endPrintArg:
     add rdx, 8             ; next arg
 
+.ignore:
+    inc rbx
+    jmp .loop
 .end:
     call flush             ; if buffer is not empty
     add rsp, BUFFER_SIZE
