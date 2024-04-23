@@ -12,8 +12,6 @@ DIGITS_BUFFER_SIZE equ 64
 ;
 ; Destroys: rdi, r8
 ;-----------------------------------------------------------------------
-; TODO: Isn't this function a literal wrapper of write syscall and the only difference
-;       is in which registers it uses, why would you want it?
 flushBuffer:
     push rax
     push rdx
@@ -44,44 +42,27 @@ flushBuffer:
 ;          al  = character
 ; Destroys: rdi, r8
 ;-----------------------------------------------------------------------
-
-printCharacter:
+%macro printCharacter 0
     stosb
     inc r8                 ; buffer_length++
     cmp r8, BUFFER_SIZE
-    jle .skipflushBuffer
+    jle %%skipflushBuffer
     call flushBuffer
-.skipflushBuffer:
-    ret
+%%skipflushBuffer:
+%endmacro
 
 ;-----------------------------------------------------------------------
 ; Prints number with decimal base
-; Entry:    rdx = pointer to number
-; Destroys: rax
+; Entry:    r12 = number
+; Destroys: rax, rcx
 ;-----------------------------------------------------------------------
-printNumber10: ; TODO: Why would you pass a pointer to number?
-    push rbp
-    ; TODO: There is a canonical entry:
-    ;
-    ;     | push rbp
-    ;     | mov rbp, rsp
-    ;
-    ;     It makes it so that rbp points to the location of previous
-    ;     rbp, making a kind of linked list on the stack.
-    ;
-    ;     This property is used by debugger to provide stack frame
-    ;     information and it's also useful for local variable referencing.
-    ;
-    ;     Why are you not following the convention and instead pointing
-    ;     rbp after your allocated buffer?
-    ;
-    ;     NOTE: It doesn't look like your making an especially great
-    ;           effort to save registers, so it's probably not for optimization?
-
+printNumber10:
+    push r11
     push rdx
     sub rsp, DIGITS_BUFFER_SIZE     ; allocate buffer for digits
-    mov rbp, rsp
-    mov rax, [rdx]                  ; number
+    mov r11, rsp
+
+    mov rax, r12                    ; number
     mov rcx, 10                     ; base
 
 .divloop:
@@ -89,44 +70,44 @@ printNumber10: ; TODO: Why would you pass a pointer to number?
     div rcx
 
     add rdx, '0'
-    mov [rbp], rdx
-    inc rbp
+    mov [r11], rdx
+    inc r11
 
     cmp rax, 0
     jne .divloop                   ; TODO: loop .loop? if you use rcx instead of rax
 
 .printloop:
-    dec rbp
-    mov al, [rbp]               ; TODO: would be lodsb with rdi? (movsb if you inline printCharacter)
-    call printCharacter                   ; TODO: can this be a macro, call for every symbol seems sad?
-    cmp rbp, rsp
+    dec r11
+    mov al, [r11]               ; TODO: would be lodsb with rdi? (movsb if you inline printCharacter)
+    printCharacter                   ; TODO: can this be a macro, call for every symbol seems sad?
+    cmp r11, rsp
     jne .printloop
 
     add rsp, DIGITS_BUFFER_SIZE     ; free memory
     pop rdx
-    pop rbp
+    pop r11
     ret
 
 ;-----------------------------------------------------------------------
 ; Prints number with 2^n base
 ; Entry:    cl  = base shift increment
 ;           rsi = base mask
-;           rdx = pointer to number
+;           r12 = number
 ; Destroys: rax
 ;-----------------------------------------------------------------------
 printNumber2N:
-    push rbp
+    push r11
     push r10
     sub rsp, DIGITS_BUFFER_SIZE     ; allocate buffer for digits
-    mov rbp, rsp
-    mov r10, [rdx]          ; number
+    mov r11, rsp
+    mov r10, r12
 
 .loop:
     mov rax, r10
     and rax, rsi
     mov rax, [digits+rax]
-    mov [rbp], rax
-    inc rbp
+    mov [r11], rax
+    inc r11
 
     shr r10, cl
 
@@ -134,15 +115,15 @@ printNumber2N:
     jne .loop
 
 .printloop:
-    dec rbp
-    mov al, [rbp]
-    call printCharacter
-    cmp rbp, rsp
+    dec r11
+    mov al, [r11]
+    printCharacter
+    cmp r11, rsp
     jne .printloop
 
     add rsp, DIGITS_BUFFER_SIZE     ; free memory
     pop r10
-    pop rbp
+    pop r11
     ret
 
 myprintf:
@@ -171,21 +152,23 @@ myprintf:
     cmp byte [rbx], '%'
     je .skipprint
     mov al, [rbx]
-    call printCharacter
+    printCharacter
     jmp .noNextArg
 .skipprint:
 
     inc rbx
     cmp byte [rbx], 0
     je .end
+    cmp byte [rbx], '%'
     je .printPercent
 
     xor rax, rax
-    mov al, byte [rbx]           ; TODO: what is this, some explanations please (like "my table's last symbol is x, so...")
+    mov al, byte [rbx]          ; TODO: what is this, some explanations please (like "my table's last symbol is x, so...")
     sub al, 'a'                 ;       also, what happens if table size changes? At least make a loud comment to change it!
     cmp al, 'z'-'a'             ;       Or make table include all alphabet for example.
     ja .noNextArg
 
+    mov r12, [rdx]
     jmp [rax * 8 + .jumptable]
 
 .nextArg:
@@ -208,24 +191,27 @@ myprintf:
     pop r8
     pop r9
 
-    pop r10
+    push r10
 
     ret
 
-; print functions 
+;-----------------------------------------------------------------------
+; print fuctions
+; entry: r12 = argument
+;-----------------------------------------------------------------------
 .printByte:
     mov al, '0'
-    call printCharacter
+    printCharacter
     mov al, 'b'
-    call printCharacter
+    printCharacter
     mov rsi, 1
     mov cl,  1
     call printNumber2N
     jmp .nextArg
 
 .printChar:
-    mov al, [rdx]
-    call printCharacter
+    mov al, r12b
+    printCharacter
     jmp .nextArg
 
 .printNumber:
@@ -234,21 +220,21 @@ myprintf:
 
 .printOctal:
     mov al, '0'
-    call printCharacter
+    printCharacter
     mov al, 'o'
-    call printCharacter
+    printCharacter
     mov rsi, 7
     mov cl,  3
     call printNumber2N
     jmp .nextArg
 
 .printString:
-    mov rcx, [rdx]
+    mov rcx, r12
 .strloop:
     cmp byte [rcx], 0
     je .strskip
     mov al, [rcx]
-    call printCharacter
+    printCharacter
     inc rcx
     jmp .strloop
 .strskip:
@@ -256,9 +242,9 @@ myprintf:
 
 .printHex:
     mov al, '0'
-    call printCharacter
+    printCharacter
     mov al, 'x'
-    call printCharacter
+    printCharacter
     mov rsi, 0xf
     mov cl,  4
     call printNumber2N
@@ -266,7 +252,7 @@ myprintf:
 
 .printPercent:
     mov al, '%'
-    call printCharacter
+    printCharacter
     jmp .noNextArg
 
 .jumptable:
