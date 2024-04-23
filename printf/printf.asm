@@ -14,7 +14,7 @@ DIGITS_BUFFER_SIZE equ 64
 ;-----------------------------------------------------------------------
 ; TODO: Isn't this function a literal wrapper of write syscall and the only difference
 ;       is in which registers it uses, why would you want it?
-flush:
+flushBuffer:
     push rax
     push rdx
     push rsi
@@ -38,23 +38,20 @@ flush:
 
 
 ;-----------------------------------------------------------------------
-; Puts character to buffer. If buffer is full, buffer will be flushed.
+; Puts character to buffer. If buffer is full, buffer will be flushBuffered.
 ; Entry:   r8  = buffer length
 ;          rdi = text end
 ;          al  = character
 ; Destroys: rdi, r8
 ;-----------------------------------------------------------------------
 
-; TODO: Data in section text?
-digits: db "0123456789abcdef"
-
-putc:
+printCharacter:
     stosb
     inc r8                 ; buffer_length++
     cmp r8, BUFFER_SIZE
-    jle .skipflush
-    call flush
-.skipflush:
+    jle .skipflushBuffer
+    call flushBuffer
+.skipflushBuffer:
     ret
 
 ;-----------------------------------------------------------------------
@@ -87,7 +84,7 @@ printNumber10: ; TODO: Why would you pass a pointer to number?
     mov rax, [rdx]                  ; number
     mov rcx, 10                     ; base
 
-.loop:                          ; TODO: Is .loop the best name you came up with?
+.divloop:
     xor rdx, rdx
     div rcx
 
@@ -96,12 +93,12 @@ printNumber10: ; TODO: Why would you pass a pointer to number?
     inc rbp
 
     cmp rax, 0
-    jne .loop                   ; TODO: loop .loop? if you use rcx instead of rax
+    jne .divloop                   ; TODO: loop .loop? if you use rcx instead of rax
 
 .printloop:
     dec rbp
-    mov al, [rbp]               ; TODO: would be lodsb with rdi? (movsb if you inline putc)
-    call putc                   ; TODO: can this be a macro, call for every symbol seems sad?
+    mov al, [rbp]               ; TODO: would be lodsb with rdi? (movsb if you inline printCharacter)
+    call printCharacter                   ; TODO: can this be a macro, call for every symbol seems sad?
     cmp rbp, rsp
     jne .printloop
 
@@ -131,7 +128,7 @@ printNumber2N:
     mov [rbp], rax
     inc rbp
 
-    shr r10, cl                 ; TODO: Is everything else copy pasted? Make a macro and/or make this more efficient as it definitely can be...
+    shr r10, cl
 
     cmp r10, 0
     jne .loop
@@ -139,7 +136,7 @@ printNumber2N:
 .printloop:
     dec rbp
     mov al, [rbp]
-    call putc
+    call printCharacter
     cmp rbp, rsp
     jne .printloop
 
@@ -147,75 +144,6 @@ printNumber2N:
     pop r10
     pop rbp
     ret
-
-; TODO: This is not a separate clause/function and shouldn't look like one, at least
-;       put it inside myprintf and separated with newlines or make into a function
-printByte:
-    mov al, '0'
-    call putc
-    mov al, 'b'
-    call putc
-    mov rsi, 1
-    mov cl,  1
-    call printNumber2N
-    jmp myprintf.endPrintArg
-
-printChar:
-    mov al, [rdx]
-    call putc
-    jmp myprintf.endPrintArg
-
-printNumber:
-    call printNumber10
-    jmp myprintf.endPrintArg
-
-printOctal:
-    mov al, '0'
-    call putc
-    mov al, 'o'
-    call putc
-    mov rsi, 7
-    mov cl,  3
-    call printNumber2N
-    jmp myprintf.endPrintArg
-
-printString:
-    mov rcx, [rdx]
-.strloop:
-    cmp byte [rcx], 0
-    je .strskip
-    mov al, [rcx]
-    call putc
-    inc rcx
-    jmp .strloop
-.strskip:
-    jmp myprintf.endPrintArg
-
-printHex:
-    mov al, '0'
-    call putc
-    mov al, 'x'
-    call putc
-    mov rsi, 0xf
-    mov cl,  4
-    call printNumber2N
-    jmp myprintf.endPrintArg
-
-printPercent:
-    mov al, '%'
-    call putc
-    jmp myprintf.ignore
-
-jtable:                         ; TODO: naming, don't use weird short reductions
-    dq printByte     ; b
-    dq printChar     ; c
-    dq printNumber   ; d
-    times 10 dq myprintf.endPrintArg
-    dq printOctal    ; o
-    times 3  dq myprintf.endPrintArg
-    dq printString   ; s
-    times 4  dq myprintf.endPrintArg
-    dq printHex      ; x
 
 myprintf:
     pop r10;                ; return address
@@ -243,32 +171,31 @@ myprintf:
     cmp byte [rbx], '%'
     je .skipprint
     mov al, [rbx]
-    call putc                    ; TODO: proper spacing? Also, naming, you're really inconsistent
-    jmp .ignore
+    call printCharacter
+    jmp .noNextArg
 .skipprint:
 
     inc rbx
-    cmp byte[rbx], 0            ; TODO: please add a space before byte "byte [rbx]"
-    je .end                     ;       not to be confused with C's array syntax
-    je printPercent
+    cmp byte [rbx], 0
+    je .end
+    je .printPercent
 
     xor rax, rax
-    mov al, byte[rbx]           ; TODO: what is this, some explanations please (like "my table's last symbol is x, so...")
-    sub al, 'b'                 ;       also, what happens if table size changes? At least make a loud comment to change it!
-    cmp al, 'x'-'a'             ;       Or make table include all alphabet for example.
-    ja .ignore
+    mov al, byte [rbx]           ; TODO: what is this, some explanations please (like "my table's last symbol is x, so...")
+    sub al, 'a'                 ;       also, what happens if table size changes? At least make a loud comment to change it!
+    cmp al, 'z'-'a'             ;       Or make table include all alphabet for example.
+    ja .noNextArg
 
-    jmp [rax * 8 + jtable]
+    jmp [rax * 8 + .jumptable]
 
-; TODO: This order is the most random thing ever
-.endPrintArg:
+.nextArg:
     add rdx, 8             ; next arg
-
-.ignore:
+.noNextArg:
     inc rbx
     jmp .loop
+
 .end:
-    call flush             ; if buffer is not empty
+    call flushBuffer             ; if buffer is not empty
     add rsp, BUFFER_SIZE
 
     mov rax, rdx        ; return
@@ -284,4 +211,77 @@ myprintf:
     pop r10
 
     ret
+
+; print functions 
+.printByte:
+    mov al, '0'
+    call printCharacter
+    mov al, 'b'
+    call printCharacter
+    mov rsi, 1
+    mov cl,  1
+    call printNumber2N
+    jmp .nextArg
+
+.printChar:
+    mov al, [rdx]
+    call printCharacter
+    jmp .nextArg
+
+.printNumber:
+    call printNumber10
+    jmp .nextArg
+
+.printOctal:
+    mov al, '0'
+    call printCharacter
+    mov al, 'o'
+    call printCharacter
+    mov rsi, 7
+    mov cl,  3
+    call printNumber2N
+    jmp .nextArg
+
+.printString:
+    mov rcx, [rdx]
+.strloop:
+    cmp byte [rcx], 0
+    je .strskip
+    mov al, [rcx]
+    call printCharacter
+    inc rcx
+    jmp .strloop
+.strskip:
+    jmp .nextArg
+
+.printHex:
+    mov al, '0'
+    call printCharacter
+    mov al, 'x'
+    call printCharacter
+    mov rsi, 0xf
+    mov cl,  4
+    call printNumber2N
+    jmp .nextArg
+
+.printPercent:
+    mov al, '%'
+    call printCharacter
+    jmp .noNextArg
+
+.jumptable:
+    dq .nextArg       ; a
+    dq .printByte     ; b
+    dq .printChar     ; c
+    dq .printNumber   ; d
+    times 10 dq .nextArg
+    dq .printOctal    ; o
+    times 3  dq .nextArg
+    dq .printString   ; s
+    times 4  dq .nextArg
+    dq .printHex      ; x
+    times 2 dq .nextArg
+
+section .data
+    digits: db "0123456789abcdef"
 
