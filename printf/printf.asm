@@ -127,8 +127,6 @@ printNumber2N:
     ret
 
 myprintf:
-    pop r10;                ; return address
-
     push r9
     push r8
     push rcx
@@ -138,7 +136,7 @@ myprintf:
     mov rdx, rsp             ; current argument
     mov rbx, rdi             ; format string
 
-    mov rbp, rsp             ; save stack head
+    mov r11, rsp             ; save stack head
     sub rsp, BUFFER_SIZE     ; allocate buffer
     mov rdi, rsp
     mov r8, 0                ; buffer size
@@ -182,7 +180,7 @@ myprintf:
     add rsp, BUFFER_SIZE
 
     mov rax, rdx        ; return
-    sub rax, rbp
+    sub rax, r11
     shr rax, 3          ; rax = (rdx - rbp) / 8
 
     pop rsi
@@ -190,8 +188,6 @@ myprintf:
     pop rcx
     pop r8
     pop r9
-
-    push r10
 
     ret
 
