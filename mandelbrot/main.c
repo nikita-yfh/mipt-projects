@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 #include <sys/time.h>
+#include <limits.h>
 
 #include "camera.h"
 #include "mandelbrot.h"
@@ -29,23 +30,27 @@ static uint64_t getProcTicks() { // for benchmark
 }
 
 static void runBenchmark(SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal, const uint32_t *palette) {
-    uint64_t startTicks = getProcTicks();
-    for(int i = 0; i < BENCH_ITERATIONS; i++)
-        mandelbrot(surface, camera, fractal, palette);
-    uint64_t endTicks = getProcTicks();
-    uint64_t simpleTime = endTicks - startTicks;
+    uint64_t ticks[RENDER_COUNT] = {0};
+    uint64_t maxTicks = 0;
 
-    printf("Benchmark for %d iterations without optimization: %llu ticks\n", BENCH_ITERATIONS, simpleTime);
+    printf("%d iterations benchmark:\n", BENCH_ITERATIONS);
+    for(int renderer = 0; renderer < RENDER_COUNT; renderer++) {
+        uint64_t startTicks = getProcTicks();
+        for(int i = 0; i < BENCH_ITERATIONS; i++)
+            mandelbrotCommon(renderer, surface, camera, fractal, palette);
+        uint64_t endTicks = getProcTicks();
+        ticks[renderer] = endTicks - startTicks;
 
-    startTicks = getProcTicks();
-    for(int i = 0; i < BENCH_ITERATIONS; i++)
-        mandelbrotAVX(surface, camera, fractal, palette);
-    endTicks = getProcTicks();
-    uint64_t avxTime = endTicks - startTicks;
+        printf("%30s: %llu ticks\n", getRendererName(renderer), ticks[renderer]);
 
-    printf("Benchmark for %d iterations with AVX-512:         %llu ticks\n", BENCH_ITERATIONS, avxTime);
+        if(ticks[renderer] > maxTicks)
+            maxTicks = ticks[renderer];
+    }
 
-    printf("AVX-512 is faster in %.02f times\n", (float) simpleTime / (float) avxTime);
+    printf("Relative speed compatarion:\n");
+    for(int renderer = 0; renderer < RENDER_COUNT; renderer++)
+        printf("%30s: %10.2f\n", getRendererName(renderer), (float) maxTicks / (float) ticks[renderer]);
+
 }
 
 int main() {
@@ -60,11 +65,11 @@ int main() {
     SDL_Surface* surface = SDL_GetWindowSurface(window);
     struct Camera camera = {WINDOW_WIDTH, WINDOW_HEIGHT, INIT_SCALE, 0.0f, 0.0f};
 
-    bool AVX = false;
     bool fpsVisible = true;
     bool animation = false;
     enum Fractal fractal = FRACTAL_MENDELBROT;
     enum PaletteType palette = PALETTE_GREY;
+    enum RenderType      renderType = RENDER_DUMB;
     generatePalettes();
 
     bool running = true;
@@ -84,7 +89,7 @@ int main() {
                 case SDL_KEYDOWN:
                     switch(event.key.keysym.sym) {
                         case SDLK_r:
-                            AVX = !AVX;
+                            renderType = (renderType + 1) % RENDER_COUNT;
                             break;
                         case SDLK_t:
                             fractal = (fractal + 1) % FRACTAL_COUNT;
@@ -111,10 +116,7 @@ int main() {
             }
         }
 
-        if(AVX)
-            mandelbrotAVX(surface, &camera, fractal, getPalette(palette));
-        else
-            mandelbrot(surface, &camera, fractal, getPalette(palette));
+        mandelbrotCommon(renderType, surface, &camera, fractal, getPalette(palette));
 
         if(fpsVisible) {
             static uint32_t startTime = 0;

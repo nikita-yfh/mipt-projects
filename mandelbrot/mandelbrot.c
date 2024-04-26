@@ -1,8 +1,37 @@
 #include "mandelbrot.h"
 
+#include <assert.h>
+
+const char *getRendererName(enum RenderType renderType) {
+    assert(renderType < RENDER_COUNT);
+
+    switch(renderType) {
+        case RENDER_DUMB:
+            return "Dumb";
+        case RENDER_ARRAYS:
+            return "Arrays optimization";
+        case RENDER_AVX:
+            return "With AVX-512 instructions";
+    }
+}
+
+void mandelbrotCommon(enum RenderType renderType, SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal, const uint32_t *palette) {
+    switch(renderType) {
+        case RENDER_DUMB:
+            mandelbrotDumb(surface, camera, fractal, palette);
+            break;
+        /* case RENDER_ARRAYS: */
+        /*     mandelbrotArrays(surface, camera, fractal, palette); */
+        /*     break; */
+        case RENDER_AVX:
+            mandelbrotAVX(surface, camera, fractal, palette);
+            break;
+    }
+}
+
 static const float R2_MAX = 1000.0f;
 
-void mandelbrot(SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal, const uint32_t *palette) {
+void mandelbrotDumb(SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal, const uint32_t *palette) {
     int windowCenterX = camera->windowWidth  / 2;
     int windowCenterY = camera->windowHeight / 2;
 
