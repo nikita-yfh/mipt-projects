@@ -36,7 +36,7 @@ flushBuffer:
 
 
 ;-----------------------------------------------------------------------
-; Puts character to buffer. If buffer is full, buffer will be flushBuffered.
+; Puts character to buffer. If buffer is full, buffer will be flushed.
 ; Entry:   r8  = buffer length
 ;          rdi = text end
 ;          al  = character
@@ -74,12 +74,12 @@ printNumber10:
     inc r11
 
     cmp rax, 0
-    jne .divloop                   ; TODO: loop .loop? if you use rcx instead of rax
+    jne .divloop                ; cant loop .divloop
 
 .printloop:
     dec r11
     mov al, [r11]               ; TODO: would be lodsb with rdi? (movsb if you inline printCharacter)
-    printCharacter                   ; TODO: can this be a macro, call for every symbol seems sad?
+    printCharacter
     cmp r11, rsp
     jne .printloop
 
@@ -127,6 +127,8 @@ printNumber2N:
     ret
 
 myprintf:
+    pop r15                  ; return address
+
     push r9
     push r8
     push rcx
@@ -161,9 +163,9 @@ myprintf:
     je .printPercent
 
     xor rax, rax
-    mov al, byte [rbx]          ; TODO: what is this, some explanations please (like "my table's last symbol is x, so...")
-    sub al, 'a'                 ;       also, what happens if table size changes? At least make a loud comment to change it!
-    cmp al, 'z'-'a'             ;       Or make table include all alphabet for example.
+    mov al, byte [rbx]
+    sub al, 'a'
+    cmp al, 'z'-'a'
     ja .noNextArg
 
     mov r12, [rdx]
@@ -188,6 +190,8 @@ myprintf:
     pop rcx
     pop r8
     pop r9
+
+    push r15            ; return address
 
     ret
 
