@@ -92,6 +92,8 @@ void mandelbrotArrays(SDL_Surface *surface, const struct Camera *camera, enum Fr
                 pixelArray[index] = palette[MAX_N];
             }
 
+            char finished[arrayLength] = {};
+
             for(int iteration = 0; iteration < MAX_N; iteration++) {
 
                 double x2   [arrayLength] = {};
@@ -108,9 +110,14 @@ void mandelbrotArrays(SDL_Surface *surface, const struct Camera *camera, enum Fr
                     x [index] = x2 [index] - y2 [index] + x0 [index];
                     y [index] = 2.0        * xy [index] + y0 [index];
                     
-                    if (x2 [index] + y2 [index] > R2_MAX)// && pixelArray[index] != palette[MAX_N])
+                    if (x2 [index] + y2 [index] > R2_MAX && !finished[index]) {
                         pixelArray[index] = palette[iteration];
+                        finished[index] = 0xFF;
+                    }
                 }
+
+                if(*(uint64_t*)finished == UINT64_MAX)
+                    break;
             }
 
             memcpy(pixels, pixelArray, sizeof(pixelArray));
