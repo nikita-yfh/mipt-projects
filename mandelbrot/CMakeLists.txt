@@ -20,7 +20,7 @@ set(CMAKE_C_FLAGS_DEBUG
 -flto-odr-type-merging -fno-omit-frame-pointer \
 -Wstack-usage=8192 -pie -fPIE -Werror=vla")
 
-set(CMAKE_C_FLAGS "-march=tigerlake -mavx512f")
+set(CMAKE_C_FLAGS "-march=tigerlake -mavx512f -O3")
 
 set(SOURCES
     main.c

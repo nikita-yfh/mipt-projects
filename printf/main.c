@@ -4,13 +4,13 @@ int myprintf(const char *str, ...);
 #define NONE    "\e[0m"
 #define PURPLE  "\e[1;35m"
 int main() {
-    myprintf("С "RED"%d.%d.%d"NONE" снимаю на пленку на фотоаппарат %s. За это время:\n"
-             "\t1) было изведено примерно %b метрa пленки; \n"
-             "\t2) было успешно проявлено %x кадров; \n"
-             "\t3) примерно %d %% всей пленки были проявлены неправильно; \n"
-             "\t4) были изготовлены %o кюветы для проявки фотобумаги; \n"
-             "\t5) было напечатано %b фотографий на фотобумаге формата %dx%d в той самой комнате %x; \n"
-             "\t6) "PURPLE"да, я я все еще троллю деда"NONE"\n", 3,3,2024, "Зенит-ТТЛ", 4, 68, 20, 4, 12, 13, 18, 331);
+    myprintf(RED"Printf test:\n"NONE
+             "\t1) "PURPLE"Characters."NONE" '%c', '%c', '%c'.\n"
+             "\t2) "PURPLE"Strings."NONE" str1=\"%s\"\n"
+             "\t3) "PURPLE"Numbers."NONE" n1=(bin) %b=(oct) %o=(dec) %d=(hex) %x\n"
+             "\t           n2=(bin) %b=(oct) %o=(dec) %d=(hex) %x\n"
+             "\t4) "PURPLE"Escape percent:"NONE" %d %%.\n",
+             'D', 'e', 'd', "teststring", 42, 42, 42, 42, 1024, 1024, 1024, 1024, 35);
 
     return 0;
 }

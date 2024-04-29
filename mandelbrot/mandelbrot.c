@@ -20,9 +20,9 @@ void mandelbrotCommon(enum RenderType renderType, SDL_Surface *surface, const st
         case RENDER_DUMB:
             mandelbrotDumb(surface, camera, fractal, palette);
             break;
-        /* case RENDER_ARRAYS: */
-        /*     mandelbrotArrays(surface, camera, fractal, palette); */
-        /*     break; */
+        case RENDER_ARRAYS:
+            mandelbrotArrays(surface, camera, fractal, palette);
+            break;
         case RENDER_AVX:
             mandelbrotAVX(surface, camera, fractal, palette);
             break;
@@ -34,8 +34,6 @@ static const float R2_MAX = 1000.0f;
 void mandelbrotDumb(SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal, const uint32_t *palette) {
     int windowCenterX = camera->windowWidth  / 2;
     int windowCenterY = camera->windowHeight / 2;
-
-    SDL_LockSurface(surface);
 
     uint32_t* pixels = (uint32_t*)surface->pixels;
 
@@ -68,16 +66,62 @@ void mandelbrotDumb(SDL_Surface *surface, const struct Camera *camera, enum Frac
             *(pixels++) = palette[iteration];
         }
     }
-
-    SDL_UnlockSurface(surface);
 }
 
+void mandelbrotArrays(SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal, const uint32_t *palette) {
+    int windowCenterX = camera->windowWidth  / 2;
+    int windowCenterY = camera->windowHeight / 2;
+
+    uint32_t* pixels = (uint32_t*)surface->pixels;
+
+    const int arrayLength = 8;
+
+    for (int ywin = -windowCenterY; ywin < camera->windowHeight - windowCenterY; ywin++) {
+        for (int xwin = - windowCenterX; xwin < camera->windowWidth - windowCenterX; xwin += arrayLength) {
+
+            uint32_t pixelArray[arrayLength] = {};
+
+            double x0   [arrayLength] = {};
+            double y0   [arrayLength] = {};
+            double x    [arrayLength] = {};
+            double y    [arrayLength] = {};
+
+            for(int index = 0; index < arrayLength; index++) {
+                x [index] = x0 [index] = (xwin + index) / camera->scale - camera->centerPositionX;
+                y [index] = y0 [index] =           ywin / camera->scale - camera->centerPositionY;
+                pixelArray[index] = palette[MAX_N];
+            }
+
+            for(int iteration = 0; iteration < MAX_N; iteration++) {
+
+                double x2   [arrayLength] = {};
+                double y2   [arrayLength] = {};
+                double xy   [arrayLength] = {};
+
+                for(int index = 0; index < arrayLength; index++) {
+                    x2 [index] = x [index] * x [index];
+                    y2 [index] = y [index] * y [index];
+                    xy [index] = x [index] * y [index];
+                    if(fractal == FRACTAL_BURNING_SHIP)
+                        xy [index] = fabs(xy [index]);
+
+                    x [index] = x2 [index] - y2 [index] + x0 [index];
+                    y [index] = 2.0        * xy [index] + y0 [index];
+                    
+                    if (x2 [index] + y2 [index] > R2_MAX)// && pixelArray[index] != palette[MAX_N])
+                        pixelArray[index] = palette[iteration];
+                }
+            }
+
+            memcpy(pixels, pixelArray, sizeof(pixelArray));
+            pixels += arrayLength;
+        }
+    }
+}
 
 void mandelbrotAVX(SDL_Surface *surface, const struct Camera *camera, enum Fractal fractal, const uint32_t *palette) {
     int windowCenterX = camera->windowWidth  / 2;
     int windowCenterY = camera->windowHeight / 2;
-
-    SDL_LockSurface(surface);
 
     uint32_t *pixels = (uint32_t*)surface->pixels;
 
@@ -126,8 +170,6 @@ void mandelbrotAVX(SDL_Surface *surface, const struct Camera *camera, enum Fract
             pixelRow += 8;
         }
     }
-
-    SDL_UnlockSurface(surface);
 }
 
 
