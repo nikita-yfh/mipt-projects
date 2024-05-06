@@ -32,6 +32,8 @@ set(SOURCES
     palette.c
     fps.h
     fps.c
+    benchmark.c
+    benchmark.h
 )
 
 

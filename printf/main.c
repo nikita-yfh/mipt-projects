@@ -9,8 +9,9 @@ int main() {
              "\t2) "PURPLE"Strings."NONE" str1=\"%s\"\n"
              "\t3) "PURPLE"Numbers."NONE" n1=(bin) %b=(oct) %o=(dec) %d=(hex) %x\n"
              "\t           n2=(bin) %b=(oct) %o=(dec) %d=(hex) %x\n"
-             "\t4) "PURPLE"Escape percent:"NONE" %d %%.\n",
-             'D', 'e', 'd', "teststring", 42, 42, 42, 42, 1024, 1024, 1024, 1024, 35);
+             "\t4) "PURPLE"Escape percent:"NONE" %d %%.\n %d %s %x %d%%%c%b\n",
+             'D', 'e', 'd', "teststring", 42, 42, 42, 42, 1024, 1024, 1024, 1024, 35,
+             -1, "Love", 3802, 100, 33, 30);
 
     return 0;
 }
