@@ -20,20 +20,25 @@ def writeleds(value):
     for i in range(0, 8):
         value1 = (float(i) + 0.25) / 8 * 3.3
         if(value1 > value):
-            print(0)
             gpio.output(leds[i], 0)
         else:
-            print(1)
             gpio.output(leds[i], 1)
 def adc():
-    for i in range(0, 256):
-        gpio.output(dac, decimal2binary(i))
+    min = 0
+    max = 256
+    while True:
+        value = int((min + max) / 2)
+        gpio.output(dac, decimal2binary(value))
         time.sleep(0.001)
-        if gpio.input(comp) == 1:
-            return float(i) / 255.0 * 3.3
-
+        if gpio.input(comp) == 0:
+            min = value
+        else:
+            max = value
+        if min == max:
+            return float(value) / 255.0 * 3.3
+        if min + 1 == max:
+            return float(min) / 255.0 * 3.3
     return 3.3
-
 
 try:
     while True:

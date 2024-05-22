@@ -25,9 +25,7 @@ def adc():
             min = value
         else:
             max = value
-        if min == max:
-            return float(value) / 255.0 * 3.3
-        if min + 1 == max:
+        if min == max or min + 1 == max:
             return float(min) / 255.0 * 3.3
     return 3.3
 

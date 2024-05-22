@@ -14,8 +14,11 @@ try:
         cycle = time.time() % period / period;
         if cycle < 0.5:
             gpio.output(dac, decimal2binary(int(cycle * 2 * 255)))
+            print(int(cycle * 2 * 255))
         else:
             gpio.output(dac, decimal2binary(int((1 - cycle) * 2 * 255)))
+            print(int((1 - cycle) * 2 * 255))
+        
 except Exception as error:
     print(error)
 finally:
